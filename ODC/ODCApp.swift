@@ -10,8 +10,9 @@ import SwiftUI
 @main
 struct ODCApp: App {
     var body: some Scene {
-        WindowGroup {
+        MenuBarExtra("ODC Lite", systemImage: "hat.widebrim.fill") {
             ContentView()
         }
+        .menuBarExtraStyle(.window)
     }
 }
