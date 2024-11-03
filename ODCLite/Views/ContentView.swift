@@ -20,13 +20,60 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        VStack(spacing: 0) {
+            HStack {
+                Label("ODC Lite", systemImage: "hat.widebrim.fill")
+                
+                Spacer()
+                
+                Button {
+                    // Start/stop stream
+                } label: {
+                    Image(systemName: "record.circle")
+                }
+                .buttonStyle(.borderless)
+            }
+            .font(.title)
+            .padding()
+            
+            Divider()
+            
+            Form {
+                Section("Video") {
+                    Toggle("Exclude app from stream", isOn: .constant(true))
+                    Toggle("Recorde stream", isOn: .constant(true))
+                }
+                
+                Section("Audio") {
+                    Toggle("Capture system audio", isOn: .constant(true))
+                    Toggle("Exclude app audio", isOn: .constant(true))
+                }
+                
+                Section("Twitch") {
+                    SecureField("Primary Stream key", text: .constant(""))
+                }
+            }
+            .formStyle(ContentFormStyle())
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding([.horizontal, .bottom])
+            .background(Color.secondary.quaternary)
         }
-        .padding()
+    }
+}
+
+private struct ContentFormStyle: FormStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        ForEach(sections: configuration.content) { section in
+            VStack(alignment: .leading) {
+                section.header
+                    .font(.title3)
+                    .padding(.top, 8)
+                
+                section.content
+                
+                section.footer
+            }
+        }
     }
 }
 

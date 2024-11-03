@@ -1,7 +1,31 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "Hello, world!" : {
+    "Audio" : {
+
+    },
+    "Capture system audio" : {
+
+    },
+    "Exclude app audio" : {
+
+    },
+    "Exclude app from stream" : {
+
+    },
+    "ODC Lite" : {
+
+    },
+    "Primary Stream key" : {
+
+    },
+    "Recorde stream" : {
+
+    },
+    "Twitch" : {
+
+    },
+    "Video" : {
 
     }
   },

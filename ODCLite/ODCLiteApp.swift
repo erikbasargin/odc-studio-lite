@@ -21,8 +21,9 @@ import SwiftUI
 @main
 struct ODCLiteApp: App {
     var body: some Scene {
-        WindowGroup {
+        MenuBarExtra("ODC Lite", systemImage: "hat.widebrim.fill") {
             ContentView()
         }
+        .menuBarExtraStyle(.window)
     }
 }
