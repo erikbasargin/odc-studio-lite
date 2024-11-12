@@ -16,18 +16,15 @@
 //  limitations under the License.
 //
 
-import SwiftUI
+import Observation
 
-@main
-struct ODCLiteApp: App {
+@Observable
+final class BroadcastManager {
 
-    private let broadcastManager = BroadcastManager()
+    var excludeAppFromStream: Bool = true
+    var captureSystemAudio: Bool = true
+    var excludeAppAudio: Bool = false
+    var primaryStreamKey: String = ""
 
-    var body: some Scene {
-        MenuBarExtra("ODC Lite", systemImage: "hat.widebrim.fill") {
-            ContentView()
-                .environment(broadcastManager)
-        }
-        .menuBarExtraStyle(.window)
-    }
+    func toogleBroadcast() {}
 }

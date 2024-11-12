@@ -19,60 +19,33 @@
 import SwiftUI
 
 struct ContentView: View {
+
+    @Environment(BroadcastManager.self) private var broadcastManager
+
     var body: some View {
-        VStack(spacing: 0) {
+        VStack(alignment: .leading, spacing: 0) {
             HStack {
                 Label("ODC Lite", systemImage: "hat.widebrim.fill")
-                
+
                 Spacer()
-                
-                Button {
-                    // Start/stop stream
-                } label: {
+
+                Button(action: broadcastManager.toogleBroadcast) {
                     Image(systemName: "record.circle")
                 }
                 .buttonStyle(.borderless)
             }
             .font(.title)
             .padding()
-            
-            Divider()
-            
-            Form {
-                Section("Video") {
-                    Toggle("Exclude app from stream", isOn: .constant(true))
-                    Toggle("Recorde stream", isOn: .constant(true))
-                }
-                
-                Section("Audio") {
-                    Toggle("Capture system audio", isOn: .constant(true))
-                    Toggle("Exclude app audio", isOn: .constant(true))
-                }
-                
-                Section("Twitch") {
-                    SecureField("Primary Stream key", text: .constant(""))
-                }
-            }
-            .formStyle(ContentFormStyle())
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding([.horizontal, .bottom])
-            .background(Color.secondary.quaternary)
-        }
-    }
-}
 
-private struct ContentFormStyle: FormStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        ForEach(sections: configuration.content) { section in
-            VStack(alignment: .leading) {
-                section.header
-                    .font(.title3)
-                    .padding(.top, 8)
-                
-                section.content
-                
-                section.footer
+            Divider()
+
+            BroadcastConfigurationView()
+
+            Button("Quit") {
+                NSApplication.shared.terminate(self)
             }
+            .buttonStyle(.borderedProminent)
+            .padding()
         }
     }
 }
