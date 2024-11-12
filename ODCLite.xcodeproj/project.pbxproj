@@ -14,19 +14,11 @@
 			remoteGlobalIDString = 6F6BE3B32CB2FCA7002695EC;
 			remoteInfo = ODCLite;
 		};
-		6F6BE3D02CB2FCA9002695EC /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 6F6BE3AC2CB2FCA7002695EC /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 6F6BE3B32CB2FCA7002695EC;
-			remoteInfo = ODCLite;
-		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		6F6BE3B42CB2FCA8002695EC /* ODCLite.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ODCLite.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6F6BE3C52CB2FCA9002695EC /* ODCLiteTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ODCLiteTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		6F6BE3CF2CB2FCA9002695EC /* ODCLiteUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ODCLiteUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -38,11 +30,6 @@
 		6F6BE3C82CB2FCA9002695EC /* ODCLiteTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = ODCLiteTests;
-			sourceTree = "<group>";
-		};
-		6F6BE3D22CB2FCA9002695EC /* ODCLiteUITests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = ODCLiteUITests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -62,13 +49,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		6F6BE3CC2CB2FCA9002695EC /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -77,7 +57,6 @@
 			children = (
 				6F6BE3B62CB2FCA8002695EC /* ODCLite */,
 				6F6BE3C82CB2FCA9002695EC /* ODCLiteTests */,
-				6F6BE3D22CB2FCA9002695EC /* ODCLiteUITests */,
 				6F6BE3B52CB2FCA8002695EC /* Products */,
 			);
 			sourceTree = "<group>";
@@ -87,7 +66,6 @@
 			children = (
 				6F6BE3B42CB2FCA8002695EC /* ODCLite.app */,
 				6F6BE3C52CB2FCA9002695EC /* ODCLiteTests.xctest */,
-				6F6BE3CF2CB2FCA9002695EC /* ODCLiteUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -140,29 +118,6 @@
 			productReference = 6F6BE3C52CB2FCA9002695EC /* ODCLiteTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		6F6BE3CE2CB2FCA9002695EC /* ODCLiteUITests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 6F6BE3DF2CB2FCA9002695EC /* Build configuration list for PBXNativeTarget "ODCLiteUITests" */;
-			buildPhases = (
-				6F6BE3CB2CB2FCA9002695EC /* Sources */,
-				6F6BE3CC2CB2FCA9002695EC /* Frameworks */,
-				6F6BE3CD2CB2FCA9002695EC /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				6F6BE3D12CB2FCA9002695EC /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				6F6BE3D22CB2FCA9002695EC /* ODCLiteUITests */,
-			);
-			name = ODCLiteUITests;
-			packageProductDependencies = (
-			);
-			productName = ODCLiteUITests;
-			productReference = 6F6BE3CF2CB2FCA9002695EC /* ODCLiteUITests.xctest */;
-			productType = "com.apple.product-type.bundle.ui-testing";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -177,10 +132,6 @@
 						CreatedOnToolsVersion = 16.0;
 					};
 					6F6BE3C42CB2FCA9002695EC = {
-						CreatedOnToolsVersion = 16.0;
-						TestTargetID = 6F6BE3B32CB2FCA7002695EC;
-					};
-					6F6BE3CE2CB2FCA9002695EC = {
 						CreatedOnToolsVersion = 16.0;
 						TestTargetID = 6F6BE3B32CB2FCA7002695EC;
 					};
@@ -202,7 +153,6 @@
 			targets = (
 				6F6BE3B32CB2FCA7002695EC /* ODCLite */,
 				6F6BE3C42CB2FCA9002695EC /* ODCLiteTests */,
-				6F6BE3CE2CB2FCA9002695EC /* ODCLiteUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -216,13 +166,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		6F6BE3C32CB2FCA9002695EC /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		6F6BE3CD2CB2FCA9002695EC /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -246,13 +189,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		6F6BE3CB2CB2FCA9002695EC /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -260,11 +196,6 @@
 			isa = PBXTargetDependency;
 			target = 6F6BE3B32CB2FCA7002695EC /* ODCLite */;
 			targetProxy = 6F6BE3C62CB2FCA9002695EC /* PBXContainerItemProxy */;
-		};
-		6F6BE3D12CB2FCA9002695EC /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 6F6BE3B32CB2FCA7002695EC /* ODCLite */;
-			targetProxy = 6F6BE3D02CB2FCA9002695EC /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -487,38 +418,6 @@
 			};
 			name = Release;
 		};
-		6F6BE3E02CB2FCA9002695EC /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = S8BXS2P4Z9;
-				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.erikbasargin.ODCLiteUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TEST_TARGET_NAME = ODCLite;
-			};
-			name = Debug;
-		};
-		6F6BE3E12CB2FCA9002695EC /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = S8BXS2P4Z9;
-				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.erikbasargin.ODCLiteUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TEST_TARGET_NAME = ODCLite;
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -545,15 +444,6 @@
 			buildConfigurations = (
 				6F6BE3DD2CB2FCA9002695EC /* Debug */,
 				6F6BE3DE2CB2FCA9002695EC /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		6F6BE3DF2CB2FCA9002695EC /* Build configuration list for PBXNativeTarget "ODCLiteUITests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				6F6BE3E02CB2FCA9002695EC /* Debug */,
-				6F6BE3E12CB2FCA9002695EC /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
