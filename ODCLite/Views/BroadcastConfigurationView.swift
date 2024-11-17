@@ -33,6 +33,7 @@ struct BroadcastConfigurationView: View {
             Section("Audio") {
                 Toggle("Capture system audio", isOn: $broadcastManager.captureSystemAudio)
                 Toggle("Exclude app audio", isOn: $broadcastManager.excludeAppAudio)
+                Toggle("Capture microphone", isOn: $broadcastManager.captureMicrophone)
             }
 
             Section("Twitch") {

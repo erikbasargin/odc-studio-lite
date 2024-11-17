@@ -17,6 +17,8 @@
 //
 
 import SwiftUI
+import ScreenCaptureKit
+import os
 
 @main
 struct ODCLiteApp: App {
@@ -24,10 +26,39 @@ struct ODCLiteApp: App {
     private let broadcastManager = BroadcastManager()
 
     var body: some Scene {
+        WindowGroup {
+            LounchView()
+                .environment(broadcastManager)
+        }
+        
         MenuBarExtra("ODC Lite", systemImage: "hat.widebrim.fill") {
             ContentView()
                 .environment(broadcastManager)
         }
         .menuBarExtraStyle(.window)
+    }
+}
+
+private struct LounchView: View {
+    
+    private let log = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "LaunchView")
+    
+    @Environment(BroadcastManager.self) var broadcastManager
+    @Environment(\.dismiss) var dismiss
+    
+    var body: some View {
+        Color.clear
+            .task {
+                Task.detached {
+                    do {
+                        try await broadcastManager.configureManager()
+                        SCContentSharingPicker.shared.isActive = true
+                    } catch {
+                        log.error("Failed to launch ODC Lite: \(error.localizedDescription)")
+                    }
+                }
+                
+                dismiss()
+            }
     }
 }
