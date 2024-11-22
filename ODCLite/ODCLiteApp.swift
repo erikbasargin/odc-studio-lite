@@ -16,6 +16,7 @@
 //  limitations under the License.
 //
 
+import AppIntents
 import SwiftUI
 import ScreenCaptureKit
 import os
@@ -23,7 +24,16 @@ import os
 @main
 struct ODCLiteApp: App {
 
-    private let broadcastManager = BroadcastManager()
+    private let broadcastManager: BroadcastManager
+    
+    init() {
+        let broadcastManager = BroadcastManager()
+        self.broadcastManager = broadcastManager
+        
+        AppDependencyManager.shared.add(dependency: broadcastManager)
+        
+        ODCLiteShortcuts.updateAppShortcutParameters()
+    }
 
     var body: some Scene {
         WindowGroup {

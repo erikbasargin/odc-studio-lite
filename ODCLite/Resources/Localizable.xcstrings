@@ -1,7 +1,16 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "audio" : {
+
+    },
     "Audio" : {
+
+    },
+    "Audio control" : {
+
+    },
+    "capture" : {
 
     },
     "Capture microphone" : {
@@ -10,10 +19,19 @@
     "Capture system audio" : {
 
     },
+    "capturing" : {
+
+    },
     "Exclude app audio" : {
 
     },
     "Exclude app from stream" : {
+
+    },
+    "microphone" : {
+
+    },
+    "mute" : {
 
     },
     "ODC Lite" : {
@@ -25,7 +43,34 @@
     "Quit" : {
 
     },
+    "start" : {
+
+    },
+    "Start capturing microphone" : {
+
+    },
+    "Start capturing microphone to broadcast you voice audio to the world" : {
+
+    },
+    "stop" : {
+
+    },
+    "Stop capturing microphone" : {
+
+    },
+    "Stop capturing microphone to stop broadcasting you voice audio to the world" : {
+
+    },
     "Twitch" : {
+
+    },
+    "uncapture" : {
+
+    },
+    "uncapturing" : {
+
+    },
+    "unmute" : {
 
     },
     "Video" : {
