@@ -21,12 +21,21 @@ import SwiftUI
 import ScreenCaptureKit
 import os
 
+#if DEBUG
+import Logboard
+import HaishinKit
+#endif
+
 @main
 struct ODCLiteApp: App {
 
     private let broadcastManager: BroadcastManager
     
     init() {
+#if DEBUG
+        LBLogger.with(kHaishinKitIdentifier).level = .trace
+#endif
+        
         let broadcastManager = BroadcastManager()
         self.broadcastManager = broadcastManager
         
@@ -68,6 +77,10 @@ private struct LounchView: View {
                 Task.detached {
                     do {
                         try await broadcastManager.configureManager()
+                        
+                        var initialConfiguration = SCContentSharingPickerConfiguration()
+                        initialConfiguration.allowedPickerModes = [.singleDisplay]
+                        SCContentSharingPicker.shared.configuration = initialConfiguration
                         SCContentSharingPicker.shared.isActive = true
                     } catch {
                         log.error("Failed to launch ODC Lite: \(error.localizedDescription)")

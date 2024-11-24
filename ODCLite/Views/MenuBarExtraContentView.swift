@@ -36,6 +36,9 @@ struct MenuBarExtraContentView: View {
         }
         
         Section("Twitch Broadcast") {
+            Toggle("Bandwidth test", isOn: $broadcastManager.bandwidthTestEnabled)
+                .disabled(broadcastManager.isBroadcasting)
+            
             Button("\(broadcastManager.isBroadcasting ? "Stop" : "Start") broadcast") {
                 Task {
                     await broadcastManager.toogleBroadcast()

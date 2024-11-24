@@ -16,14 +16,20 @@
 //  limitations under the License.
 //
 
-import Testing
+import ScreenCaptureKit
 
-@testable import ODCLite
-
-struct ODCLiteTests {
-
-    @Test func example() async throws {
-        // Write your test here and use APIs like `#expect(...)` to check expected conditions.
+extension CMSampleBuffer {
+    
+    var ioSurface: IOSurface? {
+        CVPixelBufferGetIOSurface(imageBuffer)?.takeUnretainedValue()
     }
+    
+    var videoMetadata: SCVideoMetadata? {
+        SCVideoMetadata(sampleAttachments)
+    }
+}
 
+extension CMSampleBuffer.PerSampleAttachmentsDictionary.Key {
+    
+    static let status: Self = Self(rawValue: SCStreamFrameInfo.status.rawValue as CFString)
 }
