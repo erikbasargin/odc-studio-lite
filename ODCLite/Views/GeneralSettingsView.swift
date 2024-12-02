@@ -18,38 +18,23 @@
 
 import SwiftUI
 
-struct ContentView: View {
-
+struct GeneralSettingsView: View {
+    
     @Environment(BroadcastManager.self) private var broadcastManager
-
+    
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            HStack {
-                Label("ODC Lite", systemImage: "hat.widebrim.fill")
-
-                Spacer()
-
-                Button(action: broadcastManager.toogleBroadcast) {
-                    Image(systemName: "record.circle")
-                }
-                .buttonStyle(.borderless)
+        @Bindable var broadcastManager = broadcastManager
+        
+        Form {
+            Section("Twitch") {
+                SecureField("Primary Stream key", text: $broadcastManager.primaryStreamKey)
             }
-            .font(.title)
-            .padding()
-
-            Divider()
-
-            BroadcastConfigurationView()
-
-            Button("Quit") {
-                NSApplication.shared.terminate(self)
-            }
-            .buttonStyle(.borderedProminent)
-            .padding()
         }
     }
 }
 
+
 #Preview {
-    ContentView()
+    GeneralSettingsView()
+        .environment(BroadcastManager())
 }

@@ -42,10 +42,16 @@ struct ODCLiteApp: App {
         }
         
         MenuBarExtra("ODC Lite", systemImage: "hat.widebrim.fill") {
-            ContentView()
+            MenuBarExtraContentView()
                 .environment(broadcastManager)
         }
-        .menuBarExtraStyle(.window)
+        
+        Settings {
+            GeneralSettingsView()
+                .frame(width: 830)
+                .environment(broadcastManager)
+        }
+        .windowResizability(.contentSize)
     }
 }
 

@@ -1,6 +1,9 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%@ broadcast" : {
+
+    },
     "audio" : {
 
     },
@@ -62,6 +65,9 @@
 
     },
     "Twitch" : {
+
+    },
+    "Twitch Broadcast" : {
 
     },
     "uncapture" : {
