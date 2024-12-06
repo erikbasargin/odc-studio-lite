@@ -27,6 +27,16 @@ struct MenuBarExtraContentView: View {
         
         Section("Video") {
             Toggle("Exclude app from stream", isOn: $broadcastManager.excludeAppFromStream)
+            Picker("Camera - \(broadcastManager.selectedCameraDevice?.name ?? "not selected")", selection: $broadcastManager.selectedCameraDevice) {
+                ForEach(broadcastManager.videoDevices) { device in
+                    Text(verbatim: device.name)
+                        .tag(device)
+                }
+            }
+            .disabled(!broadcastManager.cameraIsAuthorized)
+        }
+        .task {
+            await broadcastManager.listenForVideoDevices()
         }
         
         Section("Audio") {

@@ -82,6 +82,8 @@ private struct LounchView: View {
                         initialConfiguration.allowedPickerModes = [.singleDisplay]
                         SCContentSharingPicker.shared.configuration = initialConfiguration
                         SCContentSharingPicker.shared.isActive = true
+                        
+                        await broadcastManager.authorizeCamera()
                     } catch {
                         log.error("Failed to launch ODC Lite: \(error.localizedDescription)")
                     }

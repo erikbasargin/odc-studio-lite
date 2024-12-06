@@ -24,10 +24,15 @@ import os
 
 private let log = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "BroadcastManager")
 
+struct Device: Identifiable, Hashable {
+    let id: String
+    let name: String
+}
+
 @MainActor
 @Observable
 final class BroadcastManager {
-
+    
     var excludeAppFromStream = true {
         didSet {
             Task {
@@ -35,7 +40,7 @@ final class BroadcastManager {
             }
         }
     }
-
+    
     var captureSystemAudio = true {
         didSet {
             Task {
@@ -43,7 +48,7 @@ final class BroadcastManager {
             }
         }
     }
-
+    
     var captureMicrophone = false {
         didSet {
             Task {
@@ -51,7 +56,7 @@ final class BroadcastManager {
             }
         }
     }
-
+    
     var excludeAppAudio = false {
         didSet {
             Task {
@@ -61,11 +66,27 @@ final class BroadcastManager {
     }
     
     var bandwidthTestEnabled = false
-
+    
     var primaryStreamKey = ""
     
+    var cameraIsAuthorized = false
+    
+    var selectedCameraDevice: Device? {
+        didSet {
+            configureCameraSession()
+        }
+    }
+    
     private(set) var isBroadcasting: Bool = false
-
+    private(set) var videoDevices: [Device] = []
+    
+    let cameraCaptureSession = AVCaptureSession()
+    private let cameraDiscoverySession = AVCaptureDevice.DiscoverySession(
+        deviceTypes: [.builtInWideAngleCamera, .continuityCamera],
+        mediaType: .video,
+        position: .unspecified
+    )
+    
     private let streamDelegate: StreamDelegate
     private let screenStreamOutput: StreamOutput
     private let audioStreamOutput: StreamOutput
@@ -82,6 +103,9 @@ final class BroadcastManager {
     @ObservationIgnored
     private var currentShareableContent: SCShareableContent!
     
+    @ObservationIgnored
+    private var cameraPreviewLayer: AVCaptureVideoPreviewLayer?
+    
     private var currentDisplay: SCDisplay {
         currentShareableContent.displays.first!
     }
@@ -89,32 +113,32 @@ final class BroadcastManager {
     private var scaleFactor: Int {
         Int(NSScreen.main?.backingScaleFactor ?? 2)
     }
-
+    
     private var streamContentFilter: SCContentFilter {
         get async throws {
             let excludingApplications: [SCRunningApplication] =
-                if excludeAppFromStream {
-                    currentShareableContent.applications.filter {
-                        $0.bundleIdentifier == Bundle.main.bundleIdentifier
-                    }
-                } else {
-                    []
+            if excludeAppFromStream {
+                currentShareableContent.applications.filter {
+                    $0.bundleIdentifier == Bundle.main.bundleIdentifier
                 }
-
+            } else {
+                []
+            }
+            
             return SCContentFilter(display: currentDisplay, excludingApplications: excludingApplications, exceptingWindows: [])
         }
     }
-
+    
     @ObservationIgnored
     private var streamConfiguration: SCStreamConfiguration {
         let configuration = SCStreamConfiguration()
-
+        
         configuration.capturesAudio = captureSystemAudio
         configuration.excludesCurrentProcessAudio = excludeAppAudio
-
+        
         if configuration.captureMicrophone != captureMicrophone {
             configuration.captureMicrophone = captureMicrophone
-
+            
             if captureMicrophone {
                 configuration.microphoneCaptureDeviceID = AVCaptureDevice.default(for: .audio)?.uniqueID
             }
@@ -130,7 +154,7 @@ final class BroadcastManager {
         // Increase the depth of the frame queue to ensure high fps at the expense of increasing
         // the memory footprint of WindowServer.
         configuration.queueDepth = 5
-
+        
         return configuration
     }
     
@@ -170,12 +194,89 @@ final class BroadcastManager {
         
         rtmpConnectionStatusTask = task
     }
-
+    
     deinit {
         stream.stopCapture { error in
             if let error {
                 log.error("Failed to stop stream capture: \(error.localizedDescription)")
             }
+        }
+    }
+    
+    func listenForVideoDevices() async {
+        selectedCameraDevice = AVCaptureDevice.systemPreferredCamera.map { device in
+            Device(id: device.uniqueID, name: device.localizedName)
+        }
+        
+        for await devices in cameraDiscoverySession.publisher(for: \.devices).values {
+            videoDevices = devices.map { device in
+                Device(id: device.uniqueID, name: device.localizedName)
+            }
+        }
+    }
+    
+    struct NoCameraDevice: Error {}
+    struct CameraCaptureSessionError: Error {}
+    
+    private func configureCameraSession() {
+        cameraCaptureSession.beginConfiguration()
+        defer {
+            cameraCaptureSession.commitConfiguration()
+            
+            if selectedCameraDevice == nil {
+                cameraPreviewLayer = nil
+                Task.detached(priority: .userInitiated) { [weak self] in
+                    guard let captureSession = await self?.cameraCaptureSession else { return }
+                    captureSession.stopRunning()
+                }
+            } else {
+                cameraPreviewLayer = AVCaptureVideoPreviewLayer(session: cameraCaptureSession)
+                Task.detached(priority: .userInitiated) { [weak self] in
+                    guard let captureSession = await self?.cameraCaptureSession else { return }
+                    captureSession.startRunning()
+                }
+            }
+        }
+        
+        cameraCaptureSession.sessionPreset = .high
+        
+        do {
+            guard let selectedCameraDevice else {
+                cameraCaptureSession.inputs.forEach { input in
+                    cameraCaptureSession.removeInput(input)
+                }
+                return
+            }
+            
+            guard let device = cameraDiscoverySession.devices.first(where: { selectedCameraDevice.id == $0.uniqueID }) else {
+                throw NoCameraDevice()
+            }
+            
+            let input = try AVCaptureDeviceInput(device: device)
+            if cameraCaptureSession.canAddInput(input) {
+                cameraCaptureSession.addInput(input)
+            } else {
+                throw CameraCaptureSessionError()
+            }
+            
+            AVCaptureDevice.userPreferredCamera = device
+        } catch {
+            log.error("\(error.localizedDescription)")
+        }
+    }
+    
+    func authorizeCamera() async {
+        let status = AVCaptureDevice.authorizationStatus(for: .video)
+        
+        switch status {
+        case .notDetermined:
+            cameraIsAuthorized = await AVCaptureDevice.requestAccess(for: .video)
+        case .restricted, .denied:
+            cameraIsAuthorized = false
+        case .authorized:
+            cameraIsAuthorized = true
+        @unknown default:
+            cameraIsAuthorized = false
         }
     }
 
