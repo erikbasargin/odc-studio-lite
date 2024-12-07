@@ -411,10 +411,8 @@ private final class StreamOutput: NSObject, SCStreamOutput {
             )
             
             continuation.yield(sampleBuffer)
-        case .audio:
-            break
-        case .microphone:
-            break
+        case .audio, .microphone:
+            continuation.yield(sampleBuffer)
         @unknown default:
             break
         }
