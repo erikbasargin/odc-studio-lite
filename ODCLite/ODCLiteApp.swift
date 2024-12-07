@@ -50,9 +50,13 @@ struct ODCLiteApp: App {
                 .environment(broadcastManager)
         }
         
-        MenuBarExtra("ODC Lite", systemImage: "hat.widebrim.fill") {
+        MenuBarExtra {
             MenuBarExtraContentView()
                 .environment(broadcastManager)
+        } label: {
+            Image(.menuBarExtra)
+                .symbolRenderingMode(.palette)
+                .foregroundStyle(.white, broadcastManager.isBroadcasting ? .green : .white)
         }
         
         Settings {
