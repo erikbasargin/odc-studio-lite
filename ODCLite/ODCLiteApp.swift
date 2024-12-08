@@ -84,6 +84,7 @@ private struct LounchView: View {
                         
                         var initialConfiguration = SCContentSharingPickerConfiguration()
                         initialConfiguration.allowedPickerModes = [.singleDisplay]
+                        initialConfiguration.allowsChangingSelectedContent = true
                         SCContentSharingPicker.shared.configuration = initialConfiguration
                         SCContentSharingPicker.shared.isActive = true
                         
