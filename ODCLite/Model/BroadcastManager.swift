@@ -315,7 +315,8 @@ final class BroadcastManager {
             
             await rtmpStream.setVideoSettings(videoCodecSettings)
             
-            let publishName = "\(primaryStreamKey)?bandwidthtest=\(bandwidthTestEnabled)"
+            // TODO: - Check why it did not work with `bandwidthtest=false` set
+            let publishName = bandwidthTestEnabled ? "\(primaryStreamKey)?bandwidthtest=true" : primaryStreamKey
             let publishResponse = try await rtmpStream.publish(publishName)
             log.info("Publishing to Twitch RTMP server, status: \(publishResponse.status?.description ?? "unknown")")
             
