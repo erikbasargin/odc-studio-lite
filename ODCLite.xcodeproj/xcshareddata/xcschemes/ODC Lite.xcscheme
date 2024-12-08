@@ -16,7 +16,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "6F6BE3B32CB2FCA7002695EC"
-               BuildableName = "ODCLite.app"
+               BuildableName = "ODC Lite.app"
                BlueprintName = "ODCLite"
                ReferencedContainer = "container:ODCLite.xcodeproj">
             </BuildableReference>
@@ -58,7 +58,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "6F6BE3B32CB2FCA7002695EC"
-            BuildableName = "ODCLite.app"
+            BuildableName = "ODC Lite.app"
             BlueprintName = "ODCLite"
             ReferencedContainer = "container:ODCLite.xcodeproj">
          </BuildableReference>
@@ -75,7 +75,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "6F6BE3B32CB2FCA7002695EC"
-            BuildableName = "ODCLite.app"
+            BuildableName = "ODC Lite.app"
             BlueprintName = "ODCLite"
             ReferencedContainer = "container:ODCLite.xcodeproj">
          </BuildableReference>
