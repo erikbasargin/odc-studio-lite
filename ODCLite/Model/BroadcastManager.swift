@@ -20,7 +20,7 @@ import VideoToolbox
 import HaishinKit
 import Observation
 @preconcurrency import ScreenCaptureKit
-import os
+import OSLog
 
 private let log = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "BroadcastManager")
 
@@ -41,23 +41,7 @@ final class BroadcastManager {
         }
     }
     
-    var captureSystemAudio = true {
-        didSet {
-            Task {
-                await updateStreamConfiguration()
-            }
-        }
-    }
-    
     var captureMicrophone = false {
-        didSet {
-            Task {
-                await updateStreamConfiguration()
-            }
-        }
-    }
-    
-    var excludeAppAudio = false {
         didSet {
             Task {
                 await updateStreamConfiguration()
@@ -89,7 +73,6 @@ final class BroadcastManager {
     
     private let streamDelegate: StreamDelegate
     private let screenStreamOutput: StreamOutput
-    private let audioStreamOutput: StreamOutput
     private let microphoneStreamOutput: StreamOutput
     
     private let rtmpConnection: RTMPConnection
@@ -133,8 +116,7 @@ final class BroadcastManager {
     private var streamConfiguration: SCStreamConfiguration {
         let configuration = SCStreamConfiguration()
         
-        configuration.capturesAudio = captureSystemAudio
-        configuration.excludesCurrentProcessAudio = excludeAppAudio
+        configuration.excludesCurrentProcessAudio = true
         
         if configuration.captureMicrophone != captureMicrophone {
             configuration.captureMicrophone = captureMicrophone
@@ -164,7 +146,6 @@ final class BroadcastManager {
         mediaMixer = MediaMixer()
         streamDelegate = StreamDelegate()
         screenStreamOutput = StreamOutput(type: .screen, rtmpSession: mediaMixer)
-        audioStreamOutput = StreamOutput(type: .audio, rtmpSession: mediaMixer)
         microphoneStreamOutput = StreamOutput(type: .microphone, rtmpSession: mediaMixer)
         
         let task = Task {
@@ -286,9 +267,10 @@ final class BroadcastManager {
         stream = try await SCStream(filter: streamContentFilter, configuration: streamConfiguration, delegate: streamDelegate)
 
         try stream.addStreamOutput(screenStreamOutput)
-        try stream.addStreamOutput(audioStreamOutput)  // use SCStreamConfiguration/capturesAudio to switch it on/off
         try stream.addStreamOutput(microphoneStreamOutput)  // use SCStreamConfiguration/captureMicrophone to switch it on/off
 
+        await mediaMixer.addOutput(rtmpStream)
+        
         try await stream.startCapture()
     }
 
@@ -322,7 +304,6 @@ final class BroadcastManager {
             
             await mediaMixer.setSessionPreset(.high)
             await mediaMixer.setFrameRate(Float64(streamConfiguration.minimumFrameInterval.timescale))
-            await mediaMixer.addOutput(rtmpStream)
             await mediaMixer.startRunning()
         } catch RTMPConnection.Error.requestFailed {
             log.error("RTMP connection request failed")
@@ -373,21 +354,21 @@ private final class StreamOutput: NSObject, SCStreamOutput {
     private let continuation: AsyncStream<CMSampleBuffer>.Continuation
     private let task: Task<Void, Never>
 
-    init(type: SCStreamOutputType, rtmpSession: MediaMixer) {
+    init(type: SCStreamOutputType, rtmpSession: MediaMixer, track: UInt8 = 0) {
         self.type = type
         self.rtmpSession = rtmpSession
         queue = DispatchQueue(label: "\(Bundle.main.bundleIdentifier!).BroadcastManager.streamOutputQueue.\(type)")
-        let (values, continuation) = AsyncStream.makeStream(of: CMSampleBuffer.self, bufferingPolicy: .bufferingNewest(1))
+        let (sampleBuffers, continuation) = AsyncStream.makeStream(of: CMSampleBuffer.self, bufferingPolicy: .bufferingNewest(1))
         self.continuation = continuation
         
         func listenForSampleBuffers(stream: AsyncStream<CMSampleBuffer>, on mixer: isolated MediaMixer) async {
             for await sampleBuffer in stream where mixer.isRunning {
-                mixer.append(sampleBuffer)
+                mixer.append(sampleBuffer, track: track)
             }
         }
         
         task = Task {
-            await listenForSampleBuffers(stream: values, on: rtmpSession)
+            await listenForSampleBuffers(stream: sampleBuffers, on: rtmpSession)
         }
     }
     
@@ -412,8 +393,10 @@ private final class StreamOutput: NSObject, SCStreamOutput {
             )
             
             continuation.yield(sampleBuffer)
-        case .audio, .microphone:
+        case .microphone:
             continuation.yield(sampleBuffer)
+        case .audio:
+            break
         @unknown default:
             break
         }
