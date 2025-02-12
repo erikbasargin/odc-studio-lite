@@ -22,7 +22,7 @@
 
 /* Begin PBXFileReference section */
 		13A089F82CF3C12E001A7712 /* ODCLiteTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ODCLiteTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		6F6BE3B42CB2FCA8002695EC /* ODC Lite.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "ODC Lite.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		6F6BE3B42CB2FCA8002695EC /* ODC Lite Debug.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "ODC Lite Debug.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -83,7 +83,7 @@
 		6F6BE3B52CB2FCA8002695EC /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				6F6BE3B42CB2FCA8002695EC /* ODC Lite.app */,
+				6F6BE3B42CB2FCA8002695EC /* ODC Lite Debug.app */,
 				13A089F82CF3C12E001A7712 /* ODCLiteTests.xctest */,
 			);
 			name = Products;
@@ -142,7 +142,7 @@
 				136080062CF3E06400D6E894 /* HaishinKit */,
 			);
 			productName = ODCLite;
-			productReference = 6F6BE3B42CB2FCA8002695EC /* ODC Lite.app */;
+			productReference = 6F6BE3B42CB2FCA8002695EC /* ODC Lite Debug.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -434,8 +434,8 @@
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.odclite;
-				PRODUCT_NAME = "ODC Lite";
+				PRODUCT_BUNDLE_IDENTIFIER = com.odclite.debug;
+				PRODUCT_NAME = "ODC Lite Debug";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 6.0;
