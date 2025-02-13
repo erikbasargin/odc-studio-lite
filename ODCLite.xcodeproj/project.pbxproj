@@ -30,6 +30,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Resources/Info.plist,
+				Shared/Core,
 			);
 			target = 6F6BE3B32CB2FCA7002695EC /* ODCLite */;
 		};
