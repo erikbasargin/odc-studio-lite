@@ -1,2 +1,4 @@
-// The Swift Programming Language
-// https://docs.swift.org/swift-book
+//
+// https://github.com/erikbasargin/odc-studio-lite
+// See LICENSE for license information.
+//
