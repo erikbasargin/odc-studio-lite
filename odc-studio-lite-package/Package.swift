@@ -4,7 +4,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "Capture",
+    name: "ODCStudioLite",
     platforms: [
         .macOS(.v15),
     ],

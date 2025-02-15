@@ -23,6 +23,7 @@
 /* Begin PBXFileReference section */
 		13A089F82CF3C12E001A7712 /* ODCLiteTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ODCLiteTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		6F6BE3B42CB2FCA8002695EC /* ODC Lite Debug.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "ODC Lite Debug.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		E0DD97112D60F47B0016B7EA /* odc-studio-lite-package */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = "odc-studio-lite-package"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -73,6 +74,7 @@
 		6F6BE3AB2CB2FCA7002695EC = {
 			isa = PBXGroup;
 			children = (
+				E0DD97112D60F47B0016B7EA /* odc-studio-lite-package */,
 				6F6BE3B62CB2FCA8002695EC /* App */,
 				13A089F92CF3C12E001A7712 /* ODCLiteTests */,
 				E02FCC052D5A7ECC00994499 /* Frameworks */,
