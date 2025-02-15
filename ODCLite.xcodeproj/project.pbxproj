@@ -26,7 +26,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		130D1B9C2D3092E70047404E /* Exceptions for "ODCLite" folder in "ODCLite" target */ = {
+		130D1B9C2D3092E70047404E /* Exceptions for "App" folder in "ODCLite" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Resources/Info.plist,
@@ -41,12 +41,12 @@
 			path = ODCLiteTests;
 			sourceTree = "<group>";
 		};
-		6F6BE3B62CB2FCA8002695EC /* ODCLite */ = {
+		6F6BE3B62CB2FCA8002695EC /* App */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				130D1B9C2D3092E70047404E /* Exceptions for "ODCLite" folder in "ODCLite" target */,
+				130D1B9C2D3092E70047404E /* Exceptions for "App" folder in "ODCLite" target */,
 			);
-			path = ODCLite;
+			path = App;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -73,7 +73,7 @@
 		6F6BE3AB2CB2FCA7002695EC = {
 			isa = PBXGroup;
 			children = (
-				6F6BE3B62CB2FCA8002695EC /* ODCLite */,
+				6F6BE3B62CB2FCA8002695EC /* App */,
 				13A089F92CF3C12E001A7712 /* ODCLiteTests */,
 				E02FCC052D5A7ECC00994499 /* Frameworks */,
 				6F6BE3B52CB2FCA8002695EC /* Products */,
@@ -135,7 +135,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				6F6BE3B62CB2FCA8002695EC /* ODCLite */,
+				6F6BE3B62CB2FCA8002695EC /* App */,
 			);
 			name = ODCLite;
 			packageProductDependencies = (
@@ -411,19 +411,19 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = ODCLite/Resources/ODCLite.entitlements;
+				CODE_SIGN_ENTITLEMENTS = App/Resources/ODCLite.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 2;
 				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_ASSET_PATHS = "\"ODCLite/DevelopmentAssets\"";
+				DEVELOPMENT_ASSET_PATHS = "\"App/DevelopmentAssets\"";
 				DEVELOPMENT_TEAM = S8BXS2P4Z9;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = ODCLite/Resources/Info.plist;
+				INFOPLIST_FILE = App/Resources/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSCameraUsageDescription = "To capture your camera on the broadcast.";
@@ -448,19 +448,19 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = ODCLite/Resources/ODCLite.entitlements;
+				CODE_SIGN_ENTITLEMENTS = App/Resources/ODCLite.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_ASSET_PATHS = "\"ODCLite/DevelopmentAssets\"";
+				DEVELOPMENT_ASSET_PATHS = "\"App/DevelopmentAssets\"";
 				DEVELOPMENT_TEAM = S8BXS2P4Z9;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = ODCLite/Resources/Info.plist;
+				INFOPLIST_FILE = App/Resources/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSCameraUsageDescription = "To capture your camera on the broadcast.";
