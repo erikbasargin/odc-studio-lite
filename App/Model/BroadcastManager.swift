@@ -8,6 +8,7 @@ import HaishinKit
 import Observation
 @preconcurrency import ScreenCaptureKit
 import OSLog
+import Capture
 
 private let log = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "BroadcastManager")
 
@@ -370,7 +371,7 @@ private final class StreamOutput: NSObject, SCStreamOutput {
         
         switch type {
         case .screen:
-            guard sampleBuffer.videoMetadata?.status == .complete else {
+            guard SCVideoMetadata(sampleBuffer)?.status == .complete else {
                 return
             }
             

@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		136080072CF3E06400D6E894 /* HaishinKit in Frameworks */ = {isa = PBXBuildFile; productRef = 136080062CF3E06400D6E894 /* HaishinKit */; };
+		E0DD97152D60FFEF0016B7EA /* Capture in Frameworks */ = {isa = PBXBuildFile; productRef = E0DD97142D60FFEF0016B7EA /* Capture */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -65,6 +66,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				136080072CF3E06400D6E894 /* HaishinKit in Frameworks */,
+				E0DD97152D60FFEF0016B7EA /* Capture in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -142,6 +144,7 @@
 			name = ODCLite;
 			packageProductDependencies = (
 				136080062CF3E06400D6E894 /* HaishinKit */,
+				E0DD97142D60FFEF0016B7EA /* Capture */,
 			);
 			productName = ODCLite;
 			productReference = 6F6BE3B42CB2FCA8002695EC /* ODC Lite Debug.app */;
@@ -530,6 +533,10 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 136080052CF3E06400D6E894 /* XCRemoteSwiftPackageReference "HaishinKit.swift" */;
 			productName = HaishinKit;
+		};
+		E0DD97142D60FFEF0016B7EA /* Capture */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Capture;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

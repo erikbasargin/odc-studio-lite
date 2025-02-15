@@ -6,8 +6,9 @@
 import AVFoundation
 import Testing
 
-@testable import ODCLite
+import Extensions
 
+@Suite
 struct CMSampleBufferTests {
 
     @Test func sampleBufferWithoutIOSurface() throws {

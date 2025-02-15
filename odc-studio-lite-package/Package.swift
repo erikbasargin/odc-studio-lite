@@ -11,16 +11,33 @@ let package = Package(
     products: [
         .library(
             name: "Capture",
-            targets: ["Capture"]
+            targets: [
+                "Capture",
+            ]
         ),
     ],
     targets: [
         .target(
-            name: "Capture"
+            name: "Capture",
+            dependencies: [
+                "Extensions",
+            ]
         ),
         .testTarget(
             name: "CaptureTests",
-            dependencies: ["Capture"]
+            dependencies: [
+                "Capture",
+            ]
+        ),
+        
+        .target(
+            name: "Extensions"
+        ),
+        .testTarget(
+            name: "ExtensionsTests",
+            dependencies: [
+                "Extensions",
+            ]
         ),
     ]
 )
