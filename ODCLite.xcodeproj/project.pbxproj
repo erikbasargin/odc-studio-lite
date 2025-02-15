@@ -11,18 +11,7 @@
 		E0DD97152D60FFEF0016B7EA /* Capture in Frameworks */ = {isa = PBXBuildFile; productRef = E0DD97142D60FFEF0016B7EA /* Capture */; };
 /* End PBXBuildFile section */
 
-/* Begin PBXContainerItemProxy section */
-		13A089FC2CF3C12E001A7712 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 6F6BE3AC2CB2FCA7002695EC /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 6F6BE3B32CB2FCA7002695EC;
-			remoteInfo = ODCLite;
-		};
-/* End PBXContainerItemProxy section */
-
 /* Begin PBXFileReference section */
-		13A089F82CF3C12E001A7712 /* ODCLiteTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ODCLiteTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		6F6BE3B42CB2FCA8002695EC /* ODC Lite Debug.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "ODC Lite Debug.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E0DD97112D60F47B0016B7EA /* odc-studio-lite-package */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = "odc-studio-lite-package"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -38,11 +27,6 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		13A089F92CF3C12E001A7712 /* ODCLiteTests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = ODCLiteTests;
-			sourceTree = "<group>";
-		};
 		6F6BE3B62CB2FCA8002695EC /* App */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -54,13 +38,6 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		13A089F52CF3C12E001A7712 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		6F6BE3B12CB2FCA7002695EC /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -78,7 +55,6 @@
 			children = (
 				E0DD97112D60F47B0016B7EA /* odc-studio-lite-package */,
 				6F6BE3B62CB2FCA8002695EC /* App */,
-				13A089F92CF3C12E001A7712 /* ODCLiteTests */,
 				E02FCC052D5A7ECC00994499 /* Frameworks */,
 				6F6BE3B52CB2FCA8002695EC /* Products */,
 			);
@@ -88,7 +64,6 @@
 			isa = PBXGroup;
 			children = (
 				6F6BE3B42CB2FCA8002695EC /* ODC Lite Debug.app */,
-				13A089F82CF3C12E001A7712 /* ODCLiteTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -103,29 +78,6 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		13A089F72CF3C12E001A7712 /* ODCLiteTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 13A089FE2CF3C12E001A7712 /* Build configuration list for PBXNativeTarget "ODCLiteTests" */;
-			buildPhases = (
-				13A089F42CF3C12E001A7712 /* Sources */,
-				13A089F52CF3C12E001A7712 /* Frameworks */,
-				13A089F62CF3C12E001A7712 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				13A089FD2CF3C12E001A7712 /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				13A089F92CF3C12E001A7712 /* ODCLiteTests */,
-			);
-			name = ODCLiteTests;
-			packageProductDependencies = (
-			);
-			productName = ODCLiteTests;
-			productReference = 13A089F82CF3C12E001A7712 /* ODCLiteTests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
-		};
 		6F6BE3B32CB2FCA7002695EC /* ODCLite */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 6F6BE3D92CB2FCA9002695EC /* Build configuration list for PBXNativeTarget "ODCLite" */;
@@ -160,10 +112,6 @@
 				LastSwiftUpdateCheck = 1610;
 				LastUpgradeCheck = 1610;
 				TargetAttributes = {
-					13A089F72CF3C12E001A7712 = {
-						CreatedOnToolsVersion = 16.1;
-						TestTargetID = 6F6BE3B32CB2FCA7002695EC;
-					};
 					6F6BE3B32CB2FCA7002695EC = {
 						CreatedOnToolsVersion = 16.0;
 					};
@@ -187,19 +135,11 @@
 			projectRoot = "";
 			targets = (
 				6F6BE3B32CB2FCA7002695EC /* ODCLite */,
-				13A089F72CF3C12E001A7712 /* ODCLiteTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		13A089F62CF3C12E001A7712 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		6F6BE3B22CB2FCA7002695EC /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -210,13 +150,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		13A089F42CF3C12E001A7712 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		6F6BE3B02CB2FCA7002695EC /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -226,61 +159,7 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
-/* Begin PBXTargetDependency section */
-		13A089FD2CF3C12E001A7712 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 6F6BE3B32CB2FCA7002695EC /* ODCLite */;
-			targetProxy = 13A089FC2CF3C12E001A7712 /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
-
 /* Begin XCBuildConfiguration section */
-		13A089FF2CF3C12E001A7712 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = S8BXS2P4Z9;
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.1;
-				MACOSX_DEPLOYMENT_TARGET = 15.1;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.ODCLiteTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = auto;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ODCLite.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/ODCLite";
-				XROS_DEPLOYMENT_TARGET = 2.1;
-			};
-			name = Debug;
-		};
-		13A08A002CF3C12E001A7712 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = S8BXS2P4Z9;
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.1;
-				MACOSX_DEPLOYMENT_TARGET = 15.1;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.ODCLiteTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = auto;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ODCLite.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/ODCLite";
-				XROS_DEPLOYMENT_TARGET = 2.1;
-			};
-			name = Release;
-		};
 		6F6BE3D72CB2FCA9002695EC /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -488,15 +367,6 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		13A089FE2CF3C12E001A7712 /* Build configuration list for PBXNativeTarget "ODCLiteTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				13A089FF2CF3C12E001A7712 /* Debug */,
-				13A08A002CF3C12E001A7712 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 		6F6BE3AF2CB2FCA7002695EC /* Build configuration list for PBXProject "ODCLite" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
