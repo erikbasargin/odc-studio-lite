@@ -12,11 +12,6 @@ import VideoToolbox
 
 private let log = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "BroadcastManager")
 
-struct Device: Identifiable, Hashable {
-    let id: String
-    let name: String
-}
-
 @MainActor
 @Observable
 final class BroadcastManager {
@@ -43,14 +38,14 @@ final class BroadcastManager {
     
     var cameraIsAuthorized = false
     
-    var selectedCameraDevice: Device? {
+    var selectedCameraDevice: CaptureDevice? {
         didSet {
             configureCameraSession()
         }
     }
     
     private(set) var isBroadcasting: Bool = false
-    private(set) var videoDevices: [Device] = []
+    private(set) var videoDevices: [CaptureDevice] = []
     
     let cameraCaptureSession = AVCaptureSession()
     private let cameraDiscoverySession = AVCaptureDevice.DiscoverySession(
@@ -175,12 +170,12 @@ final class BroadcastManager {
     
     func listenForVideoDevices() async {
         selectedCameraDevice = AVCaptureDevice.systemPreferredCamera.map { device in
-            Device(id: device.uniqueID, name: device.localizedName)
+            CaptureDevice(id: device.uniqueID, name: device.localizedName)
         }
         
         for await devices in cameraDiscoverySession.publisher(for: \.devices).values {
             videoDevices = devices.map { device in
-                Device(id: device.uniqueID, name: device.localizedName)
+                CaptureDevice(id: device.uniqueID, name: device.localizedName)
             }
         }
     }
