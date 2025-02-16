@@ -20,7 +20,6 @@ struct GeneralSettingsView: View {
     }
 }
 
-
 #Preview {
     GeneralSettingsView()
         .environment(BroadcastManager())

@@ -6,27 +6,28 @@ import PackageDescription
 let package = Package(
     name: "ODCStudioLite",
     platforms: [
-        .macOS(.v15),
+        .macOS(.v15)
     ],
     products: [
         .library(
             name: "Capture",
             targets: [
-                "Capture",
+                "Capture"
             ]
-        ),
+        )
     ],
     targets: [
         .target(
             name: "Capture",
             dependencies: [
-                "Extensions",
+                "Extensions"
             ]
         ),
         .testTarget(
             name: "CaptureTests",
             dependencies: [
                 "Capture",
+                "Extensions",
             ]
         ),
         
@@ -36,7 +37,7 @@ let package = Package(
         .testTarget(
             name: "ExtensionsTests",
             dependencies: [
-                "Extensions",
+                "Extensions"
             ]
         ),
     ]

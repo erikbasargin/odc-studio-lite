@@ -3,8 +3,8 @@
 // See LICENSE for license information.
 //
 
-import Testing
 import ScreenCaptureKit
+import Testing
 
 extension SCFrameStatus: @retroactive CustomTestStringConvertible {
     

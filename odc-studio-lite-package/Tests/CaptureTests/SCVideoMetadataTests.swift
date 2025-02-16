@@ -3,10 +3,9 @@
 // See LICENSE for license information.
 //
 
-import Testing
-import ScreenCaptureKit
-
 import Capture
+import ScreenCaptureKit
+import Testing
 
 @Suite
 struct SCVideoMetadataTests {
@@ -20,7 +19,8 @@ struct SCVideoMetadataTests {
             .suspended,
             .started,
             .stopped,
-        ])
+        ]
+    )
     func contains(status: SCFrameStatus) throws {
         let sampleBuffer = try makeCMSampleBufferWithFrameStatus(status)
         #expect(SCVideoMetadata(sampleBuffer)?.status == status)
@@ -33,9 +33,9 @@ struct SCVideoMetadataTests {
     }
 }
 
-private extension SCVideoMetadataTests {
+extension SCVideoMetadataTests {
     
-    func makeEmptyCMSampleBuffer() throws -> CMSampleBuffer {
+    fileprivate func makeEmptyCMSampleBuffer() throws -> CMSampleBuffer {
         try CMSampleBuffer(
             dataBuffer: nil,
             formatDescription: nil,
@@ -44,7 +44,7 @@ private extension SCVideoMetadataTests {
             sampleSizes: [])
     }
     
-    func makeCMSampleBufferWithFrameStatus(_ frameStatus: SCFrameStatus) throws -> CMSampleBuffer {
+    fileprivate func makeCMSampleBufferWithFrameStatus(_ frameStatus: SCFrameStatus) throws -> CMSampleBuffer {
         let sampleBuffer = try CMSampleBuffer(
             dataBuffer: nil,
             formatDescription: nil,

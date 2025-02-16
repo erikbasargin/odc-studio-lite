@@ -3,9 +3,8 @@
 // See LICENSE for license information.
 //
 
-import ScreenCaptureKit
-
 import Extensions
+import ScreenCaptureKit
 
 public struct SCVideoMetadata: Sendable {
     public let status: SCFrameStatus
@@ -14,7 +13,9 @@ public struct SCVideoMetadata: Sendable {
 extension SCVideoMetadata {
     
     public init?(_ sampleBuffer: CMSampleBuffer) {
-        guard let rawStatus = sampleBuffer.sampleAttachments.first?[.status] as? Int, let status = SCFrameStatus(rawValue: rawStatus) else {
+        guard let rawStatus = sampleBuffer.sampleAttachments.first?[.status] as? Int,
+            let status = SCFrameStatus(rawValue: rawStatus)
+        else {
             return nil
         }
         self.status = status

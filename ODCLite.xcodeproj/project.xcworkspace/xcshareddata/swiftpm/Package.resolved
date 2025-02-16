@@ -1,5 +1,5 @@
 {
-  "originHash" : "9f3b0ec5228e63483e7f1070bc56624c7907d116228cfed4d80198ca14611baa",
+  "originHash" : "4b41f2a52135ad7f9c60688d56da55f283b08b7a7b895b42d3aa7b2d86cdcf3f",
   "pins" : [
     {
       "identity" : "haishinkit.swift",
@@ -17,6 +17,51 @@
       "state" : {
         "revision" : "272976e1f3e8873e60ffe4b08fe50df48a93751b",
         "version" : "2.5.0"
+      }
+    },
+    {
+      "identity" : "swift-argument-parser",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-argument-parser.git",
+      "state" : {
+        "revision" : "41982a3656a71c768319979febd796c6fd111d5c",
+        "version" : "1.5.0"
+      }
+    },
+    {
+      "identity" : "swift-cmark",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-cmark.git",
+      "state" : {
+        "revision" : "3ccff77b2dc5b96b77db3da0d68d28068593fa53",
+        "version" : "0.5.0"
+      }
+    },
+    {
+      "identity" : "swift-format",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/swiftlang/swift-format.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "5412cab4263a07cb42a98db2e0dd3aec839d240b"
+      }
+    },
+    {
+      "identity" : "swift-markdown",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-markdown.git",
+      "state" : {
+        "revision" : "8f79cb175981458a0a27e76cb42fee8e17b1a993",
+        "version" : "0.5.0"
+      }
+    },
+    {
+      "identity" : "swift-syntax",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/swiftlang/swift-syntax.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "1c0e46a29623526883780f2c7dfe7efae318afa2"
       }
     }
   ],

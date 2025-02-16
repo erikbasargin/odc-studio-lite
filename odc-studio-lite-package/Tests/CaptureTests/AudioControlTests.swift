@@ -3,9 +3,8 @@
 // See LICENSE for license information.
 //
 
-import Testing
-
 import Capture
+import Testing
 
 @Suite
 struct AudioControlTests {

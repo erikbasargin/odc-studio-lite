@@ -3,12 +3,12 @@
 // See LICENSE for license information.
 //
 
-import VideoToolbox
+import Capture
 import HaishinKit
+import OSLog
 import Observation
 @preconcurrency import ScreenCaptureKit
-import OSLog
-import Capture
+import VideoToolbox
 
 private let log = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "BroadcastManager")
 
@@ -88,15 +88,16 @@ final class BroadcastManager {
     private var streamContentFilter: SCContentFilter {
         get async throws {
             let excludingApplications: [SCRunningApplication] =
-            if excludeAppFromStream {
-                currentShareableContent.applications.filter {
-                    $0.bundleIdentifier == Bundle.main.bundleIdentifier
+                if excludeAppFromStream {
+                    currentShareableContent.applications.filter {
+                        $0.bundleIdentifier == Bundle.main.bundleIdentifier
+                    }
+                } else {
+                    []
                 }
-            } else {
-                []
-            }
-            
-            return SCContentFilter(display: currentDisplay, excludingApplications: excludingApplications, exceptingWindows: [])
+
+            return SCContentFilter(
+                display: currentDisplay, excludingApplications: excludingApplications, exceptingWindows: [])
         }
     }
     
@@ -129,7 +130,7 @@ final class BroadcastManager {
     }
     
     init() {
-        rtmpConnection = RTMPConnection(requestTimeout: 5000) // 5s
+        rtmpConnection = RTMPConnection(requestTimeout: 5000)  // 5s
         rtmpStream = RTMPStream(connection: rtmpConnection)
         mediaMixer = MediaMixer()
         streamDelegate = StreamDelegate()
@@ -217,7 +218,8 @@ final class BroadcastManager {
                 return
             }
             
-            guard let device = cameraDiscoverySession.devices.first(where: { selectedCameraDevice.id == $0.uniqueID }) else {
+            guard let device = cameraDiscoverySession.devices.first(where: { selectedCameraDevice.id == $0.uniqueID })
+            else {
                 throw NoCameraDevice()
             }
             
@@ -248,20 +250,22 @@ final class BroadcastManager {
             cameraIsAuthorized = false
         }
     }
-
+    
     func configureManager() async throws {
-        currentShareableContent = try await SCShareableContent.excludingDesktopWindows(false, onScreenWindowsOnly: false)
+        currentShareableContent = try await SCShareableContent.excludingDesktopWindows(
+            false, onScreenWindowsOnly: false)
         
-        stream = try await SCStream(filter: streamContentFilter, configuration: streamConfiguration, delegate: streamDelegate)
-
+        stream = try await SCStream(
+            filter: streamContentFilter, configuration: streamConfiguration, delegate: streamDelegate)
+        
         try stream.addStreamOutput(screenStreamOutput)
         try stream.addStreamOutput(microphoneStreamOutput)  // use SCStreamConfiguration/captureMicrophone to switch it on/off
-
+        
         await mediaMixer.addOutput(rtmpStream)
         
         try await stream.startCapture()
     }
-
+    
     func toogleBroadcast() async {
         do {
             guard !isBroadcasting else {
@@ -272,7 +276,7 @@ final class BroadcastManager {
             }
             isBroadcasting = true
             
-            let connectResponse = try await rtmpConnection.connect( "rtmps://lhr08.contribute.live-video.net/app/")
+            let connectResponse = try await rtmpConnection.connect("rtmps://lhr08.contribute.live-video.net/app/")
             log.info("Connection with Twitch RTMP server, status: \(connectResponse.status?.description ?? "unknown")")
             
             let videoCodecSettings = VideoCodecSettings(
@@ -280,7 +284,7 @@ final class BroadcastManager {
                 bitRate: 6000 * 1000,
                 profileLevel: kVTProfileLevel_H264_High_AutoLevel as String,
                 bitRateMode: .constant,
-                allowFrameReordering: false // disable B frames
+                allowFrameReordering: false  // disable B frames
             )
             
             await rtmpStream.setVideoSettings(videoCodecSettings)
@@ -304,7 +308,7 @@ final class BroadcastManager {
             isBroadcasting = false
         }
     }
-
+    
     private func updateStreamContentFilter() async {
         do {
             try await stream.updateContentFilter(streamContentFilter)
@@ -314,7 +318,7 @@ final class BroadcastManager {
             )
         }
     }
-
+    
     private func updateStreamConfiguration() async {
         do {
             try await stream.updateConfiguration(streamConfiguration)
@@ -327,26 +331,27 @@ final class BroadcastManager {
 }
 
 private final class StreamDelegate: NSObject, SCStreamDelegate {
-
+    
     func stream(_ stream: SCStream, didStopWithError error: any Error) {
         log.error("Stream stopped with error: \(error.localizedDescription)")
     }
 }
 
 private final class StreamOutput: NSObject, SCStreamOutput {
-
+    
     let type: SCStreamOutputType
     let rtmpSession: MediaMixer
     let queue: DispatchQueue
     
     private let continuation: AsyncStream<CMSampleBuffer>.Continuation
     private let task: Task<Void, Never>
-
+    
     init(type: SCStreamOutputType, rtmpSession: MediaMixer, track: UInt8 = 0) {
         self.type = type
         self.rtmpSession = rtmpSession
         queue = DispatchQueue(label: "\(Bundle.main.bundleIdentifier!).BroadcastManager.streamOutputQueue.\(type)")
-        let (sampleBuffers, continuation) = AsyncStream.makeStream(of: CMSampleBuffer.self, bufferingPolicy: .bufferingNewest(1))
+        let (sampleBuffers, continuation) = AsyncStream.makeStream(
+            of: CMSampleBuffer.self, bufferingPolicy: .bufferingNewest(1))
         self.continuation = continuation
         
         func listenForSampleBuffers(stream: AsyncStream<CMSampleBuffer>, on mixer: isolated MediaMixer) async {
@@ -363,7 +368,7 @@ private final class StreamOutput: NSObject, SCStreamOutput {
     deinit {
         task.cancel()
     }
-
+    
     func stream(_ stream: SCStream, didOutputSampleBuffer sampleBuffer: CMSampleBuffer, of type: SCStreamOutputType) {
         guard sampleBuffer.isValid else {
             return
@@ -392,11 +397,11 @@ private final class StreamOutput: NSObject, SCStreamOutput {
 }
 
 extension SCStream {
-
+    
     fileprivate func addStreamOutput(_ output: StreamOutput) throws {
         try addStreamOutput(output, type: output.type, sampleHandlerQueue: output.queue)
     }
-
+    
     fileprivate func removeStreamOutput(_ output: StreamOutput) throws {
         try removeStreamOutput(output, type: output.type)
     }

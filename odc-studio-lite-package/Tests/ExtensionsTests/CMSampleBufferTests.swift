@@ -4,13 +4,12 @@
 //
 
 import AVFoundation
-import Testing
-
 import Extensions
+import Testing
 
 @Suite
 struct CMSampleBufferTests {
-
+    
     @Test func sampleBufferWithoutIOSurface() throws {
         let imageBuffer = try makeCVImageBufferWithoutIOSurface()
         let sampleBuffer = try makeCMSampleBuffer(imageBuffer: imageBuffer)
@@ -24,9 +23,9 @@ struct CMSampleBufferTests {
     }
 }
 
-private extension CMSampleBufferTests {
+extension CMSampleBufferTests {
     
-    func makeCMSampleBuffer(imageBuffer: CVImageBuffer) throws -> CMSampleBuffer {
+    fileprivate func makeCMSampleBuffer(imageBuffer: CVImageBuffer) throws -> CMSampleBuffer {
         try CMSampleBuffer(
             imageBuffer: imageBuffer,
             formatDescription: .init(imageBuffer: imageBuffer),
@@ -34,7 +33,7 @@ private extension CMSampleBufferTests {
         )
     }
     
-    func makeCVImageBufferWithoutIOSurface() throws -> CVImageBuffer {
+    fileprivate func makeCVImageBufferWithoutIOSurface() throws -> CVImageBuffer {
         var imageBuffer: CVImageBuffer?
         CVPixelBufferCreate(
             kCFAllocatorDefault,
@@ -47,16 +46,18 @@ private extension CMSampleBufferTests {
         return try #require(imageBuffer)
     }
     
-    func makeCVImageBufferWithIOSurface() throws -> CVImageBuffer {
+    fileprivate func makeCVImageBufferWithIOSurface() throws -> CVImageBuffer {
         let imageWidth = 10
-        let ioSurfaceRef = try #require(IOSurfaceCreate([
-            kIOSurfaceWidth: imageWidth,
-            kIOSurfaceHeight: imageWidth,
-            kIOSurfaceBytesPerElement: 4,
-            kIOSurfaceBytesPerRow: imageWidth * 4,
-            kIOSurfaceAllocSize: imageWidth * imageWidth * 4,
-            kIOSurfacePixelFormat: kCVPixelFormatType_32BGRA,
-        ] as CFDictionary))
+        let ioSurfaceRef = try #require(
+            IOSurfaceCreate(
+                [
+                    kIOSurfaceWidth: imageWidth,
+                    kIOSurfaceHeight: imageWidth,
+                    kIOSurfaceBytesPerElement: 4,
+                    kIOSurfaceBytesPerRow: imageWidth * 4,
+                    kIOSurfaceAllocSize: imageWidth * imageWidth * 4,
+                    kIOSurfacePixelFormat: kCVPixelFormatType_32BGRA,
+                ] as CFDictionary))
         
         var imageBuffer: Unmanaged<CVImageBuffer>?
         CVPixelBufferCreateWithIOSurface(

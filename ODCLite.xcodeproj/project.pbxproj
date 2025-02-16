@@ -128,6 +128,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				136080052CF3E06400D6E894 /* XCRemoteSwiftPackageReference "HaishinKit.swift" */,
+				E08E9D162D61F62E00CFA411 /* XCRemoteSwiftPackageReference "swift-format" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 6F6BE3B52CB2FCA8002695EC /* Products */;
@@ -394,6 +395,14 @@
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 2.0.1;
+			};
+		};
+		E08E9D162D61F62E00CFA411 /* XCRemoteSwiftPackageReference "swift-format" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/swiftlang/swift-format.git";
+			requirement = {
+				branch = main;
+				kind = branch;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */

@@ -4,8 +4,8 @@
 //
 
 import AppIntents
-import SwiftUI
 import ScreenCaptureKit
+import SwiftUI
 import os
 
 #if DEBUG
@@ -15,13 +15,13 @@ import HaishinKit
 
 @main
 struct ODCLiteApp: App {
-
+    
     private let broadcastManager: BroadcastManager
     
     init() {
-#if DEBUG
+        #if DEBUG
         LBLogger.with(kHaishinKitIdentifier).level = .trace
-#endif
+        #endif
         
         let broadcastManager = BroadcastManager()
         self.broadcastManager = broadcastManager
@@ -30,7 +30,7 @@ struct ODCLiteApp: App {
         
         ODCLiteShortcuts.updateAppShortcutParameters()
     }
-
+    
     var body: some Scene {
         WindowGroup {
             LounchView()

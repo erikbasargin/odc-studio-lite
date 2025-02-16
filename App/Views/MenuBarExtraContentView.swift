@@ -6,7 +6,7 @@
 import SwiftUI
 
 struct MenuBarExtraContentView: View {
-
+    
     @Environment(BroadcastManager.self) private var broadcastManager
     
     var body: some View {
@@ -14,7 +14,10 @@ struct MenuBarExtraContentView: View {
         
         Section("Video") {
             Toggle("Exclude app from stream", isOn: $broadcastManager.excludeAppFromStream)
-            Picker("Camera - \(broadcastManager.selectedCameraDevice?.name ?? "not selected")", selection: $broadcastManager.selectedCameraDevice) {
+            Picker(
+                "Camera - \(broadcastManager.selectedCameraDevice?.name ?? "not selected")",
+                selection: $broadcastManager.selectedCameraDevice
+            ) {
                 ForEach(broadcastManager.videoDevices) { device in
                     Text(verbatim: device.name)
                         .tag(device)
