@@ -1,0 +1,35 @@
+{
+  "configurations" : [
+    {
+      "id" : "FD907133-5480-4FA0-9905-CF7BD66C524F",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:ODCLite.xcodeproj",
+      "identifier" : "6F6BE3B32CB2FCA7002695EC",
+      "name" : "ODCLite"
+    }
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:odc-studio-lite-package",
+        "identifier" : "ExtensionsTests",
+        "name" : "ExtensionsTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:odc-studio-lite-package",
+        "identifier" : "CaptureTests",
+        "name" : "CaptureTests"
+      }
+    }
+  ],
+  "version" : 2
+}

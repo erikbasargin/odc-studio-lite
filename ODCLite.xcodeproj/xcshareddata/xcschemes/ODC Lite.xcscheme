@@ -27,8 +27,13 @@
       buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
-      shouldUseLaunchSchemeArgsEnv = "YES"
-      shouldAutocreateTestPlan = "YES">
+      shouldUseLaunchSchemeArgsEnv = "YES">
+      <TestPlans>
+         <TestPlanReference
+            reference = "container:App/Resources/ODCLite.xctestplan"
+            default = "YES">
+         </TestPlanReference>
+      </TestPlans>
       <Testables>
          <TestableReference
             skipped = "NO"
@@ -38,6 +43,17 @@
                BlueprintIdentifier = "13A089F72CF3C12E001A7712"
                BuildableName = "ODCLiteTests.xctest"
                BlueprintName = "ODCLiteTests"
+               ReferencedContainer = "container:ODCLite.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "E08E9D542D621E3500CFA411"
+               BuildableName = "AllTests.xctest"
+               BlueprintName = "AllTests"
                ReferencedContainer = "container:ODCLite.xcodeproj">
             </BuildableReference>
          </TestableReference>
