@@ -6,6 +6,7 @@
 import ScreenCaptureKit
 import Testing
 
+// swift-format-ignore: AvoidRetroactiveConformances
 extension SCFrameStatus: @retroactive CustomTestStringConvertible {
     
     public var testDescription: String {

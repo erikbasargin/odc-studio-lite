@@ -212,7 +212,7 @@ final class BroadcastManager {
         
         do {
             guard let selectedCameraDevice else {
-                cameraCaptureSession.inputs.forEach { input in
+                for input in cameraCaptureSession.inputs {
                     cameraCaptureSession.removeInput(input)
                 }
                 return
@@ -259,7 +259,8 @@ final class BroadcastManager {
             filter: streamContentFilter, configuration: streamConfiguration, delegate: streamDelegate)
         
         try stream.addStreamOutput(screenStreamOutput)
-        try stream.addStreamOutput(microphoneStreamOutput)  // use SCStreamConfiguration/captureMicrophone to switch it on/off
+        // use SCStreamConfiguration/captureMicrophone to switch it on/off
+        try stream.addStreamOutput(microphoneStreamOutput)
         
         await mediaMixer.addOutput(rtmpStream)
         
