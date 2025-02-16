@@ -33,7 +33,7 @@ struct ODCLiteApp: App {
     
     var body: some Scene {
         WindowGroup {
-            LounchView()
+            LaunchView()
                 .environment(broadcastManager)
         }
         
@@ -55,7 +55,7 @@ struct ODCLiteApp: App {
     }
 }
 
-private struct LounchView: View {
+private struct LaunchView: View {
     
     private let log = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "LaunchView")
     
