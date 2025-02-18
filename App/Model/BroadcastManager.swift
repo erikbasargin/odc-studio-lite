@@ -14,6 +14,7 @@ private let log = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "Br
 
 @MainActor
 @Observable
+@available(macOS, deprecated)
 final class BroadcastManager {
     
     var excludeAppFromStream = true {
