@@ -4,7 +4,7 @@
 //
 
 import AVFoundation
-import Extensions
+import AudioVideoKit
 import Testing
 
 @Suite

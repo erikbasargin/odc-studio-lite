@@ -20,24 +20,24 @@ let package = Package(
         .target(
             name: "Capture",
             dependencies: [
-                "Extensions"
+                "AudioVideoKit"
             ]
         ),
         .testTarget(
             name: "CaptureTests",
             dependencies: [
                 "Capture",
-                "Extensions",
+                "AudioVideoKit",
             ]
         ),
         
         .target(
-            name: "Extensions"
+            name: "AudioVideoKit"
         ),
         .testTarget(
-            name: "ExtensionsTests",
+            name: "AudioVideoKitTests",
             dependencies: [
-                "Extensions"
+                "AudioVideoKit"
             ]
         ),
     ]
