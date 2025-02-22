@@ -10,21 +10,20 @@ package protocol CaptureDeviceProtocol: NSObject {
     var uniqueID: String { get }
 }
 
-package protocol PreferredCameraObserving {
+package protocol PreferredCameraProviding {
     associatedtype Source: CaptureDeviceProtocol
-    var preferredCamera: any AsyncSequence<CaptureDevice, Never> { get }
+    var preferredCamera: AsyncStream<CaptureDevice?> { get }
 }
 
-package final class PreferredCameraObserver<Source: CaptureDeviceProtocol>: NSObject, PreferredCameraObserving {
+package final class PreferredCameraProvider<Source: CaptureDeviceProtocol>: NSObject, PreferredCameraProviding {
     
-    package let onNext: (Source?) -> Void
-    package let preferredCamera: any AsyncSequence<CaptureDevice, Never>
+    package let preferredCamera: AsyncStream<CaptureDevice?>
     
+    private let continuation: AsyncStream<CaptureDevice?>.Continuation
     private let keyPath = "systemPreferredCamera"
     
-    package init(sourceType: Source.Type = Source.self, onNext: @escaping (Source?) -> Void) {
-        self.onNext = onNext
-        self.preferredCamera = AsyncStream { _ in }
+    package init(sourceType: Source.Type = AVCaptureDevice.self) {
+        (preferredCamera, continuation) = AsyncStream.makeStream(of: CaptureDevice?.self)
         super.init()
         
         Source.self.addObserver(self, forKeyPath: keyPath, options: [.old, .new], context: nil)
@@ -46,7 +45,10 @@ package final class PreferredCameraObserver<Source: CaptureDeviceProtocol>: NSOb
         let newSource = change?[.newKey] as? Source
         
         if oldSource?.uniqueID != newSource?.uniqueID {
-            onNext(newSource)
+            let captureDevice = newSource.map { source in
+                CaptureDevice(id: source.uniqueID, name: "")
+            }
+            continuation.yield(captureDevice)
         }
     }
 }

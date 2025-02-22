@@ -9,7 +9,7 @@ import AVFoundation
 import AudioVideoKit
 
 @Suite(.serialized, .timeLimit(.minutes(1)))
-struct PreferredCameraObserverTests {
+struct PreferredCameraProviderTests {
     
     private let keyPath = "systemPreferredCamera"
     
@@ -19,7 +19,7 @@ struct PreferredCameraObserverTests {
         
         MockDevice.kvoEventsHandler = continuation
         
-        _ = PreferredCameraObserver(sourceType: MockDevice.self, onNext: { _ in })
+        _ = PreferredCameraProvider(sourceType: MockDevice.self)
         
         let records = await stream.prefix(2).reduce(into: []) { partialResult, record in
             partialResult.append(record)
@@ -31,63 +31,61 @@ struct PreferredCameraObserverTests {
         ])
     }
     
-    @Test func systemPreferredCameraUpdates() async throws {
-        let (stream, continuation) = AsyncStream.makeStream(of: String?.self)
-        defer { continuation.finish() }
+    @Test func preferredCameraUpdates() async throws {
+        let observer = PreferredCameraProvider(sourceType: MockDevice.self)
         
-        let observer = PreferredCameraObserver(sourceType: MockDevice.self) { device in
-            continuation.yield(device?.uniqueID)
-        }
+        async let preferredCamera = observer.preferredCamera.prefix(3)
         
         MockDevice.systemPreferredCamera = MockDevice(uniqueID: "1")
         MockDevice.systemPreferredCamera = nil
         MockDevice.systemPreferredCamera = MockDevice(uniqueID: "2")
         
-        let deviceIDs = await stream.prefix(3).reduce(into: []) { partialResult, deviceID in
-            partialResult.append(deviceID)
+        let cameras = await preferredCamera.reduce(into: []) { partialResult, camera in
+            partialResult.append(camera)
         }
         
-        #expect(deviceIDs == ["1", nil, "2"])
-        print(observer.description)
+        #expect(cameras == [
+            CaptureDevice(id: "1", name: ""),
+            nil,
+            CaptureDevice(id: "2", name: ""),
+        ])
     }
     
     @Test func systemPreferredCameraUpdatesAreDistinct() async throws {
-        let (stream, continuation) = AsyncStream.makeStream(of: String?.self)
-        defer { continuation.finish() }
+        let observer = PreferredCameraProvider(sourceType: MockDevice.self)
         
-        let observer = PreferredCameraObserver(sourceType: MockDevice.self) { device in
-            continuation.yield(device?.uniqueID)
-        }
+        async let preferredCamera = observer.preferredCamera.prefix(2)
         
         MockDevice.systemPreferredCamera = MockDevice(uniqueID: "1")
         MockDevice.systemPreferredCamera = MockDevice(uniqueID: "1")
         MockDevice.systemPreferredCamera = nil
         
-        let deviceIDs = await stream.prefix(2).reduce(into: []) { partialResult, deviceID in
-            partialResult.append(deviceID)
+        let cameras = await preferredCamera.reduce(into: []) { partialResult, camera in
+            partialResult.append(camera)
         }
         
-        #expect(deviceIDs == ["1", nil])
-        print(observer.description)
+        #expect(cameras == [
+            CaptureDevice(id: "1", name: ""),
+            nil,
+        ])
     }
     
     @Test func onNextDoesNotEmitValueWhenNotSystemPreferredCameraKeypathObserved() async throws {
-        let (stream, continuation) = AsyncStream.makeStream(of: String?.self)
-        defer { continuation.finish() }
+        let observer = PreferredCameraProvider(sourceType: MockDevice.self)
         
-        let observer = PreferredCameraObserver(sourceType: MockDevice.self) { device in
-            continuation.yield(device?.uniqueID)
-        }
+        async let preferredCamera = observer.preferredCamera.prefix(3)
         
         MockDevice.userPreferredCamera = MockDevice(uniqueID: "2")
         MockDevice.userPreferredCamera = nil
         MockDevice.systemPreferredCamera = MockDevice(uniqueID: "1")
         
-        let deviceIDs = await stream.prefix(1).reduce(into: []) { partialResult, deviceID in
+        let deviceIDs = await preferredCamera.prefix(1).reduce(into: []) { partialResult, deviceID in
             partialResult.append(deviceID)
         }
         
-        #expect(deviceIDs == ["1"])
+        #expect(deviceIDs == [
+            CaptureDevice(id: "1", name: ""),
+        ])
         print(observer.description)
     }
 }

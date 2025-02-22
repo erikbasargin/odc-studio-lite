@@ -3,7 +3,7 @@
 // See LICENSE for license information.
 //
 
-public struct CaptureDevice: Identifiable, Hashable {
+public struct CaptureDevice: Identifiable, Hashable, Sendable {
     public let id: String
     public let name: String
     
