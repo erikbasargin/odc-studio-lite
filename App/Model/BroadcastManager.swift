@@ -3,6 +3,7 @@
 // See LICENSE for license information.
 //
 
+import AudioVideoKit
 import Capture
 import HaishinKit
 import OSLog
