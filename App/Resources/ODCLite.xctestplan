@@ -19,8 +19,8 @@
     {
       "target" : {
         "containerPath" : "container:odc-studio-lite-package",
-        "identifier" : "ExtensionsTests",
-        "name" : "ExtensionsTests"
+        "identifier" : "AudioVideoKitTests",
+        "name" : "AudioVideoKitTests"
       }
     },
     {
