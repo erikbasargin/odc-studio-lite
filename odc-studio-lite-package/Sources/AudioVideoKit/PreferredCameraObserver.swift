@@ -12,17 +12,19 @@ package protocol CaptureDeviceProtocol: NSObject {
 
 package protocol PreferredCameraObserving {
     associatedtype Source: CaptureDeviceProtocol
-    var onNext: (Source?) -> Void { get }
+    var preferredCamera: any AsyncSequence<CaptureDevice, Never> { get }
 }
 
 package final class PreferredCameraObserver<Source: CaptureDeviceProtocol>: NSObject, PreferredCameraObserving {
     
     package let onNext: (Source?) -> Void
+    package let preferredCamera: any AsyncSequence<CaptureDevice, Never>
     
     private let keyPath = "systemPreferredCamera"
     
     package init(sourceType: Source.Type = Source.self, onNext: @escaping (Source?) -> Void) {
         self.onNext = onNext
+        self.preferredCamera = AsyncStream { _ in }
         super.init()
         
         Source.self.addObserver(self, forKeyPath: keyPath, options: [.old, .new], context: nil)
