@@ -10,10 +10,16 @@ package protocol CaptureDeviceProtocol: NSObject {
     var uniqueID: String { get }
 }
 
-package final class PreferredCameraObserver<Source: CaptureDeviceProtocol>: NSObject {
+package protocol PreferredCameraObserving {
+    associatedtype Source: CaptureDeviceProtocol
+    var onNext: (Source?) -> Void { get }
+}
+
+package final class PreferredCameraObserver<Source: CaptureDeviceProtocol>: NSObject, PreferredCameraObserving {
+    
+    package let onNext: (Source?) -> Void
     
     private let keyPath = "systemPreferredCamera"
-    private let onNext: (Source?) -> Void
     
     package init(sourceType: Source.Type = Source.self, onNext: @escaping (Source?) -> Void) {
         self.onNext = onNext
