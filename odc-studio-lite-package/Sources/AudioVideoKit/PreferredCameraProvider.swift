@@ -23,7 +23,10 @@ package final class PreferredCameraProvider<Source: CaptureDeviceProtocol>: NSOb
     private let keyPath = "systemPreferredCamera"
     
     package init(sourceType: Source.Type = AVCaptureDevice.self) {
-        (preferredCamera, continuation) = AsyncStream.makeStream(of: CaptureDevice?.self, bufferingPolicy: .bufferingNewest(1))
+        (preferredCamera, continuation) = AsyncStream.makeStream(
+            of: CaptureDevice?.self,
+            bufferingPolicy: .bufferingNewest(1)
+        )
         super.init()
         
         Source.self.addObserver(self, forKeyPath: keyPath, options: [.old, .new], context: nil)

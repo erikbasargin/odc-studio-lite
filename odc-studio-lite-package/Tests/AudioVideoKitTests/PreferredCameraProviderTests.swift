@@ -3,9 +3,9 @@
 // See LICENSE for license information.
 //
 
+import AudioVideoKit
 import Foundation
 import Testing
-import AudioVideoKit
 
 @Suite(.serialized, .timeLimit(.minutes(1)))
 struct PreferredCameraProviderTests {
@@ -29,10 +29,12 @@ struct PreferredCameraProviderTests {
             partialResult.append(record)
         }
         
-        #expect(records == [
-            .addObserver(keyPath: keyPath, options: [.old, .new], withContext: false),
-            .removeObserver(keyPath: keyPath, withContext: false),
-        ])
+        #expect(
+            records == [
+                .addObserver(keyPath: keyPath, options: [.old, .new], withContext: false),
+                .removeObserver(keyPath: keyPath, withContext: false),
+            ]
+        )
     }
     
     @Test func preferredCameraUpdates() async throws {
@@ -50,11 +52,13 @@ struct PreferredCameraProviderTests {
         
         let cameras = await cameraObserver
         
-        #expect(cameras == [
-            CaptureDevice(id: "1", name: ""),
-            nil,
-            CaptureDevice(id: "2", name: ""),
-        ])
+        #expect(
+            cameras == [
+                CaptureDevice(id: "1", name: ""),
+                nil,
+                CaptureDevice(id: "2", name: ""),
+            ]
+        )
     }
     
     @Test func preferredCameraRetainsLatestValue() async throws {
@@ -86,16 +90,20 @@ struct PreferredCameraProviderTests {
         
         let cameras = await cameraObserver
         
-        #expect(cameras == [
-            CaptureDevice(id: "1", name: ""),
-            nil,
-        ])
+        #expect(
+            cameras == [
+                CaptureDevice(id: "1", name: ""),
+                nil,
+            ]
+        )
     }
     
     @Test func onNextDoesNotEmitValueWhenNotSystemPreferredCameraKeypathObserved() async throws {
         let observer = PreferredCameraProvider(sourceType: MockDevice.self)
         
-        async let preferredCamera = observer.preferredCamera.prefix(3)
+        async let cameraObserver = observer.preferredCamera.prefix(1).reduce(into: []) { partialResult, deviceID in
+            partialResult.append(deviceID)
+        }
         
         MockDevice.userPreferredCamera = MockDevice(uniqueID: "2")
         await Task.megaYield()
@@ -103,14 +111,13 @@ struct PreferredCameraProviderTests {
         await Task.megaYield()
         MockDevice.systemPreferredCamera = MockDevice(uniqueID: "1")
         
-        let deviceIDs = await preferredCamera.prefix(1).reduce(into: []) { partialResult, deviceID in
-            partialResult.append(deviceID)
-        }
+        let cameras = await cameraObserver
         
-        #expect(deviceIDs == [
-            CaptureDevice(id: "1", name: ""),
-        ])
-        print(observer.description)
+        #expect(
+            cameras == [
+                CaptureDevice(id: "1", name: "")
+            ]
+        )
     }
 }
 
@@ -178,9 +185,9 @@ private final class MockDevice: NSObject, CaptureDeviceProtocol {
     }
 }
 
-private extension Task where Success == Never, Failure == Never {
+extension Task where Success == Never, Failure == Never {
     
-    static func megaYield() async {
+    fileprivate static func megaYield() async {
         for _ in 0..<50 {
             await Task.yield()
         }
