@@ -5,13 +5,17 @@
 
 import Foundation
 import Testing
-import AVFoundation
 import AudioVideoKit
 
 @Suite(.serialized, .timeLimit(.minutes(1)))
 struct PreferredCameraProviderTests {
     
     private let keyPath = "systemPreferredCamera"
+    
+    init() {
+        MockDevice.systemPreferredCamera = nil
+        MockDevice.userPreferredCamera = nil
+    }
     
     @Test func systemPreferredCameraKVOObserver() async throws {
         let (stream, continuation) = AsyncStream.makeStream(of: MockDevice.Record.self)
@@ -34,15 +38,17 @@ struct PreferredCameraProviderTests {
     @Test func preferredCameraUpdates() async throws {
         let observer = PreferredCameraProvider(sourceType: MockDevice.self)
         
-        async let preferredCamera = observer.preferredCamera.prefix(3)
-        
-        MockDevice.systemPreferredCamera = MockDevice(uniqueID: "1")
-        MockDevice.systemPreferredCamera = nil
-        MockDevice.systemPreferredCamera = MockDevice(uniqueID: "2")
-        
-        let cameras = await preferredCamera.reduce(into: []) { partialResult, camera in
+        async let cameraObserver = observer.preferredCamera.prefix(3).reduce(into: []) { partialResult, camera in
             partialResult.append(camera)
         }
+        
+        MockDevice.systemPreferredCamera = MockDevice(uniqueID: "1")
+        await Task.megaYield()
+        MockDevice.systemPreferredCamera = nil
+        await Task.megaYield()
+        MockDevice.systemPreferredCamera = MockDevice(uniqueID: "2")
+        
+        let cameras = await cameraObserver
         
         #expect(cameras == [
             CaptureDevice(id: "1", name: ""),
@@ -51,18 +57,34 @@ struct PreferredCameraProviderTests {
         ])
     }
     
+    @Test func preferredCameraRetainsLatestValue() async throws {
+        let observer = PreferredCameraProvider(sourceType: MockDevice.self)
+        
+        MockDevice.systemPreferredCamera = MockDevice(uniqueID: "1")
+        await Task.megaYield()
+        MockDevice.systemPreferredCamera = nil
+        await Task.megaYield()
+        MockDevice.systemPreferredCamera = MockDevice(uniqueID: "2")
+        
+        let camera = await observer.preferredCamera.first(where: { _ in true })
+        
+        #expect(camera == CaptureDevice(id: "2", name: ""))
+    }
+    
     @Test func systemPreferredCameraUpdatesAreDistinct() async throws {
         let observer = PreferredCameraProvider(sourceType: MockDevice.self)
         
-        async let preferredCamera = observer.preferredCamera.prefix(2)
-        
-        MockDevice.systemPreferredCamera = MockDevice(uniqueID: "1")
-        MockDevice.systemPreferredCamera = MockDevice(uniqueID: "1")
-        MockDevice.systemPreferredCamera = nil
-        
-        let cameras = await preferredCamera.reduce(into: []) { partialResult, camera in
+        async let cameraObserver = observer.preferredCamera.prefix(2).reduce(into: []) { partialResult, camera in
             partialResult.append(camera)
         }
+        
+        MockDevice.systemPreferredCamera = MockDevice(uniqueID: "1")
+        await Task.megaYield()
+        MockDevice.systemPreferredCamera = MockDevice(uniqueID: "1")
+        await Task.megaYield()
+        MockDevice.systemPreferredCamera = nil
+        
+        let cameras = await cameraObserver
         
         #expect(cameras == [
             CaptureDevice(id: "1", name: ""),
@@ -76,7 +98,9 @@ struct PreferredCameraProviderTests {
         async let preferredCamera = observer.preferredCamera.prefix(3)
         
         MockDevice.userPreferredCamera = MockDevice(uniqueID: "2")
+        await Task.megaYield()
         MockDevice.userPreferredCamera = nil
+        await Task.megaYield()
         MockDevice.systemPreferredCamera = MockDevice(uniqueID: "1")
         
         let deviceIDs = await preferredCamera.prefix(1).reduce(into: []) { partialResult, deviceID in
@@ -151,5 +175,14 @@ private final class MockDevice: NSObject, CaptureDeviceProtocol {
     
     init(uniqueID: String) {
         self.uniqueID = uniqueID
+    }
+}
+
+private extension Task where Success == Never, Failure == Never {
+    
+    static func megaYield() async {
+        for _ in 0..<50 {
+            await Task.yield()
+        }
     }
 }
