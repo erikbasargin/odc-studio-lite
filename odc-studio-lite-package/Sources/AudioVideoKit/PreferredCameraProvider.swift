@@ -15,43 +15,58 @@ package protocol PreferredCameraProviding {
     var preferredCamera: AsyncStream<CaptureDevice?> { get }
 }
 
-package final class PreferredCameraProvider<Source: CaptureDeviceProtocol>: NSObject, PreferredCameraProviding {
+package struct PreferredCameraProvider<Source: CaptureDeviceProtocol>: PreferredCameraProviding {
     
-    package let preferredCamera: AsyncStream<CaptureDevice?>
+    package var preferredCamera: AsyncStream<CaptureDevice?> {
+        observer.preferredCamera
+    }
     
-    private let continuation: AsyncStream<CaptureDevice?>.Continuation
-    private let keyPath = "systemPreferredCamera"
+    private let observer: Observer
     
     package init(sourceType: Source.Type = AVCaptureDevice.self) {
-        (preferredCamera, continuation) = AsyncStream.makeStream(
-            of: CaptureDevice?.self,
-            bufferingPolicy: .bufferingNewest(1)
-        )
-        super.init()
-        
-        Source.self.addObserver(self, forKeyPath: keyPath, options: [.old, .new], context: nil)
+        self.observer = Observer()
     }
+}
+
+extension PreferredCameraProvider {
     
-    deinit {
-        Source.self.removeObserver(self, forKeyPath: keyPath, context: nil)
-    }
-    
-    package override func observeValue(
-        forKeyPath keyPath: String?,
-        of object: Any?,
-        change: [NSKeyValueChangeKey: Any]?,
-        context: UnsafeMutableRawPointer?
-    ) {
-        precondition(keyPath == self.keyPath)
+    private final class Observer: NSObject {
         
-        let oldSource = change?[.oldKey] as? Source
-        let newSource = change?[.newKey] as? Source
+        let preferredCamera: AsyncStream<CaptureDevice?>
         
-        if oldSource?.uniqueID != newSource?.uniqueID {
-            let captureDevice = newSource.map { source in
-                CaptureDevice(id: source.uniqueID, name: "")
+        private let continuation: AsyncStream<CaptureDevice?>.Continuation
+        private let keyPath = "systemPreferredCamera"
+        
+        override init() {
+            (preferredCamera, continuation) = AsyncStream.makeStream(
+                of: CaptureDevice?.self,
+                bufferingPolicy: .bufferingNewest(1)
+            )
+            super.init()
+            Source.self.addObserver(self, forKeyPath: keyPath, options: [.old, .new], context: nil)
+        }
+        
+        deinit {
+            Source.self.removeObserver(self, forKeyPath: keyPath, context: nil)
+        }
+        
+        override func observeValue(
+            forKeyPath keyPath: String?,
+            of object: Any?,
+            change: [NSKeyValueChangeKey: Any]?,
+            context: UnsafeMutableRawPointer?
+        ) {
+            precondition(keyPath == self.keyPath)
+            
+            let oldSource = change?[.oldKey] as? Source
+            let newSource = change?[.newKey] as? Source
+            
+            if oldSource?.uniqueID != newSource?.uniqueID {
+                let captureDevice = newSource.map { source in
+                    CaptureDevice(id: source.uniqueID, name: "")
+                }
+                continuation.yield(captureDevice)
             }
-            continuation.yield(captureDevice)
         }
     }
 }
