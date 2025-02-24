@@ -43,13 +43,6 @@ public final class CameraControl {
     }
 }
 
-package protocol PreferredCameraControlling {
-    
-    var preferredCamera: AsyncStream<CaptureDevice?> { get }
-    
-    func setPreferredCamera(_ preferredCamera: CaptureDevice?)
-}
-
 package protocol VideoDevicesProviding {
     var videoDevices: AsyncStream<[CaptureDevice]> { get }
 }
