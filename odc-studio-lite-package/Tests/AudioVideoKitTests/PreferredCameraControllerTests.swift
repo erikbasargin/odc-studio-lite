@@ -13,6 +13,7 @@ struct PreferredCameraControllerTests {
     private let keyPath = "systemPreferredCamera"
     
     init() {
+        MockDevice.kvoEventsHandler = nil
         MockDevice.systemPreferredCamera = nil
         MockDevice.userPreferredCamera = nil
     }
@@ -33,6 +34,37 @@ struct PreferredCameraControllerTests {
             records == [
                 .addObserver(keyPath: keyPath, options: [.old, .new], withContext: false),
                 .removeObserver(keyPath: keyPath, withContext: false),
+            ]
+        )
+    }
+    
+    @Test("""
+    When setPreferredCamera is called, \
+    Then userPreferredCamera is updated
+    """)
+    func userPreferredCameraIsUpdated() async throws {
+        let (stream, continuation) = AsyncStream.makeStream(of: MockDevice.Record.self)
+        defer { continuation.finish() }
+        
+        MockDevice.kvoEventsHandler = continuation
+        
+        let controller = PreferredCameraController(sourceType: MockDevice.self)
+        
+        async let recordsObserver = stream.dropFirst().prefix(2).reduce(into: []) { partialResult, record in
+            partialResult.append(record)
+        }
+        
+        controller.setPreferredCamera(CaptureDevice(id: "1", name: ""))
+        await Task.megaYield()
+        controller.setPreferredCamera(nil)
+        await Task.megaYield()
+        
+        let records = await recordsObserver
+        
+        #expect(
+            records == [
+                .userPreferredCameraDidChange(id: "1"),
+                .userPreferredCameraDidChange(id: nil),
             ]
         )
     }
@@ -126,6 +158,7 @@ private final class MockDevice: NSObject, CaptureDeviceProtocol {
     enum Record: Equatable, Sendable {
         case addObserver(keyPath: String, options: NSKeyValueObservingOptions, withContext: Bool)
         case removeObserver(keyPath: String, withContext: Bool)
+        case userPreferredCameraDidChange(id: String?)
     }
     
     nonisolated(unsafe) static var kvoEventsHandler: AsyncStream<Record>.Continuation?
@@ -145,6 +178,7 @@ private final class MockDevice: NSObject, CaptureDeviceProtocol {
         }
         didSet {
             didChangeValue(forKey: "userPreferredCamera")
+            kvoEventsHandler?.yield(.userPreferredCameraDidChange(id: userPreferredCamera?.uniqueID))
         }
     }
     

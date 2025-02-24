@@ -6,8 +6,15 @@
 import Foundation
 import ScreenCaptureKit
 
-package protocol CaptureDeviceProtocol: NSObject {
+package protocol CaptureDeviceProtocol<Camera>: NSObject {
+    
+    associatedtype Camera: CaptureDeviceProtocol
+    
+    static var userPreferredCamera: Camera? { get set }
+    
     var uniqueID: String { get }
+    
+    init?(uniqueID: String)
 }
 
 package protocol PreferredCameraControlling {
@@ -37,7 +44,11 @@ package struct PreferredCameraController<Source: CaptureDeviceProtocol>: Preferr
     }
     
     package func setPreferredCamera(_ preferredCamera: CaptureDevice?) {
-        
+        Source.userPreferredCamera = if let id = preferredCamera?.id {
+            Source.Camera(uniqueID: id)
+        } else {
+            nil
+        }
     }
 }
 
