@@ -30,7 +30,7 @@ struct CameraControlTests {
             
             let cameraControl = CameraControl(
                 preferredCameraController: preferredCameraController, 
-                videoDevicesProvider: videoDevicesProvider)
+                captureDeviceDiscoveryService: videoDevicesProvider)
             
             cameraControl.selectedCamera = camera
         }
@@ -48,7 +48,7 @@ struct CameraControlTests {
             
             let cameraControl = CameraControl(
                 preferredCameraController: preferredCameraController,
-                videoDevicesProvider: videoDevicesProvider)
+                captureDeviceDiscoveryService: videoDevicesProvider)
             
             async let _ = cameraControl.listenForCameras()
             
@@ -66,7 +66,7 @@ struct CameraControlTests {
         await withMainSerialExecutor {
             let cameraControl = CameraControl(
                 preferredCameraController: preferredCameraController,
-                videoDevicesProvider: videoDevicesProvider)
+                captureDeviceDiscoveryService: videoDevicesProvider)
             
             async let _ = cameraControl.listenForCameras()
             
@@ -114,13 +114,13 @@ private final class MockPreferredCameraController: PreferredCameraControlling {
     }
 }
 
-private final class MockVideoDevicesProvider: VideoDevicesProviding {
+private final class MockVideoDevicesProvider: CaptureDeviceDiscoveryService {
     
-    let videoDevices: AsyncStream<[CaptureDevice]>
+    let devices: AsyncStream<[CaptureDevice]>
     private let continuation: AsyncStream<[CaptureDevice]>.Continuation
     
     init() {
-        (videoDevices, continuation) = AsyncStream.makeStream(of: [CaptureDevice].self)
+        (devices, continuation) = AsyncStream.makeStream(of: [CaptureDevice].self)
     }
 
     deinit {

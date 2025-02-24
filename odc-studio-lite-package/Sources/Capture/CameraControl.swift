@@ -22,14 +22,14 @@ public final class CameraControl {
     private let preferredCameraController: any PreferredCameraControlling
     
     @ObservationIgnored
-    private let videoDevicesProvider: any VideoDevicesProviding
+    private let captureDeviceDiscoveryService: any CaptureDeviceDiscoveryService
     
     package init(
         preferredCameraController: any PreferredCameraControlling,
-        videoDevicesProvider: any VideoDevicesProviding
+        captureDeviceDiscoveryService: any CaptureDeviceDiscoveryService
     ) {
         self.preferredCameraController = preferredCameraController
-        self.videoDevicesProvider = videoDevicesProvider
+        self.captureDeviceDiscoveryService = captureDeviceDiscoveryService
     }
     
     public func listenForCameras() async {
@@ -37,12 +37,8 @@ public final class CameraControl {
             selectedCamera = preferredCamera
         }
         
-        for await devices in videoDevicesProvider.videoDevices {
+        for await devices in captureDeviceDiscoveryService.devices {
             listOfCameras = devices
         }
     }
-}
-
-package protocol VideoDevicesProviding {
-    var videoDevices: AsyncStream<[CaptureDevice]> { get }
 }
