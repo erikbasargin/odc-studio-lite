@@ -3,11 +3,11 @@
 // See LICENSE for license information.
 //
 
+import AVFoundation
 import AudioVideoKit
 import Capture
-import Testing
 import ConcurrencyExtras
-import AVFoundation
+import Testing
 
 @MainActor
 @Suite
@@ -16,10 +16,12 @@ struct CameraControlTests {
     fileprivate let preferredCameraController = MockPreferredCameraController()
     fileprivate let videoDevicesProvider = MockVideoDevicesProvider()
     
-    @Test("""
-    When selectedCamera is selected, \
-    Then preferredCamera changes
-    """)
+    @Test(
+        """
+        When selectedCamera is selected, \
+        Then preferredCamera changes
+        """
+    )
     func preferredCameraChanges() async throws {
         let camera = CaptureDevice(id: "ID", name: "Camera")
         
@@ -30,18 +32,20 @@ struct CameraControlTests {
             }
             
             let cameraControl = CameraControl(
-                preferredCameraController: preferredCameraController, 
+                preferredCameraController: preferredCameraController,
                 captureDeviceDiscoveryService: videoDevicesProvider)
             
             cameraControl.selectedCamera = camera
         }
     }
     
-    @Test("""
-    Given preferredCamera is selected, \
-    When listenForCameras is called, \
-    Then selectedCamera is set
-    """)
+    @Test(
+        """
+        Given preferredCamera is selected, \
+        When listenForCameras is called, \
+        Then selectedCamera is set
+        """
+    )
     func preferredCameraIsInitiallySet() async throws {
         await withMainSerialExecutor {
             let camera = CaptureDevice(id: "ID", name: "Camera")
@@ -59,10 +63,12 @@ struct CameraControlTests {
         }
     }
     
-    @Test("""
-    When the list of available cameras is updated, \
-    Then the list of cameras changes
-    """)
+    @Test(
+        """
+        When the list of available cameras is updated, \
+        Then the list of cameras changes
+        """
+    )
     func listOfCamerasUpdates() async throws {
         await withMainSerialExecutor {
             let cameraControl = CameraControl(
@@ -81,7 +87,7 @@ struct CameraControlTests {
             }
             
             await assertVideoDevices([
-                CaptureDevice(id: "ID1", name: "Camera1"),
+                CaptureDevice(id: "ID1", name: "Camera1")
             ])
             await assertVideoDevices([
                 CaptureDevice(id: "ID1", name: "Camera1"),
@@ -125,11 +131,11 @@ private final class MockVideoDevicesProvider: CaptureDeviceDiscoveryService {
     init() {
         (devices, continuation) = AsyncStream.makeStream(of: [CaptureDevice].self)
     }
-
+    
     deinit {
         continuation.finish()
     }
-
+    
     func stubVideoDevices(_ videoDevices: [CaptureDevice]) {
         continuation.yield(videoDevices)
     }

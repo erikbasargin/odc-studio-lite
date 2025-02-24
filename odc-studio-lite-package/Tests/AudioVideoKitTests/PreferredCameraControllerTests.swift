@@ -38,10 +38,12 @@ struct PreferredCameraControllerTests {
         )
     }
     
-    @Test("""
-    When setPreferredCamera is called, \
-    Then userPreferredCamera is updated
-    """)
+    @Test(
+        """
+        When setPreferredCamera is called, \
+        Then userPreferredCamera is updated
+        """
+    )
     func userPreferredCameraIsUpdated() async throws {
         let (stream, continuation) = AsyncStream.makeStream(of: MockDevice.Record.self)
         defer { continuation.finish() }

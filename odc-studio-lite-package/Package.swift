@@ -17,7 +17,7 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(url: "https://github.com/pointfreeco/swift-concurrency-extras", from: "1.3.1"),
+        .package(url: "https://github.com/pointfreeco/swift-concurrency-extras", from: "1.3.1")
     ],
     targets: [
         .target(

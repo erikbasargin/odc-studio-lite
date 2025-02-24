@@ -44,11 +44,12 @@ package struct PreferredCameraController<Source: CaptureDeviceProtocol>: Preferr
     }
     
     package func setPreferredCamera(_ preferredCamera: CaptureDevice?) {
-        Source.userPreferredCamera = if let id = preferredCamera?.id {
-            Source.Camera(uniqueID: id)
-        } else {
-            nil
-        }
+        Source.userPreferredCamera =
+            if let id = preferredCamera?.id {
+                Source.Camera(uniqueID: id)
+            } else {
+                nil
+            }
     }
 }
 
