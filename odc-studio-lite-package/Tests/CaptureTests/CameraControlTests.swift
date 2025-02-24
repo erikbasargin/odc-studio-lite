@@ -7,6 +7,7 @@ import AudioVideoKit
 import Capture
 import Testing
 import ConcurrencyExtras
+import AVFoundation
 
 @MainActor
 @Suite
@@ -91,6 +92,8 @@ struct CameraControlTests {
 }
 
 private final class MockPreferredCameraController: PreferredCameraControlling {
+    
+    typealias Source = AVCaptureDevice
     
     var preferredCamera: AsyncStream<CaptureDevice?> {
         let camera = preferredCameraValue

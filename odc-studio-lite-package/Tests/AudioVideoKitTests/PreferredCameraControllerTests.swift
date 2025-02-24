@@ -8,7 +8,7 @@ import Foundation
 import Testing
 
 @Suite(.serialized, .timeLimit(.minutes(1)))
-struct PreferredCameraProviderTests {
+struct PreferredCameraControllerTests {
     
     private let keyPath = "systemPreferredCamera"
     
@@ -23,7 +23,7 @@ struct PreferredCameraProviderTests {
         
         MockDevice.kvoEventsHandler = continuation
         
-        _ = PreferredCameraProvider(sourceType: MockDevice.self)
+        _ = PreferredCameraController(sourceType: MockDevice.self)
         
         let records = await stream.prefix(2).reduce(into: []) { partialResult, record in
             partialResult.append(record)
@@ -38,7 +38,7 @@ struct PreferredCameraProviderTests {
     }
     
     @Test func preferredCameraUpdates() async throws {
-        let observer = PreferredCameraProvider(sourceType: MockDevice.self)
+        let observer = PreferredCameraController(sourceType: MockDevice.self)
         
         async let cameraObserver = observer.preferredCamera.prefix(3).reduce(into: []) { partialResult, camera in
             partialResult.append(camera)
@@ -62,7 +62,7 @@ struct PreferredCameraProviderTests {
     }
     
     @Test func preferredCameraRetainsLatestValue() async throws {
-        let observer = PreferredCameraProvider(sourceType: MockDevice.self)
+        let observer = PreferredCameraController(sourceType: MockDevice.self)
         
         MockDevice.systemPreferredCamera = MockDevice(uniqueID: "1")
         await Task.megaYield()
@@ -76,7 +76,7 @@ struct PreferredCameraProviderTests {
     }
     
     @Test func systemPreferredCameraUpdatesAreDistinct() async throws {
-        let observer = PreferredCameraProvider(sourceType: MockDevice.self)
+        let observer = PreferredCameraController(sourceType: MockDevice.self)
         
         async let cameraObserver = observer.preferredCamera.prefix(2).reduce(into: []) { partialResult, camera in
             partialResult.append(camera)
@@ -99,7 +99,7 @@ struct PreferredCameraProviderTests {
     }
     
     @Test func onNextDoesNotEmitValueWhenNotSystemPreferredCameraKeypathObserved() async throws {
-        let observer = PreferredCameraProvider(sourceType: MockDevice.self)
+        let observer = PreferredCameraController(sourceType: MockDevice.self)
         
         async let cameraObserver = observer.preferredCamera.prefix(1).reduce(into: []) { partialResult, deviceID in
             partialResult.append(deviceID)
