@@ -16,6 +16,9 @@ let package = Package(
             ]
         )
     ],
+    dependencies: [
+        .package(url: "https://github.com/pointfreeco/swift-concurrency-extras", from: "1.3.1"),
+    ],
     targets: [
         .target(
             name: "Capture",
@@ -28,6 +31,7 @@ let package = Package(
             dependencies: [
                 "Capture",
                 "AudioVideoKit",
+                .product(name: "ConcurrencyExtras", package: "swift-concurrency-extras"),
             ]
         ),
         
