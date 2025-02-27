@@ -87,9 +87,7 @@ extension PreferredCameraController {
             let newSource = change?[.newKey] as? Source
             
             if oldSource?.uniqueID != newSource?.uniqueID {
-                let captureDevice = newSource.map { source in
-                    CaptureDevice(id: source.uniqueID, name: "")
-                }
+                let captureDevice = newSource.map(CaptureDevice.init(device:))
                 continuation.yield(captureDevice)
             }
         }
