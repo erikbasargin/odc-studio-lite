@@ -27,24 +27,24 @@ struct VideoDiscoveryServiceTests {
         }
         
         mockDiscoverySession.stubDiscoveredDevices([
-            MockDevice(uniqueID: "1"),
+            MockDevice(uniqueID: "1", localizedName: "Camera 1"),
         ])
         
         await Task.megaYield()
 
         mockDiscoverySession.stubDiscoveredDevices([
-            MockDevice(uniqueID: "1"),
-            MockDevice(uniqueID: "2"),
+            MockDevice(uniqueID: "1", localizedName: "Camera 1"),
+            MockDevice(uniqueID: "2", localizedName: "Camera 2"),
         ])
 
         await #expect(
             events == [
                 [
-                    CaptureDevice(id: "1", name: ""),
+                    CaptureDevice(id: "1", name: "Camera 1"),
                 ],
                 [
-                    CaptureDevice(id: "1", name: ""),
-                    CaptureDevice(id: "2", name: ""),
+                    CaptureDevice(id: "1", name: "Camera 1"),
+                    CaptureDevice(id: "2", name: "Camera 2"),
                 ],
             ]
         )

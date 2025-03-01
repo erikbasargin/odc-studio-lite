@@ -19,6 +19,6 @@ extension CaptureDevice {
 
     init<Device>(device: Device) where Device: CaptureDeviceProtocol {
         self.id = device.uniqueID
-        self.name = ""
+        self.name = device.localizedName
     }
 }
