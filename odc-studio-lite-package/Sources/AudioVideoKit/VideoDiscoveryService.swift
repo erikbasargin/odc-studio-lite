@@ -4,6 +4,7 @@
 //
 
 import Foundation
+import AVFoundation
 
 extension CaptureDevice {
 
@@ -15,7 +16,13 @@ extension CaptureDevice {
         
         private let observer: Observer
 
-        package init(session: Session) {
+        package init(
+            session: Session = AVCaptureDevice.DiscoverySession(
+                deviceTypes: [.builtInWideAngleCamera, .continuityCamera],
+                mediaType: .video,
+                position: .unspecified
+            )
+        ) {
             observer = Observer(session: session)
         }
     }
@@ -66,3 +73,5 @@ fileprivate extension CaptureDevice.VideoDiscoveryService {
         }
     }
 }
+
+extension AVCaptureDevice.DiscoverySession: CaptureDeviceDiscoverySession {}
