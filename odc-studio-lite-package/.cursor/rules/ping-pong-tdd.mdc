@@ -1,0 +1,13 @@
+---
+description: Composer/Agent TDD session
+globs: *Tests.swift
+---
+
+1. Check if there any new or failing tests
+2. Ask me which test we're going to work with
+3. Make an implementation for the given test with a minimal possible solution to pass the test, and run the test
+  a. If the test passed go to step 4
+  b. If the test failed go to step 3 once, otherwise request a help
+4. Wait for me to refoactor changes. I'll let you know when it's done, and than go to step 1
+
+
