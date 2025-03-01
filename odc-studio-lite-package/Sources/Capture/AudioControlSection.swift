@@ -9,11 +9,24 @@ public struct AudioControlSection: View {
     
     @Environment(AudioControl.self) private var audioControl
     
+    public init() {}
+    
     public var body: some View {
-        @Bindable var audioControl = audioControl
+        @Bindable var audioControl = self.audioControl
         
         Section("Audio") {
-            Toggle("Capture microphone", isOn: $audioControl.captureMicrophone)
+            Picker(
+                "Microphone - \(audioControl.selectedMicrophone?.name ?? "not selected")",
+                selection: $audioControl.selectedMicrophone
+            ) {
+                ForEach(audioControl.listOfMicrophones) { device in
+                    Text(verbatim: device.name)
+                        .tag(device)
+                }
+            }
+        }
+        .task {
+            await audioControl.listenForMicrophones()
         }
     }
 }

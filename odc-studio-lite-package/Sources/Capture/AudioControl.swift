@@ -4,10 +4,19 @@
 //
 
 import Observation
+import AudioVideoKit
 
+@MainActor
 @Observable
 public final class AudioControl {
-    var captureMicrophone: Bool = false
     
+    public var selectedMicrophone: CaptureDevice?
+    
+    public private(set) var listOfMicrophones: [CaptureDevice] = []
+
     public init() {}
+
+    public func listenForMicrophones() async {
+        
+    }
 }

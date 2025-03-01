@@ -20,6 +20,7 @@ struct ODCLiteApp: App {
     
     private let broadcastManager: BroadcastManager
     private let cameraControl: CameraControl
+    private let audioControl: AudioControl
     
     init() {
         #if DEBUG
@@ -27,6 +28,7 @@ struct ODCLiteApp: App {
         #endif
         
         cameraControl = CameraControl()
+        audioControl = AudioControl()
         let broadcastManager = BroadcastManager()
         self.broadcastManager = broadcastManager
         
@@ -45,6 +47,7 @@ struct ODCLiteApp: App {
             MenuBarExtraContentView()
                 .environment(broadcastManager)
                 .environment(cameraControl)
+                .environment(audioControl)
         } label: {
             Image(.menuBarExtra)
                 .symbolRenderingMode(.palette)

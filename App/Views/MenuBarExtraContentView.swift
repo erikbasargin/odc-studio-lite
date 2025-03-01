@@ -34,9 +34,11 @@ struct MenuBarExtraContentView: View {
 //            await broadcastManager.listenForVideoDevices()
 //        }
         
-        Section("Audio") {
-            Toggle("Capture microphone", isOn: $broadcastManager.captureMicrophone)
-        }
+        AudioControlSection()
+        
+//        Section("Audio") {
+//            Toggle("Capture microphone", isOn: $broadcastManager.captureMicrophone)
+//        }
         
         Section("Twitch Broadcast") {
             Toggle("Bandwidth test", isOn: $broadcastManager.bandwidthTestEnabled)
