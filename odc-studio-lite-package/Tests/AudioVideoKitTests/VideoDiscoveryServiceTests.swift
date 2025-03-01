@@ -11,6 +11,23 @@ import AudioVideoKit
 struct VideoDiscoveryServiceTests {
 
     fileprivate let mockDiscoverySession = MockDiscoverySession()
+
+    @Test
+    func initialVideoDevices() async throws {
+        mockDiscoverySession.stubDiscoveredDevices([
+            MockDevice(uniqueID: "1", localizedName: "Camera 1"),
+        ])
+
+        let service = CaptureDevice.VideoDiscoveryService(session: mockDiscoverySession)
+        
+        for await devices in service.devices.prefix(1) {
+            #expect(
+                devices == [
+                    CaptureDevice(id: "1", name: "Camera 1"),
+                ]
+            )
+        }
+    }
     
     @Test("""
     When video devices are discovered, \
@@ -20,7 +37,7 @@ struct VideoDiscoveryServiceTests {
         let service = CaptureDevice.VideoDiscoveryService(session: mockDiscoverySession)
         let devices = service.devices
         
-        async let events = devices.prefix(2).reduce(into: []) { partialResult, devices in
+        async let events = devices.dropFirst().prefix(2).reduce(into: []) { partialResult, devices in
             partialResult.append(devices)
         }.map { devices in
             devices.sorted { $0.id < $1.id }
@@ -54,7 +71,7 @@ struct VideoDiscoveryServiceTests {
         let service = CaptureDevice.VideoDiscoveryService(session: mockDiscoverySession)
         let devices = service.devices
         
-        async let events = devices.prefix(2).reduce(into: []) { partialResult, devices in
+        async let events = devices.dropFirst().prefix(2).reduce(into: []) { partialResult, devices in
             partialResult.append(devices)
         }.map { devices in
             devices.sorted { $0.id < $1.id }
@@ -99,7 +116,7 @@ struct VideoDiscoveryServiceTests {
         let service = CaptureDevice.VideoDiscoveryService(session: mockDiscoverySession)
         let devices = service.devices
         
-        async let events = devices.prefix(1).reduce(into: []) { partialResult, devices in
+        async let events = devices.dropFirst().prefix(1).reduce(into: []) { partialResult, devices in
             partialResult.append(devices)
         }.map { devices in
             devices.sorted { $0.id < $1.id }

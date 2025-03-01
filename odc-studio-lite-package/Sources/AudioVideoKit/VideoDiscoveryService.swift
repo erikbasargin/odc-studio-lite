@@ -39,7 +39,7 @@ fileprivate extension CaptureDevice.VideoDiscoveryService {
             (stream, continuation) = AsyncStream.makeStream(of: [CaptureDevice].self)
             self.session = session
             super.init()
-            session.addObserver(self, forKeyPath: keyPath, options: [.old, .new], context: nil)
+            session.addObserver(self, forKeyPath: keyPath, options: [.initial, .old, .new], context: nil)
         }
 
         deinit {
