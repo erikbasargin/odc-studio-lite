@@ -8,6 +8,8 @@ import ScreenCaptureKit
 import SwiftUI
 import os
 
+import Capture
+
 #if DEBUG
 import Logboard
 import HaishinKit
@@ -17,12 +19,14 @@ import HaishinKit
 struct ODCLiteApp: App {
     
     private let broadcastManager: BroadcastManager
+    private let cameraControl: CameraControl
     
     init() {
         #if DEBUG
         LBLogger.with(kHaishinKitIdentifier).level = .trace
         #endif
         
+        cameraControl = CameraControl()
         let broadcastManager = BroadcastManager()
         self.broadcastManager = broadcastManager
         
@@ -40,6 +44,7 @@ struct ODCLiteApp: App {
         MenuBarExtra {
             MenuBarExtraContentView()
                 .environment(broadcastManager)
+                .environment(cameraControl)
         } label: {
             Image(.menuBarExtra)
                 .symbolRenderingMode(.palette)

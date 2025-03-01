@@ -16,9 +16,6 @@
     "Bandwidth test" : {
 
     },
-    "Camera - %@" : {
-
-    },
     "capture" : {
 
     },
@@ -26,9 +23,6 @@
 
     },
     "capturing" : {
-
-    },
-    "Exclude app from stream" : {
 
     },
     "microphone" : {
@@ -74,9 +68,6 @@
 
     },
     "unmute" : {
-
-    },
-    "Video" : {
 
     }
   },

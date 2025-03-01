@@ -5,6 +5,8 @@
 
 import SwiftUI
 
+import Capture
+
 struct MenuBarExtraContentView: View {
     
     @Environment(BroadcastManager.self) private var broadcastManager
@@ -12,22 +14,25 @@ struct MenuBarExtraContentView: View {
     var body: some View {
         @Bindable var broadcastManager = broadcastManager
         
-        Section("Video") {
-            Toggle("Exclude app from stream", isOn: $broadcastManager.excludeAppFromStream)
-            Picker(
-                "Camera - \(broadcastManager.selectedCameraDevice?.name ?? "not selected")",
-                selection: $broadcastManager.selectedCameraDevice
-            ) {
-                ForEach(broadcastManager.videoDevices) { device in
-                    Text(verbatim: device.name)
-                        .tag(device)
-                }
-            }
+        CameraControlSection()
             .disabled(!broadcastManager.cameraIsAuthorized)
-        }
-        .task {
-            await broadcastManager.listenForVideoDevices()
-        }
+            
+//        Section("Video") {
+//            Toggle("Exclude app from stream", isOn: $broadcastManager.excludeAppFromStream)
+//            Picker(
+//                "Camera - \(broadcastManager.selectedCameraDevice?.name ?? "not selected")",
+//                selection: $broadcastManager.selectedCameraDevice
+//            ) {
+//                ForEach(broadcastManager.videoDevices) { device in
+//                    Text(verbatim: device.name)
+//                        .tag(device)
+//                }
+//            }
+//            .disabled(!broadcastManager.cameraIsAuthorized)
+//        }
+//        .task {
+//            await broadcastManager.listenForVideoDevices()
+//        }
         
         Section("Audio") {
             Toggle("Capture microphone", isOn: $broadcastManager.captureMicrophone)
