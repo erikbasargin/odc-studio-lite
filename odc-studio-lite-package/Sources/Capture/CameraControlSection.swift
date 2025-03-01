@@ -9,6 +9,8 @@ public struct CameraControlSection: View {
     
     @Environment(CameraControl.self) private var cameraControl
     
+    public init() {}
+    
     public var body: some View {
         @Bindable var cameraControl = self.cameraControl
         
@@ -29,7 +31,7 @@ public struct CameraControlSection: View {
     }
 }
 
-//#Preview {
-//    CameraControlSection()
-//        .environment(CameraControl())
-//}
+#Preview {
+    CameraControlSection()
+        .environment(CameraControl())
+}

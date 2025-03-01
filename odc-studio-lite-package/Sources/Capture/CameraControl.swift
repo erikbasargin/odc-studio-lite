@@ -3,7 +3,7 @@
 // See LICENSE for license information.
 //
 
-import AVFoundation
+import Observation
 import AudioVideoKit
 
 @MainActor
@@ -23,6 +23,11 @@ public final class CameraControl {
     
     @ObservationIgnored
     private let captureDeviceDiscoveryService: any CaptureDeviceDiscoveryService
+    
+    public init() {
+        self.preferredCameraController = PreferredCameraController()
+        self.captureDeviceDiscoveryService = CaptureDevice.VideoDiscoveryService()
+    }
     
     package init(
         preferredCameraController: any PreferredCameraControlling,
