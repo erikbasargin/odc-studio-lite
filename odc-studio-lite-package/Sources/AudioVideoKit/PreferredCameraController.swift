@@ -13,6 +13,7 @@ package protocol CaptureDeviceProtocol<Camera>: NSObject {
     static var userPreferredCamera: Camera? { get set }
     
     var uniqueID: String { get }
+    var localizedName: String { get }
     
     init?(uniqueID: String)
 }

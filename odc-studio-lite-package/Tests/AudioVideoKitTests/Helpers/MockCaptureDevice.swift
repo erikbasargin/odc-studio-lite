@@ -36,6 +36,7 @@ final class MockDevice: NSObject, CaptureDeviceProtocol {
     }
     
     let uniqueID: String
+    private(set) var localizedName: String = ""
         
     override class func addObserver(
         _ observer: NSObject,
