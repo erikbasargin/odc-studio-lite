@@ -36,7 +36,7 @@ fileprivate extension CaptureDevice.VideoDiscoveryService {
         private let keyPath = "devices"
         
         init(session: Session) {
-            (stream, continuation) = AsyncStream.makeStream(of: [CaptureDevice].self)
+            (stream, continuation) = AsyncStream.makeStream(of: [CaptureDevice].self, bufferingPolicy: .bufferingNewest(1))
             self.session = session
             super.init()
             session.addObserver(self, forKeyPath: keyPath, options: [.initial, .old, .new], context: nil)

@@ -138,6 +138,30 @@ struct VideoDiscoveryServiceTests {
             ]
         )
     }
+
+    @Test func devicesRetainsLatestValue() async throws {
+        let service = CaptureDevice.VideoDiscoveryService(session: mockDiscoverySession)
+
+        mockDiscoverySession.stubDiscoveredDevices([
+            MockDevice(uniqueID: "1", localizedName: "Camera 1"),
+        ])
+
+        await Task.megaYield()
+
+        mockDiscoverySession.stubDiscoveredDevices([
+            MockDevice(uniqueID: "2", localizedName: "Camera 2"),
+        ])
+
+        await Task.megaYield()
+
+        for await devices in service.devices.prefix(1) {
+            #expect(
+                devices == [
+                    CaptureDevice(id: "2", name: "Camera 2"),
+                ]
+            )
+        }
+    }
 }
 private final class MockDiscoverySession: NSObject, CaptureDeviceDiscoverySession {
     
