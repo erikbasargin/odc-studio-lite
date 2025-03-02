@@ -8,27 +8,28 @@ import AVFoundation
 
 extension CaptureDevice {
 
-    package struct VideoDiscoveryService<Session: CaptureDeviceDiscoverySession>: CaptureDeviceDiscoveryService {
+    package typealias MediaType = AVMediaType
+    package typealias DeviceType = AVCaptureDevice.DeviceType
+
+    package struct DiscoveryService<Session: CaptureDeviceDiscoverySession>: CaptureDeviceDiscoveryService {
         
         public var devices: AsyncStream<[CaptureDevice]> {
             observer.stream
         }
         
         private let observer: Observer
-
-        package init(
-            session: Session = AVCaptureDevice.DiscoverySession(
-                deviceTypes: [.builtInWideAngleCamera, .continuityCamera],
-                mediaType: .video,
-                position: .unspecified
-            )
-        ) {
-            observer = Observer(session: session)
+        
+        package init(mediaType: MediaType, deviceTypes: [DeviceType]) where Session == AVCaptureDevice.DiscoverySession {
+            self.init(mediaType: mediaType, deviceTypes: deviceTypes, sessionFactory: Session.init(mediaType:deviceTypes:))
+        }
+        
+        init(mediaType: MediaType, deviceTypes: [DeviceType], sessionFactory: (MediaType, [DeviceType]) -> Session) {
+            observer = Observer(session: sessionFactory(mediaType, deviceTypes))
         }
     }
 }
 
-fileprivate extension CaptureDevice.VideoDiscoveryService {
+fileprivate extension CaptureDevice.DiscoveryService {
     final class Observer: NSObject {
         let stream: AsyncStream<[CaptureDevice]>
         private let continuation: AsyncStream<[CaptureDevice]>.Continuation
@@ -75,3 +76,11 @@ fileprivate extension CaptureDevice.VideoDiscoveryService {
 }
 
 extension AVCaptureDevice.DiscoverySession: CaptureDeviceDiscoverySession {}
+
+
+fileprivate extension AVCaptureDevice.DiscoverySession {
+
+    convenience init(mediaType: CaptureDevice.MediaType, deviceTypes: [CaptureDevice.DeviceType]) {
+        self.init(deviceTypes: deviceTypes, mediaType: mediaType, position: .unspecified)
+    }
+}

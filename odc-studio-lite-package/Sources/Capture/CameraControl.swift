@@ -26,7 +26,10 @@ public final class CameraControl {
     
     public init() {
         self.preferredCameraController = PreferredCameraController()
-        self.captureDeviceDiscoveryService = CaptureDevice.VideoDiscoveryService()
+        self.captureDeviceDiscoveryService = CaptureDevice.DiscoveryService(
+            mediaType: .video, 
+            deviceTypes: [.builtInWideAngleCamera, .continuityCamera]
+        )
     }
     
     package init(
