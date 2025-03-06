@@ -19,16 +19,12 @@ import HaishinKit
 struct ODCLiteApp: App {
     
     private let broadcastManager: BroadcastManager
-    private let cameraControl: CameraControl
-    private let audioControl: AudioControl
     
     init() {
         #if DEBUG
         LBLogger.with(kHaishinKitIdentifier).level = .trace
         #endif
         
-        cameraControl = CameraControl()
-        audioControl = AudioControl()
         let broadcastManager = BroadcastManager()
         self.broadcastManager = broadcastManager
         
@@ -46,8 +42,6 @@ struct ODCLiteApp: App {
         MenuBarExtra {
             MenuBarExtraContentView()
                 .environment(broadcastManager)
-                .environment(cameraControl)
-                .environment(audioControl)
         } label: {
             Image(.menuBarExtra)
                 .symbolRenderingMode(.palette)
