@@ -4,34 +4,34 @@
 //
 
 import SwiftUI
-
+import AudioVideoKit
 public struct AudioControlSection: View {
     
-    @Environment(AudioControl.self) private var audioControl
+    @State private var selectedMicrophone: CaptureDevice?
+    @State private var microphones: [CaptureDevice] = []
     
     public init() {}
     
     public var body: some View {
-        @Bindable var audioControl = self.audioControl
-        
         Section("Audio") {
             Picker(
-                "Microphone - \(audioControl.selectedMicrophone?.name ?? "not selected")",
-                selection: $audioControl.selectedMicrophone
+                "Microphone - \(selectedMicrophone?.name ?? "not selected")",
+                selection: $selectedMicrophone
             ) {
-                ForEach(audioControl.listOfMicrophones) { device in
+                ForEach(microphones) { device in
                     Text(verbatim: device.name)
                         .tag(device)
                 }
             }
         }
         .task {
-            await audioControl.listenForMicrophones()
+            for await microphones in CaptureDevice.DiscoveryService(mediaType: .audio, deviceTypes: [.microphone]).devices {
+                self.microphones = microphones
+            }
         }
     }
 }
 
 #Preview {
     AudioControlSection()
-        .environment(AudioControl())
 }

@@ -4,34 +4,38 @@
 //
 
 import SwiftUI
-
+import AudioVideoKit
 public struct CameraControlSection: View {
     
-    @Environment(CameraControl.self) private var cameraControl
-    
+    @State private var selectedCamera: CaptureDevice?
+    @State private var cameras: [CaptureDevice] = []
+
     public init() {}
     
     public var body: some View {
-        @Bindable var cameraControl = self.cameraControl
-        
         Section("Video") {
             Picker(
-                "Camera - \(cameraControl.selectedCamera?.name ?? "not selected")",
-                selection: $cameraControl.selectedCamera
+                "Camera - \(selectedCamera?.name ?? "not selected")",
+                selection: $selectedCamera
             ) {
-                ForEach(cameraControl.listOfCameras) { device in
+                ForEach(cameras) { device in
                     Text(verbatim: device.name)
                         .tag(device)
                 }
             }
         }
         .task {
-            await cameraControl.listenForCameras()
+            let discoveryService = CaptureDevice.DiscoveryService(
+                mediaType: .video, 
+                deviceTypes: [.builtInWideAngleCamera, .continuityCamera]
+            )
+            for await cameras in discoveryService.devices {
+                self.cameras = cameras
+            }
         }
     }
 }
 
 #Preview {
     CameraControlSection()
-        .environment(CameraControl())
 }
