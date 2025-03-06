@@ -18,6 +18,15 @@ struct PreferredCameraControllerTests {
         MockDevice.userPreferredCamera = nil
     }
     
+    @Test func initialPreferredCamera() async throws {
+        MockDevice.systemPreferredCamera = MockDevice(uniqueID: "1", localizedName: "Camera")
+        
+        let controller = PreferredCameraController(sourceType: MockDevice.self)
+        let preferredCamera = await controller.preferredCamera.first(where: { _ in true })
+        
+        #expect(preferredCamera == CaptureDevice(id: "1", name: "Camera"))
+    }
+    
     @Test func systemPreferredCameraKVOObserver() async throws {
         let (stream, continuation) = AsyncStream.makeStream(of: MockDevice.Record.self)
         defer { continuation.finish() }
@@ -32,7 +41,7 @@ struct PreferredCameraControllerTests {
         
         #expect(
             records == [
-                .addObserver(keyPath: keyPath, options: [.old, .new], withContext: false),
+                .addObserver(keyPath: keyPath, options: [.initial, .old, .new], withContext: false),
                 .removeObserver(keyPath: keyPath, withContext: false),
             ]
         )

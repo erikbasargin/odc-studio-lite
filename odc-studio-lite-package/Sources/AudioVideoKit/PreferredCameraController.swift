@@ -69,7 +69,7 @@ extension PreferredCameraController {
                 bufferingPolicy: .bufferingNewest(1)
             )
             super.init()
-            Source.self.addObserver(self, forKeyPath: keyPath, options: [.old, .new], context: nil)
+            Source.self.addObserver(self, forKeyPath: keyPath, options: [.initial, .old, .new], context: nil)
         }
         
         deinit {
