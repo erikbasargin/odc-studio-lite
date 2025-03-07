@@ -40,7 +40,7 @@ fileprivate extension CaptureDevice.DiscoveryService {
             (stream, continuation) = AsyncStream.makeStream(of: [CaptureDevice].self, bufferingPolicy: .bufferingNewest(1))
             self.session = session
             super.init()
-            session.addObserver(self, forKeyPath: keyPath, options: [.initial, .old, .new], context: nil)
+            session.addObserver(self, forKeyPath: keyPath, options: [.initial, .new], context: nil)
         }
 
         deinit {
@@ -54,23 +54,13 @@ fileprivate extension CaptureDevice.DiscoveryService {
             context: UnsafeMutableRawPointer?
         ) {
             precondition(keyPath == self.keyPath)
-
-            func makeSet(from devices: [Session.Device]) -> Set<CaptureDevice> {
-                Set(devices.map(CaptureDevice.init(device:)))
-            }
             
-            let oldDevices = (change?[.oldKey] as? [Session.Device]).flatMap(makeSet(from:))
-            let newDevices = (change?[.newKey] as? [Session.Device]).flatMap(makeSet(from:))
-            
-            switch (oldDevices, newDevices) {
-            case (nil, nil):
+            guard let devices = (change?[.newKey] as? [Session.Device]) else {
                 assertionFailure("No devices observed")
-                break
-            case let (old, new?) where new != old:
-                continuation.yield(Array(new))
-            default:
-                break
+                return
             }
+            
+            continuation.yield(devices.map(CaptureDevice.init(device:)))
         }
     }
 }
