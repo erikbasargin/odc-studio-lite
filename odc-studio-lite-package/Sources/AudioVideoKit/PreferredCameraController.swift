@@ -69,7 +69,7 @@ extension PreferredCameraController {
                 bufferingPolicy: .bufferingNewest(1)
             )
             super.init()
-            Source.self.addObserver(self, forKeyPath: keyPath, options: [.initial, .old, .new], context: nil)
+            Source.self.addObserver(self, forKeyPath: keyPath, options: [.initial, .new], context: nil)
         }
         
         deinit {
@@ -84,14 +84,14 @@ extension PreferredCameraController {
             context: UnsafeMutableRawPointer?
         ) {
             precondition(keyPath == self.keyPath)
-            
-            let oldSource = change?[.oldKey] as? Source
-            let newSource = change?[.newKey] as? Source
-            
-            if oldSource?.uniqueID != newSource?.uniqueID {
-                let captureDevice = newSource.map(CaptureDevice.init(device:))
-                continuation.yield(captureDevice)
+
+            guard let newValue = change?[.newKey] else {
+                preconditionFailure("No preferred camera observed")
             }
+
+            let captureDevice = (newValue as? Source).map(CaptureDevice.init(device:))
+
+            continuation.yield(captureDevice)
         }
     }
 }

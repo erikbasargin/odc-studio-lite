@@ -42,7 +42,7 @@ struct PreferredCameraControllerTests {
         
         #expect(
             records == [
-                .addObserver(keyPath: keyPath, options: [.initial, .old, .new], withContext: false),
+                .addObserver(keyPath: keyPath, options: [.initial, .new], withContext: false),
                 .removeObserver(keyPath: keyPath, withContext: false),
             ]
         )
@@ -119,33 +119,10 @@ struct PreferredCameraControllerTests {
         #expect(camera == CaptureDevice(id: "2", name: ""))
     }
     
-    @Test func systemPreferredCameraUpdatesAreDistinct() async throws {
-        let observer = PreferredCameraController(sourceType: MockDevice.self)
-        
-        async let cameraObserver = observer.preferredCamera.prefix(2).reduce(into: []) { partialResult, camera in
-            partialResult.append(camera)
-        }
-        
-        MockDevice.systemPreferredCamera = MockDevice(uniqueID: "1")
-        await Task.megaYield()
-        MockDevice.systemPreferredCamera = MockDevice(uniqueID: "1")
-        await Task.megaYield()
-        MockDevice.systemPreferredCamera = nil
-        
-        let cameras = await cameraObserver
-        
-        #expect(
-            cameras == [
-                CaptureDevice(id: "1", name: ""),
-                nil,
-            ]
-        )
-    }
-    
     @Test func onNextDoesNotEmitValueWhenNotSystemPreferredCameraKeypathObserved() async throws {
         let observer = PreferredCameraController(sourceType: MockDevice.self)
         
-        async let cameraObserver = observer.preferredCamera.prefix(1).reduce(into: []) { partialResult, deviceID in
+        async let cameraObserver = observer.preferredCamera.dropFirst().prefix(1).reduce(into: []) { partialResult, deviceID in
             partialResult.append(deviceID)
         }
         
@@ -178,7 +155,7 @@ struct PreferredCameraControllerTests {
         
         controller.withLock { $0 = nil }
 
-        let result = try await stream.first { _ in true }
+        let result = try #require(await stream.first { _ in true })
         
         #expect(result == nil)
     }
