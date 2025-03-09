@@ -5,18 +5,21 @@
 
 import SwiftUI
 import AudioVideoKit
+
 public struct AudioControlSection: View {
     
-    @State private var selectedMicrophone: CaptureDevice?
+    @Environment(StreamConfiguration.self) private var streamConfiguration
     @State private var microphones: [CaptureDevice] = []
     
     public init() {}
     
     public var body: some View {
+        @Bindable var streamConfiguration = self.streamConfiguration
+        
         Section("Audio") {
             Picker(
-                "Microphone - \(selectedMicrophone?.name ?? "not selected")",
-                selection: $selectedMicrophone
+                "Microphone - \(streamConfiguration.selectedMicrophone?.name ?? "not selected")",
+                selection: $streamConfiguration.selectedMicrophone
             ) {
                 ForEach(microphones) { device in
                     Text(verbatim: device.name)
@@ -34,4 +37,5 @@ public struct AudioControlSection: View {
 
 #Preview {
     AudioControlSection()
+        .environment(StreamConfiguration())
 }
