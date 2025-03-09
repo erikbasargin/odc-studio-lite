@@ -73,6 +73,7 @@ extension PreferredCameraController {
         }
         
         deinit {
+            continuation.finish()
             Source.self.removeObserver(self, forKeyPath: keyPath, context: nil)
         }
         

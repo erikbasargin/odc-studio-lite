@@ -6,6 +6,7 @@
 import AudioVideoKit
 import Foundation
 import Testing
+import os
 
 @Suite(.serialized, .timeLimit(.minutes(1)))
 struct PreferredCameraControllerTests {
@@ -161,5 +162,24 @@ struct PreferredCameraControllerTests {
                 CaptureDevice(id: "1", name: "")
             ]
         )
+    }
+
+    @Test func streamIsClosedWhenControllerIsDeallocated() async throws {
+        let controller: OSAllocatedUnfairLock<PreferredCameraController<MockDevice>?> = OSAllocatedUnfairLock(
+            uncheckedState: PreferredCameraController(sourceType: MockDevice.self)
+        )
+        
+        async let stream = try controller.withLock { 
+            let controller = try #require($0)
+            return controller.preferredCamera
+        }
+        
+        await Task.megaYield()
+        
+        controller.withLock { $0 = nil }
+
+        let result = try await stream.first { _ in true }
+        
+        #expect(result == nil)
     }
 }
