@@ -11,4 +11,6 @@ public final class StreamConfiguration {
 
     public var selectedCamera: CaptureDevice?
     public var selectedMicrophone: CaptureDevice?
+    
+    public init() {}
 }

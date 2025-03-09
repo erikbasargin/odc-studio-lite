@@ -19,6 +19,7 @@ import HaishinKit
 struct ODCLiteApp: App {
     
     private let broadcastManager: BroadcastManager
+    private let streamConfiguration = StreamConfiguration()
     
     init() {
         #if DEBUG
@@ -42,6 +43,7 @@ struct ODCLiteApp: App {
         MenuBarExtra {
             MenuBarExtraContentView()
                 .environment(broadcastManager)
+                .environment(streamConfiguration)
         } label: {
             Image(.menuBarExtra)
                 .symbolRenderingMode(.palette)
