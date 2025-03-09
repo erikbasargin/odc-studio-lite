@@ -8,7 +8,7 @@ import Testing
 @testable import AudioVideoKit
 
 @Suite(.timeLimit(.minutes(1)))
-struct VideoDiscoveryServiceTests {
+struct DiscoveryServiceTests {
 
     fileprivate let mockDiscoverySession = MockDiscoverySession()
 
@@ -110,7 +110,7 @@ struct VideoDiscoveryServiceTests {
     }
 }
 
-private extension VideoDiscoveryServiceTests {
+private extension DiscoveryServiceTests {
 
     func makeService(
         mediaType: CaptureDevice.MediaType = .video, 
