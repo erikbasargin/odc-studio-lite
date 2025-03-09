@@ -44,6 +44,7 @@ fileprivate extension CaptureDevice.DiscoveryService {
         }
 
         deinit {
+            continuation.finish()
             session.removeObserver(self, forKeyPath: keyPath)
         }
 

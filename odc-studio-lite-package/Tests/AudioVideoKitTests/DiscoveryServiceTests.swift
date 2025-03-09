@@ -5,6 +5,7 @@
 
 import Foundation
 import Testing
+import os
 @testable import AudioVideoKit
 
 @Suite(.timeLimit(.minutes(1)))
@@ -107,6 +108,23 @@ struct DiscoveryServiceTests {
                 ]
             )
         }
+    }
+
+    @Test func streamIsClosedWhenSessionIsDeallocated() async throws {
+        let service: OSAllocatedUnfairLock<CaptureDevice.DiscoveryService<MockDiscoverySession>?> = OSAllocatedUnfairLock(uncheckedState: makeService())
+
+        async let stream = try service.withLock {
+            let service = try #require($0)
+            return service.devices
+        }
+        
+        await Task.megaYield()
+
+        service.withLock { $0 = nil }
+
+        let result = try await stream.dropFirst().first { _ in true }
+
+        #expect(result == nil)
     }
 }
 
