@@ -7,9 +7,11 @@
 
 package struct CapturedPayload: Equatable, Sendable {
     
+    let type: SCStreamOutputType
     private nonisolated(unsafe) let sampleBuffer: CMSampleBuffer
     
-    init(sampleBuffer: CMSampleBuffer) {
+    init(type: SCStreamOutputType = .screen, sampleBuffer: CMSampleBuffer) {
+        self.type = type
         self.sampleBuffer = sampleBuffer
     }
 }
