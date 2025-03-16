@@ -37,39 +37,9 @@ struct CaptureStreamTests {
 extension CaptureStreamTests {
     
     fileprivate func makeCMSampleBuffer() throws -> CMSampleBuffer {
-        try makeCMSampleBuffer(imageBuffer: try makeCVImageBufferWithIOSurface())
-    }
-    
-    fileprivate func makeCMSampleBuffer(imageBuffer: CVImageBuffer) throws -> CMSampleBuffer {
-        try CMSampleBuffer(
-            imageBuffer: imageBuffer,
-            formatDescription: .init(imageBuffer: imageBuffer),
-            sampleTiming: .init(duration: .zero, presentationTimeStamp: .zero, decodeTimeStamp: .zero)
+        try CaptureStreamHelper.makeCMSampleBuffer(
+            imageBuffer: try CaptureStreamHelper.makeCVImageBufferWithIOSurface()
         )
-    }
-    
-    fileprivate func makeCVImageBufferWithIOSurface() throws -> CVImageBuffer {
-        let imageWidth = 10
-        let ioSurfaceRef = try #require(
-            IOSurfaceCreate(
-                [
-                    kIOSurfaceWidth: imageWidth,
-                    kIOSurfaceHeight: imageWidth,
-                    kIOSurfaceBytesPerElement: 4,
-                    kIOSurfaceBytesPerRow: imageWidth * 4,
-                    kIOSurfaceAllocSize: imageWidth * imageWidth * 4,
-                    kIOSurfacePixelFormat: kCVPixelFormatType_32BGRA,
-                ] as CFDictionary))
-        
-        var imageBuffer: Unmanaged<CVImageBuffer>?
-        CVPixelBufferCreateWithIOSurface(
-            kCFAllocatorDefault,
-            ioSurfaceRef,
-            [:] as CFDictionary,
-            &imageBuffer
-        )
-        
-        return try #require(imageBuffer?.takeUnretainedValue())
     }
 }
 

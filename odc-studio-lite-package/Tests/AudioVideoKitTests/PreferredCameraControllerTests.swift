@@ -6,6 +6,7 @@
 import AudioVideoKit
 import Foundation
 import Testing
+import ConcurrencyExtras
 import os
 
 @Suite(.serialized, .timeLimit(.minutes(1)))

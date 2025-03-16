@@ -6,6 +6,8 @@
 import Foundation
 import Testing
 import os
+import ConcurrencyExtras
+
 @testable import AudioVideoKit
 
 @Suite(.timeLimit(.minutes(1)))
