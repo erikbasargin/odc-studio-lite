@@ -41,7 +41,8 @@ let package = Package(
         .testTarget(
             name: "AudioVideoKitTests",
             dependencies: [
-                "AudioVideoKit"
+                "AudioVideoKit",
+                .product(name: "ConcurrencyExtras", package: "swift-concurrency-extras"),
             ]
         ),
     ]
