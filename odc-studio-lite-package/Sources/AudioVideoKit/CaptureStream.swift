@@ -7,19 +7,17 @@
 
 package struct CapturedPayload: Equatable, Sendable {
     
-    let type: SCStreamOutputType
     private nonisolated(unsafe) let sampleBuffer: CMSampleBuffer
     
-    init(type: SCStreamOutputType = .screen, sampleBuffer: CMSampleBuffer) {
-        self.type = type
+    init(sampleBuffer: CMSampleBuffer) {
         self.sampleBuffer = sampleBuffer
     }
 }
 
 package struct CaptureStream: AsyncSequence, Sendable {
     
-    let source: SCStream
-    let type: SCStreamOutputType
+    private let source: SCStream
+    private let type: SCStreamOutputType
     
     package struct Iterator: AsyncIteratorProtocol {
         
@@ -75,6 +73,7 @@ private extension CaptureStream {
             didOutputSampleBuffer sampleBuffer: CMSampleBuffer,
             of type: SCStreamOutputType
         ) {
+            guard type == self.type else { return }
             continuation.yield(CapturedPayload(sampleBuffer: sampleBuffer))
         }
     }

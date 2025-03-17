@@ -16,6 +16,36 @@ struct CaptureStreamHelper {
         )
     }
     
+    static func makeAudioSampleBuffer() throws -> CMSampleBuffer {
+        var sampleBuffer: CMSampleBuffer?
+        let formatDescription = try CMFormatDescription(
+            audioStreamBasicDescription: .init(
+                mSampleRate: 48000,
+                mFormatID: 1819304813,
+                mFormatFlags: 41,
+                mBytesPerPacket: 4,
+                mFramesPerPacket: 1,
+                mBytesPerFrame: 4,
+                mChannelsPerFrame: 2,
+                mBitsPerChannel: 32,
+                mReserved: 0
+            )
+        )
+        
+        CMAudioSampleBufferCreateWithPacketDescriptionsAndMakeDataReadyHandler(
+            kCFAllocatorDefault,
+            nil,
+            false,
+            formatDescription,
+            1,
+            .zero,
+            nil,
+            &sampleBuffer,
+            nil
+        )
+        return try #require(sampleBuffer)
+    }
+    
     static func makeCVImageBufferWithIOSurface() throws -> CVImageBuffer {
         let imageWidth = 10
         let ioSurfaceRef = try #require(
