@@ -5,15 +5,13 @@
 
 import ScreenCaptureKit
 
-//package protocol ShareableContentSource: NSObject {
-//    
-//    associatedtype Content: ShareableContentSource
-//    
-//    static var current: Content { get async throws }
-//}
-
 package struct CapturedPayload: Sendable {
     nonisolated(unsafe) let sampleBuffer: CMSampleBuffer
+}
+
+package struct ContentFilter {
+    let includeMenuBar: Bool
+    let excludeCurrentApplication: Bool
 }
 
 package final class CaptureEngine {
@@ -26,6 +24,9 @@ package final class CaptureEngine {
         fileprivate let stream: AsyncStream<CapturedPayload>
     }
     
+    private let bundleIdentifier: String
+    private let shareableContentProvider: any ShareableContentProvider
+    private let contentFilterProvider: any SCContentFilterProvider
     private let stream: SCStream
     
     package var screenCaptureStream: CaptureStream<Screen> {
@@ -47,14 +48,25 @@ package final class CaptureEngine {
     }
     
     package convenience init() {
-        self.init(screenCaptureStreamFactory: { filter, configuration, delegate in
-            SCStream(filter: filter, configuration: configuration, delegate: delegate)
-        })
+        self.init(
+            bundleIdentifier: Bundle.main.bundleIdentifier!,
+            shareableContentProvider: ShareableContentRequest(),
+            contentFilterProvider: SCContentFilterRequest(),
+            screenCaptureStreamFactory: { filter, configuration, delegate in
+                SCStream(filter: filter, configuration: configuration, delegate: delegate)
+            }
+        )
     }
     
     init(
+        bundleIdentifier: String,
+        shareableContentProvider: any ShareableContentProvider,
+        contentFilterProvider: any SCContentFilterProvider,
         screenCaptureStreamFactory: (SCContentFilter, SCStreamConfiguration, (any SCStreamDelegate)?) -> SCStream
     ) {
+        self.bundleIdentifier = bundleIdentifier
+        self.shareableContentProvider = shareableContentProvider
+        self.contentFilterProvider = contentFilterProvider
         self.stream = screenCaptureStreamFactory(SCContentFilter(), SCStreamConfiguration(), nil)
     }
     
@@ -65,9 +77,29 @@ package final class CaptureEngine {
     package func stop() async throws {
         try await stream.stopCapture()
     }
+    
+    package func updateContentFilter(_ contentFilter: ContentFilter) async throws {
+        let shareableContent = try await shareableContentProvider.invoke()
+        
+        guard let currentDisplay = shareableContent.displays.first else {
+            preconditionFailure("No display available")
+        }
+        
+        let currentApplication = shareableContent.applications.first { application in
+            application.bundleIdentifier == bundleIdentifier
+        }.flatMap {
+            [$0]
+        }
+        
+        let filter = contentFilterProvider.invoke(
+            display: currentDisplay,
+            excludingApplications: contentFilter.excludeCurrentApplication ? currentApplication ?? [] : [],
+            exceptingWindows: []
+        )
+        filter.includeMenuBar = contentFilter.includeMenuBar
+        try await stream.updateContentFilter(filter)
+    }
 }
-
-//extension SCShareableContent: ShareableContentSource {}
 
 private extension CaptureEngine {
     
