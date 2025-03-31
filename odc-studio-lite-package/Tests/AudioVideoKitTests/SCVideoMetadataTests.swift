@@ -3,9 +3,10 @@
 // See LICENSE for license information.
 //
 
-import Capture
 import ScreenCaptureKit
 import Testing
+
+import AudioVideoKit
 
 @Suite
 struct SCVideoMetadataTests {

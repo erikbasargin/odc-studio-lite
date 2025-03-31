@@ -3,7 +3,6 @@
 // See LICENSE for license information.
 //
 
-import AudioVideoKit
 import ScreenCaptureKit
 
 public struct SCVideoMetadata: Sendable {
