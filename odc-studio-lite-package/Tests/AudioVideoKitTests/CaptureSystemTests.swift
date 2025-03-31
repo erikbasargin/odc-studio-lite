@@ -9,11 +9,11 @@ import Testing
 @testable import AudioVideoKit
 
 @Suite(.timeLimit(.minutes(1)))
-struct CaptureEngineTests {
+struct CaptureSystemTests {
     
     @Test func streamStarts() async throws {
         let stream = MockSCStream(filter: SCContentFilter(), configuration: SCStreamConfiguration(), delegate: nil)
-        let engine = makeEngine { _, _, _ in stream }
+        let engine = makeCaptureSystem { _, _, _ in stream }
         
         try await confirmation { confirmation in
             stream.onStartCapture = {
@@ -26,7 +26,7 @@ struct CaptureEngineTests {
     
     @Test func startThrows() async throws {
         let stream = MockSCStream(filter: SCContentFilter(), configuration: SCStreamConfiguration(), delegate: nil)
-        let engine = makeEngine { _, _, _ in stream }
+        let engine = makeCaptureSystem { _, _, _ in stream }
         
         stream.onStartCapture = {
             throw MockSCStream.Error.test
@@ -39,7 +39,7 @@ struct CaptureEngineTests {
     
     @Test func streamStops() async throws {
         let stream = MockSCStream(filter: SCContentFilter(), configuration: SCStreamConfiguration(), delegate: nil)
-        let engine = makeEngine { _, _, _ in stream }
+        let engine = makeCaptureSystem { _, _, _ in stream }
         
         try await confirmation { confirmation in
             stream.onStopCapture = {
@@ -52,7 +52,7 @@ struct CaptureEngineTests {
     
     @Test func stopThrows() async throws {
         let stream = MockSCStream(filter: SCContentFilter(), configuration: SCStreamConfiguration(), delegate: nil)
-        let engine = makeEngine { _, _, _ in stream }
+        let engine = makeCaptureSystem { _, _, _ in stream }
         
         stream.onStopCapture = {
             throw MockSCStream.Error.test
@@ -68,7 +68,7 @@ struct CaptureEngineTests {
         let stream = MockSCStream(filter: .init(), configuration: .init(), delegate: nil)
         let sampleBuffer = try makeCMSampleBuffer()
         let audioSampleBuffer = try CaptureStreamHelper.makeAudioSampleBuffer()
-        let engine = makeEngine { _, _, _ in stream }
+        let engine = makeCaptureSystem { _, _, _ in stream }
         let captureStream = try engine.screenCaptureStream
         
         async let capturedPayloads = captureStream.prefix(1).reduce(into: []) { partialResult, payload in
@@ -95,7 +95,7 @@ struct CaptureEngineTests {
         let stream = MockSCStream(filter: .init(), configuration: .init(), delegate: nil)
         let sampleBuffer = try makeCMSampleBuffer()
         let audioSampleBuffer = try CaptureStreamHelper.makeAudioSampleBuffer()
-        let engine = makeEngine { _, _, _ in stream }
+        let engine = makeCaptureSystem { _, _, _ in stream }
         let captureStream = try engine.audioCaptureStream
         
         async let capturedPayloads = captureStream.prefix(1).reduce(into: []) { partialResult, payload in
@@ -122,7 +122,7 @@ struct CaptureEngineTests {
         let stream = MockSCStream(filter: .init(), configuration: .init(), delegate: nil)
         let sampleBuffer = try makeCMSampleBuffer()
         let audioSampleBuffer = try CaptureStreamHelper.makeAudioSampleBuffer()
-        let engine = makeEngine { _, _, _ in stream }
+        let engine = makeCaptureSystem { _, _, _ in stream }
         let captureStream = try engine.microphoneCaptureStream
         
         async let capturedPayloads = captureStream.prefix(1).reduce(into: []) { partialResult, payload in
@@ -146,7 +146,7 @@ struct CaptureEngineTests {
     
     @Test func makeCaptureStreamThrowsWhenAddStreamOutputFails() async throws {
         let stream = MockSCStream(filter: .init(), configuration: .init(), delegate: nil)
-        let engine = makeEngine { _, _, _ in stream }
+        let engine = makeCaptureSystem { _, _, _ in stream }
         
         stream.onAddStreamOutput = {
             throw MockSCStream.Error.test
@@ -167,7 +167,7 @@ struct CaptureEngineTests {
         let shareableContentProvider = MockShareableContentProvider {
             .init(displays: [display], applications: [])
         }
-        let engine = makeEngine(
+        let engine = makeCaptureSystem(
             shareableContentProvider: shareableContentProvider,
             screenCaptureStreamFactory: { _, _, _ in stream }
         )
@@ -210,7 +210,7 @@ struct CaptureEngineTests {
                 confirmation()
             }
             
-            let engine = makeEngine(
+            let engine = makeCaptureSystem(
                 bundleIdentifier: "2",
                 shareableContentProvider: shareableContentProvider,
                 contentFilterProvider: contentFilterProvider,
@@ -227,7 +227,7 @@ struct CaptureEngineTests {
         let shareableContentProvider = MockShareableContentProvider {
             throw MockSCStream.Error.test
         }
-        let engine = makeEngine(
+        let engine = makeCaptureSystem(
             shareableContentProvider: shareableContentProvider,
             screenCaptureStreamFactory: { _, _, _ in stream }
         )
@@ -248,7 +248,7 @@ struct CaptureEngineTests {
             throw MockSCStream.Error.test
         }
         
-        let engine = makeEngine(
+        let engine = makeCaptureSystem(
             shareableContentProvider: shareableContentProvider,
             screenCaptureStreamFactory: { _, _, _ in stream }
         )
@@ -274,7 +274,7 @@ struct CaptureEngineTests {
                 confirmation()
             }
             
-            let engine = makeEngine(
+            let engine = makeCaptureSystem(
                 shareableContentProvider: shareableContentProvider,
                 contentFilterProvider: contentFilterProvider,
                 screenCaptureStreamFactory: { _, _, _ in stream }
@@ -285,9 +285,9 @@ struct CaptureEngineTests {
     }
 }
 
-extension CaptureEngineTests {
+extension CaptureSystemTests {
     
-    func makeEngine(
+    func makeCaptureSystem(
         bundleIdentifier: String = "",
         shareableContentProvider: any ShareableContentProvider = MockShareableContentProvider(
             onInvoke: {
@@ -296,7 +296,7 @@ extension CaptureEngineTests {
         ),
         contentFilterProvider: any SCContentFilterProvider = MockContentFilterProvider { _, _, _ in },
         screenCaptureStreamFactory: (SCContentFilter, SCStreamConfiguration, (any SCStreamDelegate)?) -> SCStream
-    ) -> CaptureEngine {
+    ) -> CaptureSystem {
         .init(
             bundleIdentifier: bundleIdentifier,
             shareableContentProvider: shareableContentProvider,

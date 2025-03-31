@@ -14,7 +14,7 @@ package struct ContentFilter {
     let excludeCurrentApplication: Bool
 }
 
-package final class CaptureEngine {
+package final class CaptureSystem {
     
     package enum Screen {}
     package enum Audio {}
@@ -101,7 +101,7 @@ package final class CaptureEngine {
     }
 }
 
-private extension CaptureEngine {
+private extension CaptureSystem {
     
     protocol CaptureStreamKind {
         static var streamOutputType: SCStreamOutputType { get }
@@ -143,28 +143,28 @@ private extension CaptureEngine {
     }
 }
 
-extension CaptureEngine.CaptureStream: AsyncSequence {
+extension CaptureSystem.CaptureStream: AsyncSequence {
     
     package func makeAsyncIterator() -> AsyncStream<CapturedPayload>.Iterator {
         stream.makeAsyncIterator()
     }
 }
 
-extension CaptureEngine.Screen: CaptureEngine.CaptureStreamKind {
+extension CaptureSystem.Screen: CaptureSystem.CaptureStreamKind {
     
     package static var streamOutputType: SCStreamOutputType {
         .screen
     }
 }
 
-extension CaptureEngine.Audio: CaptureEngine.CaptureStreamKind {
+extension CaptureSystem.Audio: CaptureSystem.CaptureStreamKind {
     
     package static var streamOutputType: SCStreamOutputType {
         .audio
     }
 }
 
-extension CaptureEngine.Microphone: CaptureEngine.CaptureStreamKind {
+extension CaptureSystem.Microphone: CaptureSystem.CaptureStreamKind {
     
     package static var streamOutputType: SCStreamOutputType {
         .microphone
