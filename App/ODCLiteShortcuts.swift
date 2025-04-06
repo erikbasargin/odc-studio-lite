@@ -17,9 +17,9 @@ class ODCLiteShortcuts: AppShortcutsProvider {
             intent: StartCapturingMicrophone(),
             phrases: [
                 "Start capturing microphone in \(.applicationName)",
-                "Start capturing microphone",
-                "Broadcast my voice",
-                "Start broadcasting my voice",
+//                "Start capturing microphone",
+//                "Broadcast my voice",
+//                "Start broadcasting my voice",
             ],
             shortTitle: "Start capturing microphone",
             systemImageName: "speaker.fill")
@@ -28,9 +28,9 @@ class ODCLiteShortcuts: AppShortcutsProvider {
             intent: StopCapturingMicrophone(),
             phrases: [
                 "Stop capturing microphone in \(.applicationName)",
-                "Stop capturing microphone",
-                "Do not capture microphone",
-                "Stop broadcasting my voice",
+//                "Stop capturing microphone",
+//                "Do not capture microphone",
+//                "Stop broadcasting my voice",
             ],
             shortTitle: "Stop capturing microphone",
             systemImageName: "speaker.slash.fill")
