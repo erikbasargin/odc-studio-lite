@@ -7,7 +7,7 @@ import AppIntents
 
 /// An `AppShortcut` wraps an intent to make it automatically discoverable throughout the system. An `AppShortcutsProvider` manages the shortcuts the app
 /// makes available. The app can update the available shortcuts by calling `updateAppShortcutParameters()` as needed.
-class ODCLiteShortcuts: AppShortcutsProvider {
+final class ODCLiteShortcuts: AppShortcutsProvider {
     
     /// The color the system uses to display the App Shortcuts in the Shortcuts app.
     static let shortcutTileColor = ShortcutTileColor.purple
