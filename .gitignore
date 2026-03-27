@@ -30,3 +30,8 @@ playground.xcworkspace
 # .swiftpm
 
 .build/
+
+# Tuist
+**/Derived/
+*.xcodeproj
+*.xcworkspace
