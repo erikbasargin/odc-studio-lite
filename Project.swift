@@ -36,6 +36,7 @@ let project = Project(
             entitlements: "Modules/App/Configurations/ODCLite.entitlements",
             dependencies: [
                 .target(name: "Capture"),
+                .target(name: "AudioVideoKit"),
                 .external(name: "HaishinKit"),
             ],
             settings: .settings(
