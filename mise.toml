@@ -1,6 +1,10 @@
 [tools]
 tuist = "4.169.2"
 
+[tasks.edit]
+description = "Edit manifest"
+run = "tuist edit"
+
 [tasks.install]
 description = "Run Tuist install"
 run = "tuist install"
