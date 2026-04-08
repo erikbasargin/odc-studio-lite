@@ -3,8 +3,8 @@ set -eu
 
 cd ..
 
-if [ "${CI_BRANCH:-}" != "main" ]; then
-    echo "Not on main branch, skipping post-xcodebuild steps"
+if [ "${CI_BRANCH:-}" != "develop" ]; then
+    echo "Not on develop branch, skipping post-xcodebuild steps"
     exit 0
 fi
 
