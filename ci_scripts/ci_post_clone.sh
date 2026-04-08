@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-cd "$CI_PRIMARY_REPOSITORY_PATH"
+cd ..
 
 # Mise installation taken from https://mise.jdx.dev/continuous-integration.html#xcode-cloud
 curl https://mise.run | sh # Install Mise
