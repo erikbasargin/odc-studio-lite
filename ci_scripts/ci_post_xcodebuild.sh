@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-cd "$CI_WORKSPACE_PATH"
+cd "$CI_PRIMARY_REPOSITORY_PATH"
 
 if [ "${CI_BRANCH:-}" != "main" ]; then
     echo "Not on main branch, skipping post-xcodebuild steps"
