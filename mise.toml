@@ -5,7 +5,16 @@ tuist = "4.169.2"
 description = "Run Tuist install"
 run = "tuist install"
 
+[tasks.setupXcodeCache]
+description = "Run Tuist setup cache"
+run = "tuist setup cache"
+
 [tasks.generate]
 description = "Generate the Xcode project"
 alias = "g"
 run = "tuist generate"
+
+[tasks.setup]
+description = "Install and generate"
+depends = ["install", "setupXcodeCache", "generate"]
+run = "echo done"
