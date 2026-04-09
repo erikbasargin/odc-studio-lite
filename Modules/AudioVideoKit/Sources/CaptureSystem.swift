@@ -5,22 +5,22 @@
 
 import ScreenCaptureKit
 
-package struct CapturedPayload: Sendable {
+public struct CapturedPayload: Sendable {
     nonisolated(unsafe) let sampleBuffer: CMSampleBuffer
 }
 
-package struct ContentFilter {
+public struct ContentFilter: Sendable {
     let includeMenuBar: Bool
     let excludeCurrentApplication: Bool
 }
 
-package final class CaptureSystem {
+public final class CaptureSystem {
     
-    package enum Screen {}
-    package enum Audio {}
-    package enum Microphone {}
+    public enum Screen {}
+    public enum Audio {}
+    public enum Microphone {}
     
-    package struct CaptureStream<Type>: Sendable {
+    public struct CaptureStream<Type>: Sendable {
         fileprivate let stream: AsyncStream<CapturedPayload>
     }
     
@@ -29,25 +29,25 @@ package final class CaptureSystem {
     private let contentFilterProvider: any SCContentFilterProvider
     private let stream: SCStream
     
-    package var screenCaptureStream: CaptureStream<Screen> {
+    public var screenCaptureStream: CaptureStream<Screen> {
         get throws {
             try makeCaptureStream()
         }
     }
     
-    package var audioCaptureStream: CaptureStream<Audio> {
+    public var audioCaptureStream: CaptureStream<Audio> {
         get throws {
             try makeCaptureStream()
         }
     }
     
-    package var microphoneCaptureStream: CaptureStream<Microphone> {
+    public var microphoneCaptureStream: CaptureStream<Microphone> {
         get throws {
             try makeCaptureStream()
         }
     }
     
-    package convenience init() {
+    public convenience init() {
         self.init(
             bundleIdentifier: Bundle.main.bundleIdentifier!,
             shareableContentProvider: ShareableContentRequest(),
@@ -70,15 +70,15 @@ package final class CaptureSystem {
         self.stream = screenCaptureStreamFactory(SCContentFilter(), SCStreamConfiguration(), nil)
     }
     
-    package func start() async throws {
+    public func start() async throws {
         try await stream.startCapture()
     }
     
-    package func stop() async throws {
+    public func stop() async throws {
         try await stream.stopCapture()
     }
     
-    package func updateContentFilter(_ contentFilter: ContentFilter) async throws {
+    public func updateContentFilter(_ contentFilter: ContentFilter) async throws {
         let shareableContent = try await shareableContentProvider.invoke()
         
         guard let currentDisplay = shareableContent.displays.first else {
@@ -145,28 +145,28 @@ private extension CaptureSystem {
 
 extension CaptureSystem.CaptureStream: AsyncSequence {
     
-    package func makeAsyncIterator() -> AsyncStream<CapturedPayload>.Iterator {
+    public func makeAsyncIterator() -> AsyncStream<CapturedPayload>.Iterator {
         stream.makeAsyncIterator()
     }
 }
 
 extension CaptureSystem.Screen: CaptureSystem.CaptureStreamKind {
     
-    package static var streamOutputType: SCStreamOutputType {
+    public static var streamOutputType: SCStreamOutputType {
         .screen
     }
 }
 
 extension CaptureSystem.Audio: CaptureSystem.CaptureStreamKind {
     
-    package static var streamOutputType: SCStreamOutputType {
+    public static var streamOutputType: SCStreamOutputType {
         .audio
     }
 }
 
 extension CaptureSystem.Microphone: CaptureSystem.CaptureStreamKind {
     
-    package static var streamOutputType: SCStreamOutputType {
+    public static var streamOutputType: SCStreamOutputType {
         .microphone
     }
 }

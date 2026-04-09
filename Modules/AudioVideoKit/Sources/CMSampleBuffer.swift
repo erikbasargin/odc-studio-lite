@@ -7,11 +7,11 @@ import ScreenCaptureKit
 
 extension CMSampleBuffer {
     
-    package var ioSurface: IOSurface? {
+    public var ioSurface: IOSurface? {
         CVPixelBufferGetIOSurface(imageBuffer)?.takeUnretainedValue()
     }
 }
 
 extension CMSampleBuffer.PerSampleAttachmentsDictionary.Key {
-    package static let status: Self = Self(rawValue: SCStreamFrameInfo.status.rawValue as CFString)
+    public static let status: Self = Self(rawValue: SCStreamFrameInfo.status.rawValue as CFString)
 }

@@ -18,7 +18,7 @@ public protocol CaptureDeviceProtocol<Camera>: NSObject {
     init?(uniqueID: String)
 }
 
-package protocol PreferredCameraControlling {
+public protocol PreferredCameraControlling {
     
     associatedtype Source: CaptureDeviceProtocol
     
@@ -27,24 +27,24 @@ package protocol PreferredCameraControlling {
     func setPreferredCamera(_ preferredCamera: CaptureDevice?)
 }
 
-package protocol PreferredCameraProviding {
+public protocol PreferredCameraProviding {
     associatedtype Source: CaptureDeviceProtocol
     var preferredCamera: AsyncStream<CaptureDevice?> { get }
 }
 
-package struct PreferredCameraController<Source: CaptureDeviceProtocol>: PreferredCameraControlling {
+public struct PreferredCameraController<Source: CaptureDeviceProtocol>: PreferredCameraControlling {
     
-    package var preferredCamera: AsyncStream<CaptureDevice?> {
+    public var preferredCamera: AsyncStream<CaptureDevice?> {
         observer.preferredCamera
     }
     
     private let observer: Observer
     
-    package init(sourceType: Source.Type = AVCaptureDevice.self) {
+    public init(sourceType: Source.Type = AVCaptureDevice.self) {
         self.observer = Observer()
     }
     
-    package func setPreferredCamera(_ preferredCamera: CaptureDevice?) {
+    public func setPreferredCamera(_ preferredCamera: CaptureDevice?) {
         Source.userPreferredCamera =
             if let id = preferredCamera?.id {
                 Source.Camera(uniqueID: id)

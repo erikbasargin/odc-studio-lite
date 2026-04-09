@@ -13,12 +13,6 @@ let targetBaseSettings: SettingsDictionary = [
     "CODE_SIGN_IDENTITY": "Apple Development",
 ]
 
-var captureKitBaseSettings: SettingsDictionary {
-    var settings = targetBaseSettings
-    settings["SWIFT_PACKAGE_NAME"] = "Capture"
-    return settings
-}
-
 let project = Project(
     name: "ODCLite",
     settings: .settings(base: projectBaseSettings),
@@ -69,7 +63,6 @@ let project = Project(
             buildableFolders: [
                 "Modules/AudioVideoKit/Sources",
             ],
-            settings: .settings(base: captureKitBaseSettings),
         ),
         
         .target(
@@ -85,7 +78,6 @@ let project = Project(
                 .target(name: "AudioVideoKit"),
                 .external(name: "ConcurrencyExtras"),
             ],
-            settings: .settings(base: captureKitBaseSettings),
         ),
     ],
     schemes: [
