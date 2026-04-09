@@ -14,7 +14,7 @@ public struct ContentFilter: Sendable {
     let excludeCurrentApplication: Bool
 }
 
-public final class CaptureSystem {
+public struct CaptureSystem {
     
     public enum Screen {}
     public enum Audio {}
@@ -47,7 +47,7 @@ public final class CaptureSystem {
         }
     }
     
-    public convenience init() {
+    public init() {
         self.init(
             bundleIdentifier: Bundle.main.bundleIdentifier!,
             shareableContentProvider: ShareableContentRequest(),
