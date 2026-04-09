@@ -32,6 +32,6 @@ playground.xcworkspace
 .build/
 
 # Tuist
-**/Derived/
+**/Derived*/
 *.xcodeproj
 *.xcworkspace
