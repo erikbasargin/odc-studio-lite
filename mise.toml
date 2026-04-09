@@ -21,4 +21,3 @@ run = "tuist generate"
 [tasks.setup]
 description = "Install and generate"
 depends = ["install", "setupXcodeCache", "generate"]
-run = "echo done"
