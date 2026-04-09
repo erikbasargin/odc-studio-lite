@@ -6,14 +6,12 @@
 import SwiftUI
 import AudioVideoKit
 
-public struct CameraControlSection: View {
+struct CameraControlSection: View {
     
     @Environment(StreamConfiguration.self) private var streamConfiguration
     @State private var cameras: [CaptureDevice] = []
-
-    public init() {}
     
-    public var body: some View {
+    var body: some View {
         @Bindable var streamConfiguration = self.streamConfiguration
         
         Section("Video") {
