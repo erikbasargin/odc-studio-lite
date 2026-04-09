@@ -342,7 +342,7 @@ private final class MockSCStream: SCStream {
         currentStreamOutput = output
     }
     
-    nonisolated(nonsending) override func updateContentFilter(_ contentFilter: SCContentFilter) async throws {
+    override func updateContentFilter(_ contentFilter: SCContentFilter) async throws {
         try onUpdateContentFilter?(contentFilter)
     }
 
