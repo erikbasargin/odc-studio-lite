@@ -295,12 +295,19 @@ extension CaptureSystemTests {
             }
         ),
         contentFilterProvider: any SCContentFilterProvider = MockContentFilterProvider { _, _, _ in },
+        configuration: CaptureConfiguration = .init(
+            width: 1920,
+            height: 1080,
+            minimumFrameInterval: CMTime(value: 1, timescale: 60),
+            queueDepth: 5
+        ),
         screenCaptureStreamFactory: (SCContentFilter, SCStreamConfiguration, (any SCStreamDelegate)?) -> SCStream
     ) -> CaptureSystem {
         .init(
             bundleIdentifier: bundleIdentifier,
             shareableContentProvider: shareableContentProvider,
             contentFilterProvider: contentFilterProvider,
+            configuration: configuration,
             screenCaptureStreamFactory: screenCaptureStreamFactory
         )
     }

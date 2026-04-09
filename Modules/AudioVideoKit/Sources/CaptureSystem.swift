@@ -6,12 +6,48 @@
 import ScreenCaptureKit
 
 public struct CapturedPayload: Sendable {
-    nonisolated(unsafe) let sampleBuffer: CMSampleBuffer
+    nonisolated(unsafe) public let sampleBuffer: CMSampleBuffer
 }
 
 public struct ContentFilter: Sendable {
-    let includeMenuBar: Bool
-    let excludeCurrentApplication: Bool
+    public let includeMenuBar: Bool
+    public let excludeCurrentApplication: Bool
+    
+    public init(
+        includeMenuBar: Bool,
+        excludeCurrentApplication: Bool
+    ) {
+        self.includeMenuBar = includeMenuBar
+        self.excludeCurrentApplication = excludeCurrentApplication
+    }
+}
+
+public struct CaptureConfiguration: Sendable {
+    public let excludesCurrentProcessAudio: Bool
+    public let captureMicrophone: Bool
+    public let microphoneCaptureDeviceID: String?
+    public let width: Int
+    public let height: Int
+    public let minimumFrameInterval: CMTime
+    public let queueDepth: Int
+    
+    public init(
+        excludesCurrentProcessAudio: Bool = true,
+        captureMicrophone: Bool = false,
+        microphoneCaptureDeviceID: String? = nil,
+        width: Int,
+        height: Int,
+        minimumFrameInterval: CMTime,
+        queueDepth: Int
+    ) {
+        self.excludesCurrentProcessAudio = excludesCurrentProcessAudio
+        self.captureMicrophone = captureMicrophone
+        self.microphoneCaptureDeviceID = microphoneCaptureDeviceID
+        self.width = width
+        self.height = height
+        self.minimumFrameInterval = minimumFrameInterval
+        self.queueDepth = queueDepth
+    }
 }
 
 public struct CaptureSystem {
@@ -21,7 +57,15 @@ public struct CaptureSystem {
     public enum Microphone {}
     
     public struct CaptureStream<Type>: Sendable {
-        fileprivate let stream: AsyncStream<CapturedPayload>
+        fileprivate var stream: AsyncStream<CapturedPayload> {
+            observer.stream
+        }
+        
+        private let observer: CaptureSystem.Observer
+        
+        fileprivate init(observer: CaptureSystem.Observer) {
+            self.observer = observer
+        }
     }
     
     private let bundleIdentifier: String
@@ -49,9 +93,21 @@ public struct CaptureSystem {
     
     public init() {
         self.init(
+            configuration: .init(
+                width: 1920,
+                height: 1080,
+                minimumFrameInterval: CMTime(value: 1, timescale: 60),
+                queueDepth: 5
+            )
+        )
+    }
+    
+    init(configuration: CaptureConfiguration) {
+        self.init(
             bundleIdentifier: Bundle.main.bundleIdentifier!,
             shareableContentProvider: ShareableContentRequest(),
             contentFilterProvider: SCContentFilterRequest(),
+            configuration: configuration,
             screenCaptureStreamFactory: { filter, configuration, delegate in
                 SCStream(filter: filter, configuration: configuration, delegate: delegate)
             }
@@ -62,12 +118,17 @@ public struct CaptureSystem {
         bundleIdentifier: String,
         shareableContentProvider: any ShareableContentProvider,
         contentFilterProvider: any SCContentFilterProvider,
+        configuration: CaptureConfiguration,
         screenCaptureStreamFactory: (SCContentFilter, SCStreamConfiguration, (any SCStreamDelegate)?) -> SCStream
     ) {
         self.bundleIdentifier = bundleIdentifier
         self.shareableContentProvider = shareableContentProvider
         self.contentFilterProvider = contentFilterProvider
-        self.stream = screenCaptureStreamFactory(SCContentFilter(), SCStreamConfiguration(), nil)
+        self.stream = screenCaptureStreamFactory(
+            SCContentFilter(),
+            Self.makeStreamConfiguration(configuration),
+            nil
+        )
     }
     
     public func start() async throws {
@@ -99,15 +160,33 @@ public struct CaptureSystem {
         filter.includeMenuBar = contentFilter.includeMenuBar
         try await stream.updateContentFilter(filter)
     }
+    
+    public func updateConfiguration(_ configuration: CaptureConfiguration) async throws {
+        try await stream.updateConfiguration(Self.makeStreamConfiguration(configuration))
+    }
 }
 
 private extension CaptureSystem {
+    
+    static func makeStreamConfiguration(_ configuration: CaptureConfiguration) -> SCStreamConfiguration {
+        let streamConfiguration = SCStreamConfiguration()
+        streamConfiguration.excludesCurrentProcessAudio = configuration.excludesCurrentProcessAudio
+        streamConfiguration.captureMicrophone = configuration.captureMicrophone
+        streamConfiguration.microphoneCaptureDeviceID = configuration.captureMicrophone
+            ? configuration.microphoneCaptureDeviceID
+            : nil
+        streamConfiguration.width = configuration.width
+        streamConfiguration.height = configuration.height
+        streamConfiguration.minimumFrameInterval = configuration.minimumFrameInterval
+        streamConfiguration.queueDepth = configuration.queueDepth
+        return streamConfiguration
+    }
     
     protocol CaptureStreamKind {
         static var streamOutputType: SCStreamOutputType { get }
     }
     
-    final class Observer: NSObject, SCStreamOutput {
+    final class Observer: NSObject, SCStreamOutput, Sendable {
         
         let type: SCStreamOutputType
         let stream: AsyncStream<CapturedPayload>
@@ -131,7 +210,7 @@ private extension CaptureSystem {
     
     func makeCaptureStream<T: CaptureStreamKind>(of kind: T.Type = T.self) throws -> CaptureStream<T> {
         let observer = Observer(type: kind.streamOutputType)
-        let captureStream = CaptureStream<T>(stream: observer.stream)
+        let captureStream = CaptureStream<T>(observer: observer)
         
         try stream.addStreamOutput(
             observer,

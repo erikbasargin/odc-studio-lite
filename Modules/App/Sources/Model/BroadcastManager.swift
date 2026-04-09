@@ -4,10 +4,11 @@
 //
 
 import AudioVideoKit
+@preconcurrency import AVFoundation
+import AppKit
 import HaishinKit
 import OSLog
 import Observation
-@preconcurrency import ScreenCaptureKit
 import VideoToolbox
 
 private let log = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "BroadcastManager")
@@ -54,83 +55,47 @@ final class BroadcastManager {
         position: .unspecified
     )
     
-    private let streamDelegate: StreamDelegate
-    private let screenStreamOutput: StreamOutput
-    private let microphoneStreamOutput: StreamOutput
-    
     private let rtmpConnection: RTMPConnection
     private let rtmpStream: RTMPStream
     private let mediaMixer: MediaMixer
     private var rtmpConnectionStatusTask: Task<Void, Never>!
+    private let captureSystem = CaptureSystem()
     
     @ObservationIgnored
-    private var stream: SCStream!
-    
+    private var screenCaptureTask: Task<Void, Never>?
     @ObservationIgnored
-    private var currentShareableContent: SCShareableContent!
+    private var microphoneCaptureTask: Task<Void, Never>?
     
     @ObservationIgnored
     private var cameraPreviewLayer: AVCaptureVideoPreviewLayer?
-    
-    private var currentDisplay: SCDisplay {
-        currentShareableContent.displays.first!
-    }
     
     private var scaleFactor: Int {
         Int(NSScreen.main?.backingScaleFactor ?? 2)
     }
     
-    private var streamContentFilter: SCContentFilter {
-        get async throws {
-            let excludingApplications: [SCRunningApplication] =
-                if excludeAppFromStream {
-                    currentShareableContent.applications.filter {
-                        $0.bundleIdentifier == Bundle.main.bundleIdentifier
-                    }
-                } else {
-                    []
-                }
-
-            return SCContentFilter(
-                display: currentDisplay, excludingApplications: excludingApplications, exceptingWindows: [])
-        }
+    private var streamContentFilter: ContentFilter {
+        .init(includeMenuBar: false, excludeCurrentApplication: excludeAppFromStream)
     }
     
     @ObservationIgnored
-    private var streamConfiguration: SCStreamConfiguration {
-        let configuration = SCStreamConfiguration()
+    private var streamConfiguration: CaptureConfiguration {
+        let screenFrame = NSScreen.main?.frame ?? .init(x: 0, y: 0, width: 1920, height: 1080)
         
-        configuration.excludesCurrentProcessAudio = true
-        
-        if configuration.captureMicrophone != captureMicrophone {
-            configuration.captureMicrophone = captureMicrophone
-            
-            if captureMicrophone {
-                configuration.microphoneCaptureDeviceID = AVCaptureDevice.default(for: .audio)?.uniqueID
-            }
-        }
-        
-        // Configure the display content width and height.
-        configuration.width = currentDisplay.width * scaleFactor
-        configuration.height = currentDisplay.height * scaleFactor
-        
-        // Set the capture interval at 60 fps.
-        configuration.minimumFrameInterval = CMTime(value: 1, timescale: 60)
-        
-        // Increase the depth of the frame queue to ensure high fps at the expense of increasing
-        // the memory footprint of WindowServer.
-        configuration.queueDepth = 5
-        
-        return configuration
+        return .init(
+            excludesCurrentProcessAudio: true,
+            captureMicrophone: captureMicrophone,
+            microphoneCaptureDeviceID: captureMicrophone ? AVCaptureDevice.default(for: .audio)?.uniqueID : nil,
+            width: Int(screenFrame.width) * scaleFactor,
+            height: Int(screenFrame.height) * scaleFactor,
+            minimumFrameInterval: CMTime(value: 1, timescale: 60),
+            queueDepth: 5
+        )
     }
     
     init() {
         rtmpConnection = RTMPConnection(requestTimeout: 5000)  // 5s
         rtmpStream = RTMPStream(connection: rtmpConnection)
         mediaMixer = MediaMixer()
-        streamDelegate = StreamDelegate()
-        screenStreamOutput = StreamOutput(type: .screen, rtmpSession: mediaMixer)
-        microphoneStreamOutput = StreamOutput(type: .microphone, rtmpSession: mediaMixer)
         
         let task = Task {
             for await rtmpStatus in await rtmpConnection.status {
@@ -161,11 +126,16 @@ final class BroadcastManager {
     }
     
     deinit {
-        stream.stopCapture { error in
-            if let error {
-                log.error("Failed to stop stream capture: \(error.localizedDescription)")
-            }
-        }
+        screenCaptureTask?.cancel()
+        microphoneCaptureTask?.cancel()
+//        let captureSystem = captureSystem
+//        Task {
+//            do {
+//                try await captureSystem?.stop()
+//            } catch {
+//                log.error("Failed to stop stream capture: \(error.localizedDescription)")
+//            }
+//        }
     }
     
     func listenForVideoDevices() async {
@@ -247,19 +217,13 @@ final class BroadcastManager {
     }
     
     func configureManager() async throws {
-        currentShareableContent = try await SCShareableContent.excludingDesktopWindows(
-            false, onScreenWindowsOnly: false)
-        
-        stream = try await SCStream(
-            filter: streamContentFilter, configuration: streamConfiguration, delegate: streamDelegate)
-        
-        try stream.addStreamOutput(screenStreamOutput)
-        // use SCStreamConfiguration/captureMicrophone to switch it on/off
-        try stream.addStreamOutput(microphoneStreamOutput)
+        try await captureSystem.updateConfiguration(streamConfiguration)
+        try await captureSystem.updateContentFilter(streamContentFilter)
+        try startConsumingCaptureStreams(from: captureSystem)
         
         await mediaMixer.addOutput(rtmpStream)
         
-        try await stream.startCapture()
+        try await captureSystem.start()
     }
     
     func toogleBroadcast() async {
@@ -272,7 +236,7 @@ final class BroadcastManager {
             }
             isBroadcasting = true
             
-            let connectResponse = try await rtmpConnection.connect("rtmps://lhr08.contribute.live-video.net/app/")
+            let connectResponse = try await rtmpConnection.connect("rtmps://ingest.global-contribute.live-video.net/app/")
             log.info("Connection with Twitch RTMP server, status: \(connectResponse.status?.description ?? "unknown")")
             
             let videoCodecSettings = VideoCodecSettings(
@@ -307,7 +271,7 @@ final class BroadcastManager {
     
     private func updateStreamContentFilter() async {
         do {
-            try await stream.updateContentFilter(streamContentFilter)
+            try await captureSystem.updateContentFilter(streamContentFilter)
         } catch {
             log.error(
                 "Failed to update stream content filter: \(error.localizedDescription)"
@@ -317,88 +281,59 @@ final class BroadcastManager {
     
     private func updateStreamConfiguration() async {
         do {
-            try await stream.updateConfiguration(streamConfiguration)
+            try await captureSystem.updateConfiguration(streamConfiguration)
         } catch {
             log.error(
                 "Failed to update stream configuration: \(error.localizedDescription)"
             )
         }
     }
-}
-
-private final class StreamDelegate: NSObject, SCStreamDelegate {
     
-    func stream(_ stream: SCStream, didStopWithError error: any Error) {
-        log.error("Stream stopped with error: \(error.localizedDescription)")
-    }
-}
-
-private final class StreamOutput: NSObject, SCStreamOutput {
-    
-    let type: SCStreamOutputType
-    let rtmpSession: MediaMixer
-    let queue: DispatchQueue
-    
-    private let continuation: AsyncStream<CMSampleBuffer>.Continuation
-    private let task: Task<Void, Never>
-    
-    init(type: SCStreamOutputType, rtmpSession: MediaMixer, track: UInt8 = 0) {
-        self.type = type
-        self.rtmpSession = rtmpSession
-        queue = DispatchQueue(label: "\(Bundle.main.bundleIdentifier!).BroadcastManager.streamOutputQueue.\(type)")
-        let (sampleBuffers, continuation) = AsyncStream.makeStream(
-            of: CMSampleBuffer.self, bufferingPolicy: .bufferingNewest(1))
-        self.continuation = continuation
+    private func startConsumingCaptureStreams(from captureSystem: CaptureSystem) throws {
+        let screenCaptureStream = try captureSystem.screenCaptureStream
+        let microphoneCaptureStream = try captureSystem.microphoneCaptureStream
         
-        func listenForSampleBuffers(stream: AsyncStream<CMSampleBuffer>, on mixer: isolated MediaMixer) async {
-            for await sampleBuffer in stream where mixer.isRunning {
-                mixer.append(sampleBuffer, track: track)
+        func listenVideoStream(stream: CaptureSystem.CaptureStream<CaptureSystem.Screen>, on mixer: isolated MediaMixer) async {
+            for await payload in stream where mixer.isRunning {
+                let sampleBuffer = payload.sampleBuffer
+                
+                guard sampleBuffer.isValid else {
+                    continue
+                }
+                
+                guard SCVideoMetadata(sampleBuffer)?.status == .complete else {
+                    continue
+                }
+                
+                precondition(
+                    sampleBuffer.formatDescription?.isCompressed == false,
+                    "Compressed sample buffers are not supported"
+                )
+                
+                mixer.append(sampleBuffer, track: 0)
             }
         }
         
-        task = Task {
-            await listenForSampleBuffers(stream: sampleBuffers, on: rtmpSession)
-        }
-    }
-    
-    deinit {
-        task.cancel()
-    }
-    
-    func stream(_ stream: SCStream, didOutputSampleBuffer sampleBuffer: CMSampleBuffer, of type: SCStreamOutputType) {
-        guard sampleBuffer.isValid else {
-            return
+        func listenMicrophone(stream: CaptureSystem.CaptureStream<CaptureSystem.Microphone>, on mixer: isolated MediaMixer) async {
+            for await payload in stream where mixer.isRunning {
+                let sampleBuffer = payload.sampleBuffer
+                
+                guard sampleBuffer.isValid else {
+                    continue
+                }
+                
+                mixer.append(sampleBuffer, track: 0)
+            }
         }
         
-        switch type {
-        case .screen:
-            guard SCVideoMetadata(sampleBuffer)?.status == .complete else {
-                return
-            }
-            
-            precondition(
-                sampleBuffer.formatDescription?.isCompressed == false,
-                "Compressed sample buffers are not supported"
-            )
-            
-            continuation.yield(sampleBuffer)
-        case .microphone:
-            continuation.yield(sampleBuffer)
-        case .audio:
-            break
-        @unknown default:
-            break
+        screenCaptureTask?.cancel()
+        screenCaptureTask = Task { [mediaMixer] in
+            await listenVideoStream(stream: screenCaptureStream, on: mediaMixer)
         }
-    }
-}
-
-extension SCStream {
-    
-    fileprivate func addStreamOutput(_ output: StreamOutput) throws {
-        try addStreamOutput(output, type: output.type, sampleHandlerQueue: output.queue)
-    }
-    
-    fileprivate func removeStreamOutput(_ output: StreamOutput) throws {
-        try removeStreamOutput(output, type: output.type)
+        
+        microphoneCaptureTask?.cancel()
+        microphoneCaptureTask = Task { [mediaMixer] in
+            await listenMicrophone(stream: microphoneCaptureStream, on: mediaMixer)
+        }
     }
 }
