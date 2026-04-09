@@ -9,10 +9,6 @@ let projectBaseSettings: SettingsDictionary = [
     "SWIFT_UPCOMING_FEATURE_6_0": "YES",
 ]
 
-let targetBaseSettings: SettingsDictionary = [
-    "CODE_SIGN_IDENTITY": "Apple Development",
-]
-
 let project = Project(
     name: "ODCLite",
     settings: .settings(base: projectBaseSettings),
@@ -34,7 +30,10 @@ let project = Project(
                 .external(name: "HaishinKit"),
             ],
             settings: .settings(
-                base: targetBaseSettings,
+                base: [
+                    "CODE_SIGN_IDENTITY": "Apple Development",
+                    "ENABLE_HARDENED_RUNTIME": "YES",
+                ],
                 configurations: [
                     .debug(
                         name: "Debug",
@@ -63,6 +62,14 @@ let project = Project(
             buildableFolders: [
                 "Modules/AudioVideoKit/Sources",
             ],
+            settings: .settings(
+                base: [
+                    "ENABLE_MODULE_VERIFIER": "YES",
+                    "MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS": "gnu11 gnu++14",
+                    "ENABLE_USER_SCRIPT_SANDBOXING": "YES",
+                    "STRING_CATALOG_GENERATE_SYMBOLS": "YES",
+                ],
+            )
         ),
         
         .target(
