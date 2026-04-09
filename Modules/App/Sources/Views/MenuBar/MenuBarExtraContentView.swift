@@ -5,7 +5,7 @@
 
 import SwiftUI
 
-import Capture
+import AudioVideoKit
 
 struct MenuBarExtraContentView: View {
     

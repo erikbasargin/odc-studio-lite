@@ -31,11 +31,11 @@ let project = Project(
             deploymentTargets: .macOS("15.0"),
             infoPlist: "Modules/App/Configurations/Info.plist",
             buildableFolders: [
-                "Modules/App"
+                "Modules/App/Sources",
+                "Modules/App/Resources",
             ],
             entitlements: "Modules/App/Configurations/ODCLite.entitlements",
             dependencies: [
-                .target(name: "Capture"),
                 .target(name: "AudioVideoKit"),
                 .external(name: "HaishinKit"),
             ],
@@ -59,22 +59,7 @@ let project = Project(
                 ],
             ),
         ),
-
-        .target(
-            name: "Capture",
-            destinations: .macOS,
-            product: .framework,
-            bundleId: "com.odclite.capture",
-            deploymentTargets: .macOS("15.0"),
-            buildableFolders: [
-                "Modules/CaptureKit/Sources",
-            ],
-            dependencies: [
-                .target(name: "AudioVideoKit"),
-            ],
-            settings: .settings(base: captureKitBaseSettings),
-        ),
-
+        
         .target(
             name: "AudioVideoKit",
             destinations: .macOS,

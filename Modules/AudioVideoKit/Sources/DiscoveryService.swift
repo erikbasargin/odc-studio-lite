@@ -8,10 +8,10 @@ import AVFoundation
 
 extension CaptureDevice {
 
-    package typealias MediaType = AVMediaType
-    package typealias DeviceType = AVCaptureDevice.DeviceType
+    public typealias MediaType = AVMediaType
+    public typealias DeviceType = AVCaptureDevice.DeviceType
 
-    package struct DiscoveryService<Session: CaptureDeviceDiscoverySession>: CaptureDeviceDiscoveryService {
+    public struct DiscoveryService<Session: CaptureDeviceDiscoverySession>: CaptureDeviceDiscoveryService {
         
         public var devices: AsyncStream<[CaptureDevice]> {
             observer.stream
@@ -19,7 +19,7 @@ extension CaptureDevice {
         
         private let observer: Observer
         
-        package init(mediaType: MediaType, deviceTypes: [DeviceType]) where Session == AVCaptureDevice.DiscoverySession {
+        public init(mediaType: MediaType, deviceTypes: [DeviceType]) where Session == AVCaptureDevice.DiscoverySession {
             self.init(mediaType: mediaType, deviceTypes: deviceTypes, sessionFactory: Session.init(mediaType:deviceTypes:))
         }
         

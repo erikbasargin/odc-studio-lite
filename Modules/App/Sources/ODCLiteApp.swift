@@ -8,7 +8,7 @@ import ScreenCaptureKit
 import SwiftUI
 import os
 
-import Capture
+import AudioVideoKit
 
 #if DEBUG
 import Logboard

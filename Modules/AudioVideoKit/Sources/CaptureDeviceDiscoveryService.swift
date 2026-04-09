@@ -5,11 +5,11 @@
 
 import Foundation
 
-package protocol CaptureDeviceDiscoveryService {
+public protocol CaptureDeviceDiscoveryService {
     var devices: AsyncStream<[CaptureDevice]> { get }
 }
 
-package protocol CaptureDeviceDiscoverySession: NSObject {
+public protocol CaptureDeviceDiscoverySession: NSObject {
     associatedtype Device: CaptureDeviceProtocol
     var devices: [Device] { get }
 }

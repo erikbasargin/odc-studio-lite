@@ -6,7 +6,7 @@
 import Foundation
 import ScreenCaptureKit
 
-package protocol CaptureDeviceProtocol<Camera>: NSObject {
+public protocol CaptureDeviceProtocol<Camera>: NSObject {
     
     associatedtype Camera: CaptureDeviceProtocol
     
