@@ -94,6 +94,16 @@ let project = Project(
             name: "ODCLite",
             buildAction: .buildAction(
                 targets: ["ODCLite"],
+                postActions: [
+                    .executionAction(
+                        title: "Inspect Build",
+                        scriptText: """
+                        $HOME/.local/bin/mise x -C $SRCROOT -- tuist inspect build    
+                        """,
+                        target: "ODCLite",
+                    ),
+                ],
+                runPostActionsOnFailure: true,
             ),
             testAction: .targets([
                 "AudioVideoKitTests",
