@@ -1,12 +1,11 @@
 {
-  "originHash" : "eec0811b49bcb2ac42ec1513630209c0f1a99cc6caff23043669e10f7d4a11cf",
+  "originHash" : "3dcde20b7692d263e29d63a430be18019e2247321a7589567cb9afaa9eb80684",
   "pins" : [
     {
-      "identity" : "haishinkit.swift",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/HaishinKit/HaishinKit.swift",
+      "identity" : "HaishinKit.HaishinKit_swift",
+      "kind" : "registry",
+      "location" : "",
       "state" : {
-        "revision" : "e83507c77af50ffe4e907f842473dc0e27e344b1",
         "version" : "2.0.1"
       }
     },
@@ -20,11 +19,10 @@
       }
     },
     {
-      "identity" : "swift-concurrency-extras",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/pointfreeco/swift-concurrency-extras",
+      "identity" : "pointfreeco.swift-concurrency-extras",
+      "kind" : "registry",
+      "location" : "",
       "state" : {
-        "revision" : "5a3825302b1a0d744183200915a47b508c828e6f",
         "version" : "1.3.2"
       }
     }

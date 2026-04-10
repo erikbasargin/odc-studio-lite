@@ -9,6 +9,7 @@ let tuist = Tuist(
         swiftVersion: "6.3",
         generationOptions: .options(
             enableCaching: true,
+            registryEnabled: true,
         ),
     ),
 )

@@ -15,7 +15,7 @@ import PackageDescription
 let package = Package(
     name: "ODCLite",
     dependencies: [
-        .package(url: "https://github.com/HaishinKit/HaishinKit.swift", exact: "2.0.1"),
-        .package(url: "https://github.com/pointfreeco/swift-concurrency-extras", from: "1.3.1"),
+        .package(id: "HaishinKit.HaishinKit_swift", exact: "2.0.1"),
+        .package(id: "pointfreeco.swift-concurrency-extras", from: "1.3.1"),
     ]
 )
