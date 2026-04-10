@@ -7,6 +7,7 @@ import AudioVideoKit
 @preconcurrency import AVFoundation
 import AppKit
 import HaishinKit
+import RTMPHaishinKit
 import OSLog
 import Observation
 import VideoToolbox
@@ -55,11 +56,10 @@ final class BroadcastManager {
         position: .unspecified
     )
     
-    private let rtmpConnection: RTMPConnection
-    private let rtmpStream: RTMPStream
-    private let mediaMixer: MediaMixer
-    private var rtmpConnectionStatusTask: Task<Void, Never>!
+    private let mediaMixer = MediaMixer()
+    private var rtmpConnectionStatusTask: Task<Void, Never>?
     private let captureSystem = CaptureSystem()
+    private var session: (any Session)?
     
     @ObservationIgnored
     private var screenCaptureTask: Task<Void, Never>?
@@ -92,38 +92,7 @@ final class BroadcastManager {
         )
     }
     
-    init() {
-        rtmpConnection = RTMPConnection(requestTimeout: 5000)  // 5s
-        rtmpStream = RTMPStream(connection: rtmpConnection)
-        mediaMixer = MediaMixer()
-        
-        let task = Task {
-            for await rtmpStatus in await rtmpConnection.status {
-                let rtmpConnectionCode = RTMPConnection.Code(rawValue: rtmpStatus.code)
-                if let rtmpConnectionCode {
-                    if rtmpConnectionCode.level == "error" {
-                        log.error("RTMP connection status: \(rtmpStatus.code)")
-                    } else {
-                        log.info("RTMP connection status: \(rtmpStatus.code)")
-                    }
-                } else {
-                    if rtmpStatus.level == "error" {
-                        log.error("RTMP connection status. Code: \(rtmpStatus.code); \(rtmpStatus.description)")
-                    } else {
-                        log.info("RTMP connection status. Code: \(rtmpStatus.code); \(rtmpStatus.description)")
-                    }
-                }
-                
-                guard rtmpStatus.level == "error" || rtmpConnectionCode != .connectSuccess else {
-                    continue
-                }
-                
-                isBroadcasting = false
-            }
-        }
-        
-        rtmpConnectionStatusTask = task
-    }
+    init() {}
     
     deinit {
         screenCaptureTask?.cancel()
@@ -217,11 +186,11 @@ final class BroadcastManager {
     }
     
     func configureManager() async throws {
+        await SessionBuilderFactory.shared.register(RTMPSessionFactory())
+        
         try await captureSystem.updateConfiguration(streamConfiguration)
         try await captureSystem.updateContentFilter(streamContentFilter)
         try startConsumingCaptureStreams(from: captureSystem)
-        
-        await mediaMixer.addOutput(rtmpStream)
         
         try await captureSystem.start()
     }
@@ -230,14 +199,19 @@ final class BroadcastManager {
         do {
             guard !isBroadcasting else {
                 await mediaMixer.stopRunning()
-                try await rtmpConnection.close()
-                isBroadcasting = false
+                
+                try await session?.close()
+                session = nil
                 return
             }
             isBroadcasting = true
             
-            let connectResponse = try await rtmpConnection.connect("rtmps://ingest.global-contribute.live-video.net/app/")
-            log.info("Connection with Twitch RTMP server, status: \(connectResponse.status?.description ?? "unknown")")
+            await makeSession(primaryStreamKey: primaryStreamKey)
+            
+            guard let session else {
+                log.error("Session is nil")
+                return
+            }
             
             let videoCodecSettings = VideoCodecSettings(
                 videoSize: .init(width: 1920, height: 1080),
@@ -246,17 +220,19 @@ final class BroadcastManager {
                 bitRateMode: .constant,
                 allowFrameReordering: false  // disable B frames
             )
-            
-            await rtmpStream.setVideoSettings(videoCodecSettings)
-            
-            // TODO: - Check why it did not work with `bandwidthtest=false` set
-            let publishName = bandwidthTestEnabled ? "\(primaryStreamKey)?bandwidthtest=true" : primaryStreamKey
-            let publishResponse = try await rtmpStream.publish(publishName)
-            log.info("Publishing to Twitch RTMP server, status: \(publishResponse.status?.description ?? "unknown")")
+            try await session.stream.setVideoSettings(videoCodecSettings)
             
             await mediaMixer.setSessionPreset(.high)
-            await mediaMixer.setFrameRate(Float64(streamConfiguration.minimumFrameInterval.timescale))
+            try await mediaMixer.setFrameRate(Float64(streamConfiguration.minimumFrameInterval.timescale))
+            
+            await mediaMixer.addOutput(session.stream)
             await mediaMixer.startRunning()
+            
+            try await session.connect {
+                Task { @MainActor in
+                    self.isBroadcasting = false
+                }
+            }
         } catch RTMPConnection.Error.requestFailed {
             log.error("RTMP connection request failed")
             isBroadcasting = false
@@ -266,6 +242,51 @@ final class BroadcastManager {
         } catch {
             log.error("\(error.localizedDescription)")
             isBroadcasting = false
+        }
+    }
+    
+    private func makeSession(primaryStreamKey: String) async {
+        do {
+            if session != nil {
+                try await session?.close()
+                session = nil
+            }
+            
+            // TODO: - Add bandwidthtest
+            guard let url = URL(string: "rtmps://ingest.global-contribute.live-video.net/app/\(primaryStreamKey)") else {
+                fatalError("Broadcast URL is not valid")
+            }
+            
+            session = try await SessionBuilderFactory.shared.make(url)
+                .setMode(.publish)
+                .build()
+            
+            await session?.setMaxRetryCount(0)
+            
+            guard let session else {
+                fatalError("Session is not available")
+            }
+            
+            rtmpConnectionStatusTask?.cancel()
+            rtmpConnectionStatusTask = Task {
+                for await readyState in await session.readyState {
+                    let description = switch readyState {
+                    case .connecting:
+                        "Connecting..."
+                    case .open:
+                        "Open"
+                    case .closing:
+                        "Closing..."
+                    case .closed:
+                        "Closed"
+                    }
+                    
+                    log.info("RTMP connection status: \(description)")
+                }
+            }
+        } catch {
+            session = nil
+            log.error("Cannot create session: \(error.localizedDescription)")
         }
     }
     
@@ -298,11 +319,6 @@ final class BroadcastManager {
                 guard SCVideoMetadata(payload.sample)?.status == .complete else {
                     continue
                 }
-                
-                precondition(
-                    payload.sample.formatDescription?.isCompressed == false,
-                    "Compressed sample buffers are not supported"
-                )
                 
                 payload.sample.withUnsafeSampleBuffer { sampleBuffer in
                     mixer.append(sampleBuffer, track: 0)

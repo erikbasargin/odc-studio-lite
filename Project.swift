@@ -31,6 +31,7 @@ let project = Project(
             dependencies: [
                 .target(name: "AudioVideoKit"),
                 .external(name: "HaishinKit"),
+                .external(name: "RTMPHaishinKit"),
             ],
             settings: .settings(
                 base: [

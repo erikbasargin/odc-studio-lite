@@ -13,6 +13,7 @@ import AudioVideoKit
 #if DEBUG
 import Logboard
 import HaishinKit
+import RTMPHaishinKit
 #endif
 
 @main
@@ -23,7 +24,8 @@ struct ODCLiteApp: App {
     
     init() {
         #if DEBUG
-        LBLogger.with(kHaishinKitIdentifier).level = .trace
+        LBLogger(kHaishinKitIdentifier).level = .debug
+        LBLogger(kRTMPHaishinKitIdentifier).level = .debug
         #endif
         
         let broadcastManager = BroadcastManager()

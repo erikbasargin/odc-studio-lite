@@ -1,12 +1,12 @@
 {
-  "originHash" : "3dcde20b7692d263e29d63a430be18019e2247321a7589567cb9afaa9eb80684",
+  "originHash" : "876830d406e03a2896b57046db5359719a0b34d9de1e4349d9de607816366aa0",
   "pins" : [
     {
       "identity" : "HaishinKit.HaishinKit_swift",
       "kind" : "registry",
       "location" : "",
       "state" : {
-        "version" : "2.0.1"
+        "version" : "2.2.5"
       }
     },
     {
@@ -14,8 +14,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/shogo4405/Logboard.git",
       "state" : {
-        "revision" : "272976e1f3e8873e60ffe4b08fe50df48a93751b",
-        "version" : "2.5.0"
+        "revision" : "8f41c63afb903040b77049ee2efa8c257b8c0d50",
+        "version" : "2.6.0"
       }
     },
     {
