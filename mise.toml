@@ -1,9 +1,8 @@
 [tools]
 tuist = "4.169.2"
 
-[task.auth]
+[tasks.auth]
 description = "Login to Tuist account"
-alias = "a"
 run = "tuist auth login"
 
 [tasks.edit]
