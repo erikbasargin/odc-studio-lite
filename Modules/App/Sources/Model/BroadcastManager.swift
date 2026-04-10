@@ -295,34 +295,26 @@ final class BroadcastManager {
         
         func listenVideoStream(stream: CaptureSystem.CaptureStream<CaptureSystem.Screen>, on mixer: isolated MediaMixer) async {
             for await payload in stream where mixer.isRunning {
-                let sampleBuffer = payload.sampleBuffer
-                
-                guard sampleBuffer.isValid else {
-                    continue
-                }
-                
-                guard SCVideoMetadata(sampleBuffer)?.status == .complete else {
+                guard SCVideoMetadata(payload.sample)?.status == .complete else {
                     continue
                 }
                 
                 precondition(
-                    sampleBuffer.formatDescription?.isCompressed == false,
+                    payload.sample.formatDescription?.isCompressed == false,
                     "Compressed sample buffers are not supported"
                 )
                 
-                mixer.append(sampleBuffer, track: 0)
+                payload.sample.withUnsafeSampleBuffer { sampleBuffer in
+                    mixer.append(sampleBuffer, track: 0)
+                }
             }
         }
         
         func listenMicrophone(stream: CaptureSystem.CaptureStream<CaptureSystem.Microphone>, on mixer: isolated MediaMixer) async {
             for await payload in stream where mixer.isRunning {
-                let sampleBuffer = payload.sampleBuffer
-                
-                guard sampleBuffer.isValid else {
-                    continue
+                payload.sample.withUnsafeSampleBuffer { sampleBuffer in
+                    mixer.append(sampleBuffer, track: 0)
                 }
-                
-                mixer.append(sampleBuffer, track: 0)
             }
         }
         

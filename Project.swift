@@ -9,6 +9,8 @@ let projectBaseSettings: SettingsDictionary = [
     "SWIFT_UPCOMING_FEATURE_6_0": "YES",
 ]
 
+let deploymentTargets: DeploymentTargets = .macOS("26.0")
+
 let project = Project(
     name: "ODCLite",
     settings: .settings(base: projectBaseSettings),
@@ -18,7 +20,7 @@ let project = Project(
             destinations: .macOS,
             product: .app,
             bundleId: "$(PRODUCT_BUNDLE_IDENTIFIER)",
-            deploymentTargets: .macOS("15.0"),
+            deploymentTargets: deploymentTargets,
             infoPlist: "Modules/App/Configurations/Info.plist",
             buildableFolders: [
                 "Modules/App/Sources",
@@ -58,7 +60,7 @@ let project = Project(
             destinations: .macOS,
             product: .framework,
             bundleId: "com.odclite.audioVideoKit",
-            deploymentTargets: .macOS("15.0"),
+            deploymentTargets: deploymentTargets,
             buildableFolders: [
                 "Modules/AudioVideoKit/Sources",
             ],
@@ -77,7 +79,7 @@ let project = Project(
             destinations: .macOS,
             product: .unitTests,
             bundleId: "com.odclite.audioVideoKit.unitTests",
-            deploymentTargets: .macOS("15.0"),
+            deploymentTargets: deploymentTargets,
             buildableFolders: [
                 "Modules/AudioVideoKit/Tests",
             ],

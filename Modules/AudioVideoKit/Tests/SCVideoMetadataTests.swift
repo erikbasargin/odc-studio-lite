@@ -12,7 +12,7 @@ import AudioVideoKit
 struct SCVideoMetadataTests {
     
     @Test(
-        "SCVideoMetadata contains frame status",
+        "SCVideoMetadata contains frame status, given CMSampleBuffer",
         arguments: [
             SCFrameStatus.complete,
             .idle,
@@ -22,15 +22,39 @@ struct SCVideoMetadataTests {
             .stopped,
         ]
     )
-    func contains(status: SCFrameStatus) throws {
+    func sampleBufferContains(status: SCFrameStatus) throws {
         let sampleBuffer = try makeCMSampleBufferWithFrameStatus(status)
         #expect(SCVideoMetadata(sampleBuffer)?.status == status)
     }
     
-    @Test("SCVideoMetadata is nil when there is no frame status")
-    func videoMetadataIsNil() throws {
+    @Test(
+        "SCVideoMetadata contains frame status, given CMReadySampleBuffer",
+        arguments: [
+            SCFrameStatus.complete,
+            .idle,
+            .blank,
+            .suspended,
+            .started,
+            .stopped,
+        ]
+    )
+    func readySampleBufferContains(status: SCFrameStatus) throws {
+        let sampleBuffer = try makeCMSampleBufferWithFrameStatus(status)
+        let readyBuffer = CMReadySampleBuffer(unsafeBuffer: consume sampleBuffer)
+        #expect(SCVideoMetadata(readyBuffer)?.status == status)
+    }
+    
+    @Test("SCVideoMetadata is nil when there is no frame status, given empty CMSampleBuffer")
+    func videoMetadataIsNilGivenEmptyCMSampleBuffer() throws {
         let sampleBuffer = try makeEmptyCMSampleBuffer()
         #expect(SCVideoMetadata(sampleBuffer) == nil)
+    }
+    
+    @Test("SCVideoMetadata is nil when there is no frame status, given empty CMReadySampleBuffer")
+    func videoMetadataIsNilGivenEmptCMReadySampleBuffer() throws {
+        let sampleBuffer = try makeEmptyCMSampleBuffer()
+        let readyBuffer = CMReadySampleBuffer(unsafeBuffer: consume sampleBuffer)
+        #expect(SCVideoMetadata(readyBuffer) == nil)
     }
 }
 

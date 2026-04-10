@@ -83,8 +83,12 @@ struct CaptureSystemTests {
         
         stream.stubOutputSampleBuffer(sampleBuffer, type: .screen)
         
-        await #expect(
-            capturedPayloads.map(\.sampleBuffer) == [
+        let sampleBuffers = await capturedPayloads.map { payload in
+            payload.sample.withUnsafeSampleBuffer(\.self)
+        }
+        
+        #expect(
+            sampleBuffers == [
                 sampleBuffer
             ]
         )
@@ -110,8 +114,12 @@ struct CaptureSystemTests {
         
         stream.stubOutputSampleBuffer(sampleBuffer, type: .audio)
         
-        await #expect(
-            capturedPayloads.map(\.sampleBuffer) == [
+        let sampleBuffers = await capturedPayloads.map { payload in
+            payload.sample.withUnsafeSampleBuffer(\.self)
+        }
+        
+        #expect(
+            sampleBuffers == [
                 sampleBuffer
             ]
         )
@@ -137,8 +145,12 @@ struct CaptureSystemTests {
         
         stream.stubOutputSampleBuffer(sampleBuffer, type: .microphone)
         
-        await #expect(
-            capturedPayloads.map(\.sampleBuffer) == [
+        let sampleBuffers = await capturedPayloads.map { payload in
+            payload.sample.withUnsafeSampleBuffer(\.self)
+        }
+        
+        #expect(
+            sampleBuffers == [
                 sampleBuffer
             ]
         )

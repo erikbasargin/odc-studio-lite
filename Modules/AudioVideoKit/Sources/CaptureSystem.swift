@@ -6,7 +6,7 @@
 import ScreenCaptureKit
 
 public struct CapturedPayload: Sendable {
-    nonisolated(unsafe) public let sampleBuffer: CMSampleBuffer
+    public let sample: CMReadySampleBuffer<CMSampleBuffer.DynamicContent>
 }
 
 public struct ContentFilter: Sendable {
@@ -204,7 +204,17 @@ private extension CaptureSystem {
             of type: SCStreamOutputType
         ) {
             guard type == self.type else { return }
-            continuation.yield(CapturedPayload(sampleBuffer: sampleBuffer))
+            guard CMSampleBufferIsValid(sampleBuffer) else { return }
+            guard CMSampleBufferDataIsReady(sampleBuffer) else { return }
+            
+            nonisolated(unsafe) let unsafeBuffer = consume sampleBuffer
+            let sample = CMReadySampleBuffer(unsafeBuffer: unsafeBuffer)
+            
+            continuation.yield(
+                CapturedPayload(
+                    sample: sample,
+                )
+            )
         }
     }
     

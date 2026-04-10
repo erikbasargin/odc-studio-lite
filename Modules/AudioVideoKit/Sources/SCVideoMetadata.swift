@@ -19,4 +19,13 @@ extension SCVideoMetadata {
         }
         self.status = status
     }
+    
+    public init?(_ sampleBuffer: CMReadySampleBuffer<CMSampleBuffer.DynamicContent>) {
+        let sampleAttachments = sampleBuffer.sampleProperties.first?.attachments.dictionaryRepresentation
+        let rawStatus = sampleAttachments?[SCStreamFrameInfo.status.rawValue] as? Int
+        guard let rawStatus, let status = SCFrameStatus(rawValue: rawStatus) else {
+            return nil
+        }
+        self.status = status
+    }
 }
