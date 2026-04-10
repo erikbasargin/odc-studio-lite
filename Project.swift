@@ -7,6 +7,7 @@ let projectBaseSettings: SettingsDictionary = [
     "SWIFT_STRICT_CONCURRENCY": "complete",
     "SWIFT_APPROACHABLE_CONCURRENCY": "YES",
     "SWIFT_UPCOMING_FEATURE_6_0": "YES",
+    "STRING_CATALOG_GENERATE_SYMBOLS": "YES",
 ]
 
 let deploymentTargets: DeploymentTargets = .macOS("26.0")
@@ -69,7 +70,6 @@ let project = Project(
                     "ENABLE_MODULE_VERIFIER": "YES",
                     "MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS": "gnu11 gnu++14",
                     "ENABLE_USER_SCRIPT_SANDBOXING": "YES",
-                    "STRING_CATALOG_GENERATE_SYMBOLS": "YES",
                 ],
             )
         ),
