@@ -1,8 +1,8 @@
 #!/bin/sh
 set -eu
 
-if [ "${CI_XCODEBUILD_ACTION:-}" != "build" ]; then
-    echo "Not a build action, skipping post-xcodebuild steps"
+if [ "${CI_XCODEBUILD_ACTION:-}" != "build-for-testing" ]; then
+    echo "Not a build-for-testing action, skipping post-xcodebuild steps"
     exit 0
 fi
 
