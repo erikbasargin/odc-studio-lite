@@ -58,7 +58,7 @@ let project = Project(
         .target(
             name: "AudioVideoKit",
             destinations: .macOS,
-            product: .framework,
+            product: productType(),
             bundleId: "com.odclite.audioVideoKit",
             deploymentTargets: deploymentTargets,
             buildableFolders: [
@@ -111,3 +111,10 @@ let project = Project(
         ),
     ]
 )
+
+func productType() -> Product {
+    switch Environment.productType {
+    case .string("static-library"): .staticLibrary
+    default: .framework
+    }
+}
