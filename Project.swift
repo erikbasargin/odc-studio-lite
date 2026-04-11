@@ -8,6 +8,7 @@ let projectBaseSettings: SettingsDictionary = [
     "SWIFT_APPROACHABLE_CONCURRENCY": "YES",
     "SWIFT_UPCOMING_FEATURE_6_0": "YES",
     "STRING_CATALOG_GENERATE_SYMBOLS": "YES",
+    "RUN_DOCUMENTATION_COMPILER": "YES",
 ]
 
 let deploymentTargets: DeploymentTargets = .macOS("26.0")
@@ -43,14 +44,12 @@ let project = Project(
                     .debug(
                         name: "Debug",
                         settings: [
-                            "PRODUCT_NAME": "ODC Lite Debug",
                             "PRODUCT_BUNDLE_IDENTIFIER": "com.odclite.debug",
                         ],
                     ),
                     .release(
                         name: "Release",
                         settings: [
-                            "PRODUCT_NAME": "ODC Lite",
                             "PRODUCT_BUNDLE_IDENTIFIER": "com.odclite",
                         ],
                     ),
