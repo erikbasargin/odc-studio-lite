@@ -8,7 +8,7 @@ let tuist = Tuist(
     project: .tuist(
         swiftVersion: "6.3",
         generationOptions: .options(
-            enableCaching: true,
+            enableCaching: false,
             registryEnabled: true,
         ),
     ),
