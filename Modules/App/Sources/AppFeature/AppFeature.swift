@@ -17,7 +17,7 @@ struct AppFeature {
         }
     }
 
-    enum Action {
+    enum Action: Equatable {
         case task
         case broadcast(BroadcastFeature.Action)
     }

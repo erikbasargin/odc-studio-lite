@@ -25,7 +25,7 @@ struct BroadcastFeature {
         }
     }
 
-    enum Action {
+    enum Action: Equatable {
         case task
         case primaryStreamKeyChanged(String)
         case bandwidthTestEnabledChanged(Bool)

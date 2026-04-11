@@ -68,6 +68,7 @@ let project = Project(
             ],
             dependencies: [
                 .target(name: "ODCLite"),
+                .external(name: "ComposableArchitecture"),
             ],
             settings: .settings(
                 base: [
