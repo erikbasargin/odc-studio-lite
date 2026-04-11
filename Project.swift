@@ -30,6 +30,7 @@ let project = Project(
             entitlements: "Modules/App/Configurations/ODCLite.entitlements",
             dependencies: [
                 .target(name: "AudioVideoKit"),
+                .external(name: "ComposableArchitecture"),
                 .external(name: "HaishinKit"),
                 .external(name: "RTMPHaishinKit"),
             ],
