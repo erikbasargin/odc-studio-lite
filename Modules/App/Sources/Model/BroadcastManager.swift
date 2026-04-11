@@ -17,7 +17,10 @@ private let log = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "Br
 @MainActor
 @Observable
 final class BroadcastManager {
-    
+
+    @ObservationIgnored
+    let streamConfiguration: StreamConfiguration
+
     var excludeAppFromStream = true {
         didSet {
             Task {
@@ -25,30 +28,42 @@ final class BroadcastManager {
             }
         }
     }
-    
-    var captureMicrophone = false {
-        didSet {
-            Task {
-                await updateStreamConfiguration()
+
+    var captureMicrophone: Bool {
+        get {
+            streamConfiguration.selectedMicrophone != nil
+        }
+        set {
+            guard newValue != captureMicrophone else {
+                return
+            }
+
+            if newValue {
+                streamConfiguration.selectedMicrophone = defaultMicrophoneDevice()
+            } else {
+                streamConfiguration.selectedMicrophone = nil
             }
         }
     }
-    
+
     var bandwidthTestEnabled = false
-    
+
     var primaryStreamKey = ""
-    
+
     var cameraIsAuthorized = false
-    
+
     var selectedCameraDevice: CaptureDevice? {
-        didSet {
-            configureCameraSession()
+        get {
+            streamConfiguration.selectedCamera
+        }
+        set {
+            streamConfiguration.selectedCamera = newValue
         }
     }
-    
+
     private(set) var isBroadcasting: Bool = false
     private(set) var videoDevices: [CaptureDevice] = []
-    
+
     let cameraCaptureSession = AVCaptureSession()
     private let cameraDiscoverySession = AVCaptureDevice.DiscoverySession(
         deviceTypes: [.builtInWideAngleCamera, .continuityCamera],
@@ -78,22 +93,25 @@ final class BroadcastManager {
     }
     
     @ObservationIgnored
-    private var streamConfiguration: CaptureConfiguration {
+    private var captureConfiguration: CaptureConfiguration {
         let screenFrame = NSScreen.main?.frame ?? .init(x: 0, y: 0, width: 1920, height: 1080)
-        
+
         return .init(
             excludesCurrentProcessAudio: true,
             captureMicrophone: captureMicrophone,
-            microphoneCaptureDeviceID: captureMicrophone ? AVCaptureDevice.default(for: .audio)?.uniqueID : nil,
+            microphoneCaptureDeviceID: streamConfiguration.selectedMicrophone?.id,
             width: Int(screenFrame.width) * scaleFactor,
             height: Int(screenFrame.height) * scaleFactor,
             minimumFrameInterval: CMTime(value: 1, timescale: 60),
             queueDepth: 5
         )
     }
-    
-    init() {}
-    
+
+    init(streamConfiguration: StreamConfiguration = StreamConfiguration()) {
+        self.streamConfiguration = streamConfiguration
+        observeStreamConfiguration()
+    }
+
     deinit {
         screenCaptureTask?.cancel()
         microphoneCaptureTask?.cancel()
@@ -187,17 +205,18 @@ final class BroadcastManager {
     
     func configureManager() async throws {
         await SessionBuilderFactory.shared.register(RTMPSessionFactory())
-        
-        try await captureSystem.updateConfiguration(streamConfiguration)
+
+        try await captureSystem.updateConfiguration(captureConfiguration)
         try await captureSystem.updateContentFilter(streamContentFilter)
         try startConsumingCaptureStreams(from: captureSystem)
-        
+
         try await captureSystem.start()
     }
     
     func toogleBroadcast() async {
         do {
             guard !isBroadcasting else {
+                isBroadcasting = false
                 await mediaMixer.stopRunning()
                 
                 try await session?.close()
@@ -223,7 +242,7 @@ final class BroadcastManager {
             try await session.stream.setVideoSettings(videoCodecSettings)
             
             await mediaMixer.setSessionPreset(.high)
-            try await mediaMixer.setFrameRate(Float64(streamConfiguration.minimumFrameInterval.timescale))
+            try await mediaMixer.setFrameRate(Float64(captureConfiguration.minimumFrameInterval.timescale))
             
             await mediaMixer.addOutput(session.stream)
             await mediaMixer.startRunning()
@@ -302,11 +321,34 @@ final class BroadcastManager {
     
     private func updateStreamConfiguration() async {
         do {
-            try await captureSystem.updateConfiguration(streamConfiguration)
+            try await captureSystem.updateConfiguration(captureConfiguration)
         } catch {
             log.error(
                 "Failed to update stream configuration: \(error.localizedDescription)"
             )
+        }
+    }
+
+    private func observeStreamConfiguration() {
+        withObservationTracking {
+            _ = streamConfiguration.selectedCamera
+            _ = streamConfiguration.selectedMicrophone
+        } onChange: { [weak self] in
+            Task { @MainActor [weak self] in
+                guard let self else {
+                    return
+                }
+
+                configureCameraSession()
+                await updateStreamConfiguration()
+                observeStreamConfiguration()
+            }
+        }
+    }
+
+    private func defaultMicrophoneDevice() -> CaptureDevice? {
+        AVCaptureDevice.default(for: .audio).map { device in
+            CaptureDevice(id: device.uniqueID, name: device.localizedName)
         }
     }
     

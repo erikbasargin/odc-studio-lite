@@ -27,12 +27,13 @@ struct ODCLiteApp: App {
         LBLogger(kHaishinKitIdentifier).level = .debug
         LBLogger(kRTMPHaishinKitIdentifier).level = .debug
         #endif
-        
-        let broadcastManager = BroadcastManager()
+
+        let streamConfiguration = self.streamConfiguration
+        let broadcastManager = BroadcastManager(streamConfiguration: streamConfiguration)
         self.broadcastManager = broadcastManager
-        
+
         AppDependencyManager.shared.add(dependency: broadcastManager)
-        
+
         ODCLiteShortcuts.updateAppShortcutParameters()
     }
     

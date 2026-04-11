@@ -6,11 +6,10 @@
 import Foundation
 import AudioVideoKit
 
+@MainActor
 @Observable
 final class StreamConfiguration {
 
-    public var selectedCamera: CaptureDevice?
-    public var selectedMicrophone: CaptureDevice?
-    
-    public init() {}
+    var selectedCamera: CaptureDevice?
+    var selectedMicrophone: CaptureDevice?
 }
