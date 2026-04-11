@@ -58,6 +58,25 @@ let project = Project(
         ),
         
         .target(
+            name: "ODCLiteTests",
+            destinations: .macOS,
+            product: .unitTests,
+            bundleId: "com.odclite.debug.unitTests",
+            deploymentTargets: deploymentTargets,
+            buildableFolders: [
+                "Modules/App/Tests",
+            ],
+            dependencies: [
+                .target(name: "ODCLite"),
+            ],
+            settings: .settings(
+                base: [
+                    "CODE_SIGN_IDENTITY": "Apple Development",
+                ],
+            ),
+        ),
+        
+        .target(
             name: "AudioVideoKit",
             destinations: .macOS,
             product: productType(),
@@ -107,6 +126,7 @@ let project = Project(
                 runPostActionsOnFailure: true,
             ),
             testAction: .targets([
+                "ODCLiteTests",
                 "AudioVideoKitTests",
             ]),
         ),
