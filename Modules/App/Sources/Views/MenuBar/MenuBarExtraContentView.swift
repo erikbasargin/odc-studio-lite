@@ -3,17 +3,17 @@
 // See LICENSE for license information.
 //
 
+import ComposableArchitecture
 import SwiftUI
 
 import AudioVideoKit
 
 struct MenuBarExtraContentView: View {
     
+    @Bindable var store: StoreOf<BroadcastFeature>
     @Environment(BroadcastManager.self) private var broadcastManager
     
     var body: some View {
-        @Bindable var broadcastManager = broadcastManager
-        
         CameraControlSection()
             .disabled(!broadcastManager.cameraIsAuthorized)
             
@@ -41,15 +41,16 @@ struct MenuBarExtraContentView: View {
 //        }
         
         Section("Twitch Broadcast") {
-            Toggle("Bandwidth test", isOn: $broadcastManager.bandwidthTestEnabled)
-                .disabled(broadcastManager.isBroadcasting)
+            Toggle(
+                "Bandwidth test",
+                isOn: $store.bandwidthTestEnabled.sending(\.bandwidthTestEnabledChanged),
+            )
+                .disabled(store.isBroadcasting)
             
-            Button("\(broadcastManager.isBroadcasting ? "Stop" : "Start") broadcast") {
-                Task {
-                    await broadcastManager.toogleBroadcast()
-                }
+            Button("\(store.isBroadcasting ? "Stop" : "Start") broadcast") {
+                store.send(.startStopBroadcastButtonTapped)
             }
-            .disabled(broadcastManager.primaryStreamKey.isEmpty)
+            .disabled(store.primaryStreamKey.isEmpty)
         }
         
         Section {
@@ -63,6 +64,8 @@ struct MenuBarExtraContentView: View {
 }
 
 #Preview {
-    MenuBarExtraContentView()
-        .environment(BroadcastManager())
+    MenuBarExtraContentView(
+        store: Store(initialState: BroadcastFeature.State()) {}
+    )
+    .environment(BroadcastManager())
 }

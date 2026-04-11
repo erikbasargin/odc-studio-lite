@@ -11,6 +11,7 @@ import RTMPHaishinKit
 import OSLog
 import Observation
 import VideoToolbox
+import Foundation
 
 private let log = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "BroadcastManager")
 
@@ -47,8 +48,18 @@ final class BroadcastManager {
     }
 
     var bandwidthTestEnabled = false
+    {
+        didSet {
+            notifyBroadcastStateDidChange()
+        }
+    }
 
     var primaryStreamKey = ""
+    {
+        didSet {
+            notifyBroadcastStateDidChange()
+        }
+    }
 
     var cameraIsAuthorized = false
 
@@ -61,7 +72,11 @@ final class BroadcastManager {
         }
     }
 
-    private(set) var isBroadcasting: Bool = false
+    private(set) var isBroadcasting: Bool = false {
+        didSet {
+            notifyBroadcastStateDidChange()
+        }
+    }
     private(set) var videoDevices: [CaptureDevice] = []
 
     let cameraCaptureSession = AVCaptureSession()
@@ -83,6 +98,8 @@ final class BroadcastManager {
     
     @ObservationIgnored
     private var cameraPreviewLayer: AVCaptureVideoPreviewLayer?
+    @ObservationIgnored
+    private var broadcastStateContinuations: [UUID: AsyncStream<BroadcastStateSnapshot>.Continuation] = [:]
     
     private var scaleFactor: Int {
         Int(NSScreen.main?.backingScaleFactor ?? 2)
@@ -115,6 +132,9 @@ final class BroadcastManager {
     deinit {
         screenCaptureTask?.cancel()
         microphoneCaptureTask?.cancel()
+        for continuation in broadcastStateContinuations.values {
+            continuation.finish()
+        }
 //        let captureSystem = captureSystem
 //        Task {
 //            do {
@@ -200,6 +220,36 @@ final class BroadcastManager {
             cameraIsAuthorized = true
         @unknown default:
             cameraIsAuthorized = false
+        }
+    }
+
+    func updatePrimaryStreamKey(_ primaryStreamKey: String) {
+        self.primaryStreamKey = primaryStreamKey
+    }
+
+    func updateBandwidthTestEnabled(_ bandwidthTestEnabled: Bool) {
+        self.bandwidthTestEnabled = bandwidthTestEnabled
+    }
+
+    func broadcastStateSnapshot() -> BroadcastStateSnapshot {
+        BroadcastStateSnapshot(
+            bandwidthTestEnabled: bandwidthTestEnabled,
+            primaryStreamKey: primaryStreamKey,
+            isBroadcasting: isBroadcasting
+        )
+    }
+
+    func broadcastStateUpdates() -> AsyncStream<BroadcastStateSnapshot> {
+        let id = UUID()
+
+        return AsyncStream { continuation in
+            broadcastStateContinuations[id] = continuation
+            continuation.yield(broadcastStateSnapshot())
+            continuation.onTermination = { [weak self] _ in
+                Task { @MainActor [weak self] in
+                    self?.broadcastStateContinuations.removeValue(forKey: id)
+                }
+            }
         }
     }
     
@@ -349,6 +399,13 @@ final class BroadcastManager {
     private func defaultMicrophoneDevice() -> CaptureDevice? {
         AVCaptureDevice.default(for: .audio).map { device in
             CaptureDevice(id: device.uniqueID, name: device.localizedName)
+        }
+    }
+
+    private func notifyBroadcastStateDidChange() {
+        let snapshot = broadcastStateSnapshot()
+        for continuation in broadcastStateContinuations.values {
+            continuation.yield(snapshot)
         }
     }
     

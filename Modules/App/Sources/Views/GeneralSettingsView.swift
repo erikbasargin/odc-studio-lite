@@ -3,24 +3,27 @@
 // See LICENSE for license information.
 //
 
+import ComposableArchitecture
 import SwiftUI
 
 struct GeneralSettingsView: View {
     
-    @Environment(BroadcastManager.self) private var broadcastManager
+    @Bindable var store: StoreOf<BroadcastFeature>
     
     var body: some View {
-        @Bindable var broadcastManager = broadcastManager
-        
         Form {
             Section("Twitch") {
-                SecureField("Primary Stream key", text: $broadcastManager.primaryStreamKey)
+                SecureField(
+                    "Primary Stream key",
+                    text: $store.primaryStreamKey.sending(\.primaryStreamKeyChanged),
+                )
             }
         }
     }
 }
 
 #Preview {
-    GeneralSettingsView()
-        .environment(BroadcastManager())
+    GeneralSettingsView(
+        store: Store(initialState: BroadcastFeature.State()) {}
+    )
 }

@@ -4,9 +4,9 @@
 //
 
 import AppIntents
+import ComposableArchitecture
 import ScreenCaptureKit
 import SwiftUI
-import os
 
 import AudioVideoKit
 
@@ -20,6 +20,7 @@ import RTMPHaishinKit
 struct ODCLiteApp: App {
     
     private let broadcastManager: BroadcastManager
+    private let store: StoreOf<AppFeature>
     private let streamConfiguration = StreamConfiguration()
     
     init() {
@@ -31,6 +32,11 @@ struct ODCLiteApp: App {
         let streamConfiguration = self.streamConfiguration
         let broadcastManager = BroadcastManager(streamConfiguration: streamConfiguration)
         self.broadcastManager = broadcastManager
+        self.store = Store(initialState: AppFeature.State(snapshot: broadcastManager.broadcastStateSnapshot())) {
+            AppFeature()
+        } withDependencies: {
+            $0.broadcastClient = .live(broadcastManager)
+        }
 
         AppDependencyManager.shared.add(dependency: broadcastManager)
 
@@ -39,22 +45,25 @@ struct ODCLiteApp: App {
     
     var body: some Scene {
         WindowGroup {
-            LaunchView()
-                .environment(broadcastManager)
+            LaunchView(store: store)
         }
         
         MenuBarExtra {
-            MenuBarExtraContentView()
+            MenuBarExtraContentView(
+                store: store.scope(state: \.broadcast, action: \.broadcast)
+            )
                 .environment(broadcastManager)
                 .environment(streamConfiguration)
         } label: {
-            Image(.menuBarExtra)
-                .symbolRenderingMode(.palette)
-                .foregroundStyle(.white, broadcastManager.isBroadcasting ? .green : .white)
+            MenuBarExtraLabelView(
+                store: store.scope(state: \.broadcast, action: \.broadcast)
+            )
         }
         
         Settings {
-            GeneralSettingsView()
+            GeneralSettingsView(
+                store: store.scope(state: \.broadcast, action: \.broadcast)
+            )
                 .frame(width: 830)
                 .environment(broadcastManager)
         }
@@ -63,32 +72,26 @@ struct ODCLiteApp: App {
 }
 
 private struct LaunchView: View {
-    
-    private let log = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "LaunchView")
-    
-    @Environment(BroadcastManager.self) var broadcastManager
+
+    let store: StoreOf<AppFeature>
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
         Color.clear
             .task {
-                Task.detached {
-                    do {
-                        try await broadcastManager.configureManager()
-                        
-                        var initialConfiguration = SCContentSharingPickerConfiguration()
-                        initialConfiguration.allowedPickerModes = [.singleDisplay]
-                        initialConfiguration.allowsChangingSelectedContent = true
-                        SCContentSharingPicker.shared.configuration = initialConfiguration
-                        SCContentSharingPicker.shared.isActive = true
-                        
-                        await broadcastManager.authorizeCamera()
-                    } catch {
-                        log.error("Failed to launch ODC Lite: \(error.localizedDescription)")
-                    }
-                }
-                
+                store.send(.task)
                 dismiss()
             }
+    }
+}
+
+private struct MenuBarExtraLabelView: View {
+
+    let store: StoreOf<BroadcastFeature>
+
+    var body: some View {
+        Image(.menuBarExtra)
+            .symbolRenderingMode(.palette)
+            .foregroundStyle(.white, store.isBroadcasting ? .green : .white)
     }
 }
