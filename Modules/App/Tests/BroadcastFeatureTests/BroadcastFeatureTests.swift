@@ -55,7 +55,7 @@ struct BroadcastFeatureTests {
         continuation.finish()
         await store.finish()
 
-        #expect(await probe.bootstrapCount() == 1)
+        #expect(await probe.bootstrapCount() == 0)
     }
 
     @Test

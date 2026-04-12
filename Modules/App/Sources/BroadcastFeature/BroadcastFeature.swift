@@ -51,25 +51,15 @@ struct BroadcastFeature {
         Reduce { state, action in
             switch action {
             case .task:
-                return .merge(
-                    .run { send in
-                        let initialSnapshot = await broadcastClient.snapshot()
-                        await send(.stateDidChange(initialSnapshot))
+                return .run { send in
+                    let initialSnapshot = await broadcastClient.snapshot()
+                    await send(.stateDidChange(initialSnapshot))
 
-                        let updates = await broadcastClient.updates()
-                        for await snapshot in updates {
-                            await send(.stateDidChange(snapshot))
-                        }
-                    },
-                    .run { send in
-                        do {
-                            try await broadcastClient.bootstrap()
-                        } catch {
-                            log.error("Failed to bootstrap broadcast flow: \(error.localizedDescription)")
-                            await send(.bootstrapFailed(error.localizedDescription))
-                        }
+                    let updates = await broadcastClient.updates()
+                    for await snapshot in updates {
+                        await send(.stateDidChange(snapshot))
                     }
-                )
+                }
 
             case let .bandwidthTestEnabledChanged(bandwidthTestEnabled):
                 state.bandwidthTestEnabled = bandwidthTestEnabled
@@ -110,7 +100,8 @@ struct BroadcastFeature {
                 state.selectedMicrophone = snapshot.selectedMicrophone
                 return .none
 
-            case .bootstrapFailed:
+            case let .bootstrapFailed(message):
+                log.error("Failed to bootstrap broadcast flow: \(message)")
                 return .none
             }
         }

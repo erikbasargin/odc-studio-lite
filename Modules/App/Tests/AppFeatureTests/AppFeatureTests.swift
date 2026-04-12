@@ -1,5 +1,6 @@
 import ComposableArchitecture
 @testable import ODCLite
+import Foundation
 import Testing
 
 @Suite
@@ -27,13 +28,44 @@ struct AppFeatureTests {
             )
         }
 
-        await store.send(.task)
+        await store.send(.task) {
+            $0.bootstrapState = .inProgress
+        }
         await store.receive(.broadcast(.task))
+        await store.receive(.bootstrapSucceeded) {
+            $0.bootstrapState = .finished
+        }
         await store.receive(.broadcast(.stateDidChange(initialSnapshot))) {
             $0.broadcast = BroadcastFeature.State(snapshot: initialSnapshot)
             $0.settings = SettingsFeature.State()
         }
 
         #expect(await probe.bootstrapCount() == 1)
+    }
+
+    @Test
+    @MainActor
+    func bootstrapFailureIsModeledInAppState() async {
+        let bootstrapError = NSError(domain: "AppFeatureTests", code: 1, userInfo: [
+            NSLocalizedDescriptionKey: "Bootstrap failed"
+        ])
+        let store = TestStore(initialState: AppFeature.State()) {
+            AppFeature()
+        } withDependencies: {
+            $0.broadcastClient = .mock(
+                bootstrap: {
+                    throw bootstrapError
+                }
+            )
+        }
+        store.exhaustivity = .off
+
+        await store.send(.task) {
+            $0.bootstrapState = .inProgress
+        }
+        await store.receive(.broadcast(.task))
+        await store.receive(.bootstrapFailed("Bootstrap failed")) {
+            $0.bootstrapState = .failed("Bootstrap failed")
+        }
     }
 }

@@ -179,7 +179,7 @@ Expected outcome:
 
 - The main app UI becomes store-driven from the root app reducer.
 
-### Phase 5: Move launch orchestration into TCA
+### Phase 5: Move launch orchestration into TCA - [Completed]
 
 Goals:
 

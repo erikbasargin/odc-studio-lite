@@ -19,7 +19,6 @@ import RTMPHaishinKit
 @main
 struct ODCLiteApp: App {
     
-    private let broadcastManager: BroadcastManager
     private let store: StoreOf<AppFeature>
     
     init() {
@@ -29,7 +28,6 @@ struct ODCLiteApp: App {
         #endif
 
         let broadcastManager = BroadcastManager()
-        self.broadcastManager = broadcastManager
         self.store = Store(initialState: AppFeature.State(snapshot: broadcastManager.broadcastStateSnapshot())) {
             AppFeature()
         } withDependencies: {
@@ -48,7 +46,6 @@ struct ODCLiteApp: App {
         
         MenuBarExtra {
             MenuBarExtraContentView(store: store)
-                .environment(broadcastManager)
         } label: {
             MenuBarExtraLabelView(store: store.scope(state: \.broadcast, action: \.broadcast))
         }
@@ -58,20 +55,6 @@ struct ODCLiteApp: App {
                 .frame(width: 830)
         }
         .windowResizability(.contentSize)
-    }
-}
-
-private struct LaunchView: View {
-
-    let store: StoreOf<AppFeature>
-    @Environment(\.dismiss) var dismiss
-    
-    var body: some View {
-        Color.clear
-            .task {
-                store.send(.task)
-                dismiss()
-            }
     }
 }
 
