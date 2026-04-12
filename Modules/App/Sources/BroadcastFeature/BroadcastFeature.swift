@@ -7,6 +7,8 @@ import ComposableArchitecture
 import Foundation
 import os
 
+import AudioVideoKit
+
 private let log = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "BroadcastFeature")
 
 @Reducer
@@ -17,11 +19,19 @@ struct BroadcastFeature {
         var bandwidthTestEnabled = false
         var primaryStreamKey = ""
         var isBroadcasting = false
+        var cameraIsAuthorized = false
+        var availableCameras: [CaptureDevice] = []
+        var selectedCamera: CaptureDevice?
+        var availableMicrophones: [CaptureDevice] = []
+        var selectedMicrophone: CaptureDevice?
 
         init(snapshot: BroadcastStateSnapshot = .init()) {
             self.bandwidthTestEnabled = snapshot.bandwidthTestEnabled
             self.primaryStreamKey = snapshot.primaryStreamKey
             self.isBroadcasting = snapshot.isBroadcasting
+            self.cameraIsAuthorized = snapshot.cameraIsAuthorized
+            self.selectedCamera = snapshot.selectedCamera
+            self.selectedMicrophone = snapshot.selectedMicrophone
         }
     }
 
@@ -29,6 +39,10 @@ struct BroadcastFeature {
         case task
         case primaryStreamKeyChanged(String)
         case bandwidthTestEnabledChanged(Bool)
+        case availableCamerasChanged([CaptureDevice])
+        case selectedCameraChanged(CaptureDevice?)
+        case availableMicrophonesChanged([CaptureDevice])
+        case selectedMicrophoneChanged(CaptureDevice?)
         case startStopBroadcastButtonTapped
         case stateDidChange(BroadcastStateSnapshot)
         case bootstrapFailed(String)
@@ -72,13 +86,38 @@ struct BroadcastFeature {
                     await broadcastClient.setBandwidthTestEnabled(bandwidthTestEnabled)
                 }
 
+            case let .availableCamerasChanged(cameras):
+                state.availableCameras = cameras
+                return .none
+
+            case let .selectedCameraChanged(camera):
+                state.selectedCamera = camera
+                return .run { _ in
+                    await broadcastClient.setSelectedCamera(camera)
+                }
+
+            case let .availableMicrophonesChanged(microphones):
+                state.availableMicrophones = microphones
+                return .none
+
+            case let .selectedMicrophoneChanged(microphone):
+                state.selectedMicrophone = microphone
+                return .run { _ in
+                    await broadcastClient.setSelectedMicrophone(microphone)
+                }
+
             case .startStopBroadcastButtonTapped:
                 return .run { _ in
                     await broadcastClient.toggleBroadcast()
                 }
 
             case let .stateDidChange(snapshot):
-                state = State(snapshot: snapshot)
+                state.bandwidthTestEnabled = snapshot.bandwidthTestEnabled
+                state.primaryStreamKey = snapshot.primaryStreamKey
+                state.isBroadcasting = snapshot.isBroadcasting
+                state.cameraIsAuthorized = snapshot.cameraIsAuthorized
+                state.selectedCamera = snapshot.selectedCamera
+                state.selectedMicrophone = snapshot.selectedMicrophone
                 return .none
 
             case .bootstrapFailed:

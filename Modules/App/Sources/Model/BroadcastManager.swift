@@ -61,7 +61,11 @@ final class BroadcastManager {
         }
     }
 
-    var cameraIsAuthorized = false
+    var cameraIsAuthorized = false {
+        didSet {
+            notifyBroadcastStateDidChange()
+        }
+    }
 
     var selectedCameraDevice: CaptureDevice? {
         get {
@@ -77,7 +81,6 @@ final class BroadcastManager {
             notifyBroadcastStateDidChange()
         }
     }
-    private(set) var videoDevices: [CaptureDevice] = []
 
     let cameraCaptureSession = AVCaptureSession()
     private let cameraDiscoverySession = AVCaptureDevice.DiscoverySession(
@@ -126,6 +129,9 @@ final class BroadcastManager {
 
     init(streamConfiguration: StreamConfiguration = StreamConfiguration()) {
         self.streamConfiguration = streamConfiguration
+        self.streamConfiguration.selectedCamera = AVCaptureDevice.systemPreferredCamera.map {
+            CaptureDevice(id: $0.uniqueID, name: $0.localizedName)
+        }
         observeStreamConfiguration()
     }
 
@@ -143,18 +149,6 @@ final class BroadcastManager {
 //                log.error("Failed to stop stream capture: \(error.localizedDescription)")
 //            }
 //        }
-    }
-    
-    func listenForVideoDevices() async {
-        selectedCameraDevice = AVCaptureDevice.systemPreferredCamera.map { device in
-            CaptureDevice(id: device.uniqueID, name: device.localizedName)
-        }
-        
-        for await devices in cameraDiscoverySession.publisher(for: \.devices).values {
-            videoDevices = devices.map { device in
-                CaptureDevice(id: device.uniqueID, name: device.localizedName)
-            }
-        }
     }
     
     struct NoCameraDevice: Error {}
@@ -231,11 +225,24 @@ final class BroadcastManager {
         self.bandwidthTestEnabled = bandwidthTestEnabled
     }
 
+    func updateSelectedCamera(_ camera: CaptureDevice?) {
+        selectedCameraDevice = camera
+        notifyBroadcastStateDidChange()
+    }
+
+    func updateSelectedMicrophone(_ microphone: CaptureDevice?) {
+        streamConfiguration.selectedMicrophone = microphone
+        notifyBroadcastStateDidChange()
+    }
+
     func broadcastStateSnapshot() -> BroadcastStateSnapshot {
         BroadcastStateSnapshot(
             bandwidthTestEnabled: bandwidthTestEnabled,
             primaryStreamKey: primaryStreamKey,
-            isBroadcasting: isBroadcasting
+            isBroadcasting: isBroadcasting,
+            cameraIsAuthorized: cameraIsAuthorized,
+            selectedCamera: selectedCameraDevice,
+            selectedMicrophone: streamConfiguration.selectedMicrophone
         )
     }
 
@@ -391,6 +398,7 @@ final class BroadcastManager {
 
                 configureCameraSession()
                 await updateStreamConfiguration()
+                notifyBroadcastStateDidChange()
                 observeStreamConfiguration()
             }
         }

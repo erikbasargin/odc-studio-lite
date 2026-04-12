@@ -11,11 +11,10 @@ import AudioVideoKit
 struct MenuBarExtraContentView: View {
     
     @Bindable var store: StoreOf<BroadcastFeature>
-    @Environment(BroadcastManager.self) private var broadcastManager
     
     var body: some View {
-        CameraControlSection()
-            .disabled(!broadcastManager.cameraIsAuthorized)
+        CameraControlSection(store: store)
+            .disabled(!store.cameraIsAuthorized)
             
 //        Section("Video") {
 //            Toggle("Exclude app from stream", isOn: $broadcastManager.excludeAppFromStream)
@@ -34,7 +33,7 @@ struct MenuBarExtraContentView: View {
 //            await broadcastManager.listenForVideoDevices()
 //        }
         
-        AudioControlSection()
+        AudioControlSection(store: store)
         
 //        Section("Audio") {
 //            Toggle("Capture microphone", isOn: $broadcastManager.captureMicrophone)
@@ -67,5 +66,4 @@ struct MenuBarExtraContentView: View {
     MenuBarExtraContentView(
         store: Store(initialState: BroadcastFeature.State()) {}
     )
-    .environment(BroadcastManager())
 }

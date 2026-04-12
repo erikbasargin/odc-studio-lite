@@ -3,37 +3,46 @@
 // See LICENSE for license information.
 //
 
-import SwiftUI
 import AudioVideoKit
+import ComposableArchitecture
+import SwiftUI
 
 struct AudioControlSection: View {
-    
-    @Environment(StreamConfiguration.self) private var streamConfiguration
-    @State private var microphones: [CaptureDevice] = []
+
+    @Bindable var store: StoreOf<BroadcastFeature>
     
     var body: some View {
-        @Bindable var streamConfiguration = self.streamConfiguration
-        
         Section("Audio") {
             Picker(
-                "Microphone - \(streamConfiguration.selectedMicrophone?.name ?? "not selected")",
-                selection: $streamConfiguration.selectedMicrophone
+                "Microphone - \(store.selectedMicrophone?.name ?? "not selected")",
+                selection: $store.selectedMicrophone.sending(\.selectedMicrophoneChanged)
             ) {
-                ForEach(microphones) { device in
+                ForEach(store.availableMicrophones) { device in
                     Text(verbatim: device.name)
                         .tag(device)
                 }
             }
         }
         .task {
-            for await microphones in CaptureDevice.DiscoveryService(mediaType: .audio, deviceTypes: [.microphone]).devices {
-                self.microphones = microphones
+            let discoveryService = CaptureDevice.DiscoveryService(
+                mediaType: .audio,
+                deviceTypes: [.microphone]
+            )
+            for await microphones in discoveryService.devices {
+                store.send(.availableMicrophonesChanged(microphones))
             }
         }
     }
 }
 
 #Preview {
-    AudioControlSection()
-        .environment(StreamConfiguration())
+    AudioControlSection(
+        store: Store(
+            initialState: BroadcastFeature.State(
+                snapshot: BroadcastStateSnapshot()
+            )
+        ) {
+            BroadcastFeature()
+        }
+    )
 }

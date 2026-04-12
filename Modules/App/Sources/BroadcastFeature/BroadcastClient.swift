@@ -6,12 +6,16 @@
 import ComposableArchitecture
 import ScreenCaptureKit
 
+import AudioVideoKit
+
 struct BroadcastClient: Sendable {
     var bootstrap: @Sendable () async throws -> Void
     var snapshot: @Sendable () async -> BroadcastStateSnapshot
     var updates: @Sendable () async -> AsyncStream<BroadcastStateSnapshot>
     var setPrimaryStreamKey: @Sendable (String) async -> Void
     var setBandwidthTestEnabled: @Sendable (Bool) async -> Void
+    var setSelectedCamera: @Sendable (CaptureDevice?) async -> Void
+    var setSelectedMicrophone: @Sendable (CaptureDevice?) async -> Void
     var toggleBroadcast: @Sendable () async -> Void
 }
 
@@ -25,6 +29,8 @@ extension BroadcastClient: DependencyKey {
         updates: { AsyncStream { _ in } },
         setPrimaryStreamKey: { _ in },
         setBandwidthTestEnabled: { _ in },
+        setSelectedCamera: { _ in },
+        setSelectedMicrophone: { _ in },
         toggleBroadcast: {}
     )
 }
@@ -61,6 +67,12 @@ extension BroadcastClient {
             },
             setBandwidthTestEnabled: { bandwidthTestEnabled in
                 await broadcastManager.updateBandwidthTestEnabled(bandwidthTestEnabled)
+            },
+            setSelectedCamera: { camera in
+                await broadcastManager.updateSelectedCamera(camera)
+            },
+            setSelectedMicrophone: { microphone in
+                await broadcastManager.updateSelectedMicrophone(microphone)
             },
             toggleBroadcast: {
                 await broadcastManager.toogleBroadcast()

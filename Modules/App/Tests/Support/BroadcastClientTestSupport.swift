@@ -1,10 +1,13 @@
 import ComposableArchitecture
+import AudioVideoKit
 @testable import ODCLite
 
 actor BroadcastClientProbe {
     private var bootstrapInvocationCount = 0
     private var primaryStreamKeyValues: [String] = []
     private var bandwidthTestEnabledValues: [Bool] = []
+    private var selectedCameras: [CaptureDevice?] = []
+    private var selectedMicrophones: [CaptureDevice?] = []
     private var toggleInvocationCount = 0
 
     func recordBootstrap() {
@@ -17,6 +20,14 @@ actor BroadcastClientProbe {
 
     func recordBandwidthTestEnabled(_ bandwidthTestEnabled: Bool) {
         bandwidthTestEnabledValues.append(bandwidthTestEnabled)
+    }
+
+    func recordSelectedCamera(_ camera: CaptureDevice?) {
+        selectedCameras.append(camera)
+    }
+
+    func recordSelectedMicrophone(_ microphone: CaptureDevice?) {
+        selectedMicrophones.append(microphone)
     }
 
     func recordToggleBroadcast() {
@@ -35,6 +46,14 @@ actor BroadcastClientProbe {
         bandwidthTestEnabledValues
     }
 
+    func selectedCameraValues() -> [CaptureDevice?] {
+        selectedCameras
+    }
+
+    func selectedMicrophoneValues() -> [CaptureDevice?] {
+        selectedMicrophones
+    }
+
     func toggleBroadcastCount() -> Int {
         toggleInvocationCount
     }
@@ -51,6 +70,8 @@ extension BroadcastClient {
         },
         setPrimaryStreamKey: @escaping @Sendable (String) async -> Void = { _ in },
         setBandwidthTestEnabled: @escaping @Sendable (Bool) async -> Void = { _ in },
+        setSelectedCamera: @escaping @Sendable (CaptureDevice?) async -> Void = { _ in },
+        setSelectedMicrophone: @escaping @Sendable (CaptureDevice?) async -> Void = { _ in },
         toggleBroadcast: @escaping @Sendable () async -> Void = {}
     ) -> Self {
         Self(
@@ -59,6 +80,8 @@ extension BroadcastClient {
             updates: updates,
             setPrimaryStreamKey: setPrimaryStreamKey,
             setBandwidthTestEnabled: setBandwidthTestEnabled,
+            setSelectedCamera: setSelectedCamera,
+            setSelectedMicrophone: setSelectedMicrophone,
             toggleBroadcast: toggleBroadcast
         )
     }

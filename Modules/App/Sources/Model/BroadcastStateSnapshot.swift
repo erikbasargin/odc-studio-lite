@@ -5,8 +5,13 @@
 
 import Foundation
 
+import AudioVideoKit
+
 struct BroadcastStateSnapshot: Equatable, Sendable {
     var bandwidthTestEnabled = false
     var primaryStreamKey = ""
     var isBroadcasting = false
+    var cameraIsAuthorized = false
+    var selectedCamera: CaptureDevice?
+    var selectedMicrophone: CaptureDevice?
 }

@@ -129,7 +129,7 @@ are most side-effect heavy.
 Use a staged migration. Start by wrapping the current structure with TCA, then
 move ownership inward reducer by reducer.
 
-### Phase 1: Introduce root and broadcast reducers
+### Phase 1: Introduce root and broadcast reducers - [Completed]
 
 Goals:
 
@@ -155,7 +155,7 @@ Expected outcome:
 
 - The first user-facing flow becomes store-driven with low migration risk.
 
-### Phase 3: Expand broadcast state ownership
+### Phase 3: Expand broadcast state ownership - [Completed]
 
 Goals:
 

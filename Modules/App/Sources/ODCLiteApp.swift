@@ -21,7 +21,6 @@ struct ODCLiteApp: App {
     
     private let broadcastManager: BroadcastManager
     private let store: StoreOf<AppFeature>
-    private let streamConfiguration = StreamConfiguration()
     
     init() {
         #if DEBUG
@@ -29,8 +28,7 @@ struct ODCLiteApp: App {
         LBLogger(kRTMPHaishinKitIdentifier).level = .debug
         #endif
 
-        let streamConfiguration = self.streamConfiguration
-        let broadcastManager = BroadcastManager(streamConfiguration: streamConfiguration)
+        let broadcastManager = BroadcastManager()
         self.broadcastManager = broadcastManager
         self.store = Store(initialState: AppFeature.State(snapshot: broadcastManager.broadcastStateSnapshot())) {
             AppFeature()
@@ -53,7 +51,6 @@ struct ODCLiteApp: App {
                 store: store.scope(state: \.broadcast, action: \.broadcast)
             )
                 .environment(broadcastManager)
-                .environment(streamConfiguration)
         } label: {
             MenuBarExtraLabelView(
                 store: store.scope(state: \.broadcast, action: \.broadcast)

@@ -3,23 +3,21 @@
 // See LICENSE for license information.
 //
 
-import SwiftUI
 import AudioVideoKit
+import ComposableArchitecture
+import SwiftUI
 
 struct CameraControlSection: View {
-    
-    @Environment(StreamConfiguration.self) private var streamConfiguration
-    @State private var cameras: [CaptureDevice] = []
+
+    @Bindable var store: StoreOf<BroadcastFeature>
     
     var body: some View {
-        @Bindable var streamConfiguration = self.streamConfiguration
-        
         Section("Video") {
             Picker(
-                "Camera - \(streamConfiguration.selectedCamera?.name ?? "not selected")",
-                selection: $streamConfiguration.selectedCamera
+                "Camera - \(store.selectedCamera?.name ?? "not selected")",
+                selection: $store.selectedCamera.sending(\.selectedCameraChanged)
             ) {
-                ForEach(cameras) { device in
+                ForEach(store.availableCameras) { device in
                     Text(verbatim: device.name)
                         .tag(device)
                 }
@@ -27,17 +25,24 @@ struct CameraControlSection: View {
         }
         .task {
             let discoveryService = CaptureDevice.DiscoveryService(
-                mediaType: .video, 
+                mediaType: .video,
                 deviceTypes: [.builtInWideAngleCamera, .continuityCamera]
             )
             for await cameras in discoveryService.devices {
-                self.cameras = cameras
+                store.send(.availableCamerasChanged(cameras))
             }
         }
     }
 }
 
 #Preview {
-    CameraControlSection()
-        .environment(StreamConfiguration())
+    CameraControlSection(
+        store: Store(
+            initialState: BroadcastFeature.State(
+                snapshot: BroadcastStateSnapshot()
+            )
+        ) {
+            BroadcastFeature()
+        }
+    )
 }
