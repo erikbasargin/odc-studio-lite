@@ -17,7 +17,6 @@ struct BroadcastFeature {
     @ObservableState
     struct State: Equatable {
         var bandwidthTestEnabled = false
-        var primaryStreamKey = ""
         var isBroadcasting = false
         var cameraIsAuthorized = false
         var availableCameras: [CaptureDevice] = []
@@ -27,7 +26,6 @@ struct BroadcastFeature {
 
         init(snapshot: BroadcastStateSnapshot = .init()) {
             self.bandwidthTestEnabled = snapshot.bandwidthTestEnabled
-            self.primaryStreamKey = snapshot.primaryStreamKey
             self.isBroadcasting = snapshot.isBroadcasting
             self.cameraIsAuthorized = snapshot.cameraIsAuthorized
             self.selectedCamera = snapshot.selectedCamera
@@ -37,7 +35,6 @@ struct BroadcastFeature {
 
     enum Action: Equatable {
         case task
-        case primaryStreamKeyChanged(String)
         case bandwidthTestEnabledChanged(Bool)
         case availableCamerasChanged([CaptureDevice])
         case selectedCameraChanged(CaptureDevice?)
@@ -74,12 +71,6 @@ struct BroadcastFeature {
                     }
                 )
 
-            case let .primaryStreamKeyChanged(primaryStreamKey):
-                state.primaryStreamKey = primaryStreamKey
-                return .run { _ in
-                    await broadcastClient.setPrimaryStreamKey(primaryStreamKey)
-                }
-
             case let .bandwidthTestEnabledChanged(bandwidthTestEnabled):
                 state.bandwidthTestEnabled = bandwidthTestEnabled
                 return .run { _ in
@@ -113,7 +104,6 @@ struct BroadcastFeature {
 
             case let .stateDidChange(snapshot):
                 state.bandwidthTestEnabled = snapshot.bandwidthTestEnabled
-                state.primaryStreamKey = snapshot.primaryStreamKey
                 state.isBroadcasting = snapshot.isBroadcasting
                 state.cameraIsAuthorized = snapshot.cameraIsAuthorized
                 state.selectedCamera = snapshot.selectedCamera

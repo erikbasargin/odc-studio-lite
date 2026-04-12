@@ -31,6 +31,7 @@ struct AppFeatureTests {
         await store.receive(.broadcast(.task))
         await store.receive(.broadcast(.stateDidChange(initialSnapshot))) {
             $0.broadcast = BroadcastFeature.State(snapshot: initialSnapshot)
+            $0.settings = SettingsFeature.State()
         }
 
         #expect(await probe.bootstrapCount() == 1)

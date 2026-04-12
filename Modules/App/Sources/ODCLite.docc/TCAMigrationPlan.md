@@ -50,7 +50,7 @@ Responsibilities:
 ### `BroadcastFeature`
 
 Owns the core streaming domain that is currently concentrated in
-`BroadcastManager`. Including UI to control Broadcast (start/stop) that 
+`BroadcastManager`. Including UI to control Broadcast (start/stop) that
 can be injected into menu bar.
 
 Responsibilities:
@@ -118,7 +118,7 @@ Recommended boundaries for this codebase:
 - `ContentSharingPickerService`
   Wraps `SCContentSharingPicker` configuration and activation.
 - `BroadcastSession`
-  Wraps RTMP session creation, mixer setup, connection lifecycle, and shutdown. 
+  Wraps RTMP session creation, mixer setup, connection lifecycle, and shutdown.
   Can register output from `CaptureSystem`.
 
 This keeps the migration seams narrow and focused on the parts of the app that
@@ -143,7 +143,7 @@ Expected outcome:
 - The app starts using a `Store` without immediately rewriting capture and RTMP
   internals.
 
-### Phase 2: Extract Settings
+### Phase 2: Extract Settings - [Completed]
 
 Goals:
 
@@ -167,7 +167,7 @@ Expected outcome:
 
 - Broadcast-related state becomes explicit and testable in one reducer.
 
-### Phase 4: Move menu bar composition into `AppFeature`
+### Phase 4: Move menu bar composition into `AppFeature` - [Completed]
 
 Goals:
 

@@ -44,9 +44,7 @@ struct BroadcastFeatureTests {
         }
 
         await store.send(.task)
-        await store.receive(.stateDidChange(initialSnapshot)) {
-            $0 = BroadcastFeature.State(snapshot: initialSnapshot)
-        }
+        await store.receive(.stateDidChange(initialSnapshot))
 
         continuation.yield(updatedSnapshot)
 
@@ -58,28 +56,6 @@ struct BroadcastFeatureTests {
         await store.finish()
 
         #expect(await probe.bootstrapCount() == 1)
-    }
-
-    @Test
-    @MainActor
-    func primaryStreamKeyWritesThroughDependency() async {
-        let probe = BroadcastClientProbe()
-        let store = TestStore(initialState: BroadcastFeature.State()) {
-            BroadcastFeature()
-        } withDependencies: {
-            $0.broadcastClient = .mock(
-                setPrimaryStreamKey: { key in
-                    await probe.recordPrimaryStreamKey(key)
-                }
-            )
-        }
-
-        await store.send(.primaryStreamKeyChanged("abc123")) {
-            $0.primaryStreamKey = "abc123"
-        }
-        await store.finish()
-
-        #expect(await probe.primaryStreamKeys() == ["abc123"])
     }
 
     @Test

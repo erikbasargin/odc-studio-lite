@@ -8,14 +8,14 @@ import SwiftUI
 
 struct GeneralSettingsView: View {
     
-    @Bindable var store: StoreOf<BroadcastFeature>
+    @Bindable var store: StoreOf<SettingsFeature>
     
     var body: some View {
         Form {
             Section("Twitch") {
                 SecureField(
                     "Primary Stream key",
-                    text: $store.primaryStreamKey.sending(\.primaryStreamKeyChanged),
+                    text: $store.primaryStreamKey.sending(\.primaryStreamKeyChanged)
                 )
             }
         }
@@ -24,6 +24,6 @@ struct GeneralSettingsView: View {
 
 #Preview {
     GeneralSettingsView(
-        store: Store(initialState: BroadcastFeature.State()) {}
+        store: Store(initialState: SettingsFeature.State()) {}
     )
 }

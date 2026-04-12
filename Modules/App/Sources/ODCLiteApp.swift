@@ -47,22 +47,15 @@ struct ODCLiteApp: App {
         }
         
         MenuBarExtra {
-            MenuBarExtraContentView(
-                store: store.scope(state: \.broadcast, action: \.broadcast)
-            )
+            MenuBarExtraContentView(store: store)
                 .environment(broadcastManager)
         } label: {
-            MenuBarExtraLabelView(
-                store: store.scope(state: \.broadcast, action: \.broadcast)
-            )
+            MenuBarExtraLabelView(store: store.scope(state: \.broadcast, action: \.broadcast))
         }
         
         Settings {
-            GeneralSettingsView(
-                store: store.scope(state: \.broadcast, action: \.broadcast)
-            )
+            GeneralSettingsView(store: store.scope(state: \.settings, action: \.settings))
                 .frame(width: 830)
-                .environment(broadcastManager)
         }
         .windowResizability(.contentSize)
     }

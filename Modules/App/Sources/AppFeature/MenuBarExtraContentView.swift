@@ -6,15 +6,15 @@
 import ComposableArchitecture
 import SwiftUI
 
-import AudioVideoKit
-
 struct MenuBarExtraContentView: View {
     
-    @Bindable var store: StoreOf<BroadcastFeature>
+    @Bindable var store: StoreOf<AppFeature>
     
     var body: some View {
-        CameraControlSection(store: store)
-            .disabled(!store.cameraIsAuthorized)
+        @Bindable var broadcastStore = store.scope(state: \.broadcast, action: \.broadcast)
+
+        CameraControlSection(store: broadcastStore)
+            .disabled(!broadcastStore.cameraIsAuthorized)
             
 //        Section("Video") {
 //            Toggle("Exclude app from stream", isOn: $broadcastManager.excludeAppFromStream)
@@ -33,7 +33,7 @@ struct MenuBarExtraContentView: View {
 //            await broadcastManager.listenForVideoDevices()
 //        }
         
-        AudioControlSection(store: store)
+        AudioControlSection(store: broadcastStore)
         
 //        Section("Audio") {
 //            Toggle("Capture microphone", isOn: $broadcastManager.captureMicrophone)
@@ -42,14 +42,14 @@ struct MenuBarExtraContentView: View {
         Section("Twitch Broadcast") {
             Toggle(
                 "Bandwidth test",
-                isOn: $store.bandwidthTestEnabled.sending(\.bandwidthTestEnabledChanged),
+                isOn: $broadcastStore.bandwidthTestEnabled.sending(\.bandwidthTestEnabledChanged)
             )
-                .disabled(store.isBroadcasting)
+            .disabled(broadcastStore.isBroadcasting)
             
-            Button("\(store.isBroadcasting ? "Stop" : "Start") broadcast") {
-                store.send(.startStopBroadcastButtonTapped)
+            Button("\(broadcastStore.isBroadcasting ? "Stop" : "Start") broadcast") {
+                broadcastStore.send(.startStopBroadcastButtonTapped)
             }
-            .disabled(store.primaryStreamKey.isEmpty)
+            .disabled(store.settings.primaryStreamKey.isEmpty)
         }
         
         Section {
@@ -64,6 +64,6 @@ struct MenuBarExtraContentView: View {
 
 #Preview {
     MenuBarExtraContentView(
-        store: Store(initialState: BroadcastFeature.State()) {}
+        store: Store(initialState: AppFeature.State()) {}
     )
 }

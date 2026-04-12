@@ -11,15 +11,18 @@ struct AppFeature {
     @ObservableState
     struct State: Equatable {
         var broadcast: BroadcastFeature.State
+        var settings: SettingsFeature.State
 
         init(snapshot: BroadcastStateSnapshot = .init()) {
             self.broadcast = BroadcastFeature.State(snapshot: snapshot)
+            self.settings = SettingsFeature.State()
         }
     }
 
     enum Action: Equatable {
         case task
         case broadcast(BroadcastFeature.Action)
+        case settings(SettingsFeature.Action)
     }
 
     var body: some ReducerOf<Self> {
@@ -27,11 +30,16 @@ struct AppFeature {
             BroadcastFeature()
         }
 
-        Reduce { _, action in
+        Scope(state: \.settings, action: \.settings) {
+            SettingsFeature()
+        }
+
+        Reduce { state, action in
             switch action {
             case .task:
                 return .send(.broadcast(.task))
-            case .broadcast:
+
+            case .broadcast, .settings:
                 return .none
             }
         }

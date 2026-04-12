@@ -22,6 +22,7 @@ This repository is a Tuist-managed macOS app for broadcasting captured content:
 - Use `mise run setup` to generate Xcode project if needed.
 - Use Xcode MCP for builds and tests.
 - Prefer editing docs in `Modules/App/Sources/ODCLite.docc` when the request is architectural or planning-oriented.
+- When User requests to initiate the migration - use the migration plan `Modules/App/Sources/ODCLite.docc/TCAMigrationPlan.md` and folow phases in defined order. If provided order is no longer working notify User and wait for further instructions.
 
 ## Intent Layer Maintenance
 
