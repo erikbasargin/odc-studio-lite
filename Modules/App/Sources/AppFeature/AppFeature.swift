@@ -30,6 +30,7 @@ struct AppFeature {
     enum Action: Equatable {
         case task
         case retryButtonTapped
+        case microphoneCaptureRequested(Bool)
         case bootstrapSucceeded
         case bootstrapFailed(String)
         case broadcast(BroadcastFeature.Action)
@@ -70,6 +71,9 @@ struct AppFeature {
             case .retryButtonTapped:
                 state.bootstrapState = .idle
                 return .send(.task)
+
+            case let .microphoneCaptureRequested(isEnabled):
+                return .send(.broadcast(.captureMicrophoneChanged(isEnabled)))
 
             case .bootstrapSucceeded:
                 state.bootstrapState = .finished

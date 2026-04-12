@@ -28,13 +28,14 @@ struct ODCLiteApp: App {
         #endif
 
         let broadcastManager = BroadcastManager()
-        self.store = Store(initialState: AppFeature.State(snapshot: broadcastManager.broadcastStateSnapshot())) {
+        let store = Store(initialState: AppFeature.State(snapshot: broadcastManager.broadcastStateSnapshot())) {
             AppFeature()
         } withDependencies: {
             $0.broadcastClient = .live(broadcastManager)
         }
+        self.store = store
 
-        AppDependencyManager.shared.add(dependency: broadcastManager)
+        AppDependencyManager.shared.add(dependency: store)
 
         ODCLiteShortcuts.updateAppShortcutParameters()
     }

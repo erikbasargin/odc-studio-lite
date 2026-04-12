@@ -14,6 +14,7 @@ struct BroadcastClient: Sendable {
     var updates: @Sendable () async -> AsyncStream<BroadcastStateSnapshot>
     var setPrimaryStreamKey: @Sendable (String) async -> Void
     var setBandwidthTestEnabled: @Sendable (Bool) async -> Void
+    var setCaptureMicrophone: @Sendable (Bool) async -> Void
     var setSelectedCamera: @Sendable (CaptureDevice?) async -> Void
     var setSelectedMicrophone: @Sendable (CaptureDevice?) async -> Void
     var toggleBroadcast: @Sendable () async -> Void
@@ -29,6 +30,7 @@ extension BroadcastClient: DependencyKey {
         updates: { AsyncStream { _ in } },
         setPrimaryStreamKey: { _ in },
         setBandwidthTestEnabled: { _ in },
+        setCaptureMicrophone: { _ in },
         setSelectedCamera: { _ in },
         setSelectedMicrophone: { _ in },
         toggleBroadcast: {}
@@ -67,6 +69,9 @@ extension BroadcastClient {
             },
             setBandwidthTestEnabled: { bandwidthTestEnabled in
                 await broadcastManager.updateBandwidthTestEnabled(bandwidthTestEnabled)
+            },
+            setCaptureMicrophone: { isEnabled in
+                await broadcastManager.updateCaptureMicrophone(isEnabled)
             },
             setSelectedCamera: { camera in
                 await broadcastManager.updateSelectedCamera(camera)

@@ -35,6 +35,7 @@ struct BroadcastFeature {
 
     enum Action: Equatable {
         case task
+        case captureMicrophoneChanged(Bool)
         case bandwidthTestEnabledChanged(Bool)
         case availableCamerasChanged([CaptureDevice])
         case selectedCameraChanged(CaptureDevice?)
@@ -65,6 +66,11 @@ struct BroadcastFeature {
                 state.bandwidthTestEnabled = bandwidthTestEnabled
                 return .run { _ in
                     await broadcastClient.setBandwidthTestEnabled(bandwidthTestEnabled)
+                }
+
+            case let .captureMicrophoneChanged(isEnabled):
+                return .run { _ in
+                    await broadcastClient.setCaptureMicrophone(isEnabled)
                 }
 
             case let .availableCamerasChanged(cameras):

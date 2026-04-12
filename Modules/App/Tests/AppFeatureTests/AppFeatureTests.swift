@@ -68,4 +68,15 @@ struct AppFeatureTests {
             $0.bootstrapState = .failed("Bootstrap failed")
         }
     }
+
+    @Test
+    @MainActor
+    func microphoneCaptureRequestRoutesThroughBroadcastFeature() async {
+        let store = TestStore(initialState: AppFeature.State()) {
+            AppFeature()
+        }
+
+        await store.send(.microphoneCaptureRequested(true))
+        await store.receive(.broadcast(.captureMicrophoneChanged(true)))
+    }
 }

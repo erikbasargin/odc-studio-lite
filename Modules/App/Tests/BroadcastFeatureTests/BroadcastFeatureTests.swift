@@ -82,6 +82,26 @@ struct BroadcastFeatureTests {
 
     @Test
     @MainActor
+    func microphoneCaptureWritesThroughDependency() async {
+        let probe = BroadcastClientProbe()
+        let store = TestStore(initialState: BroadcastFeature.State()) {
+            BroadcastFeature()
+        } withDependencies: {
+            $0.broadcastClient = .mock(
+                setCaptureMicrophone: { isEnabled in
+                    await probe.recordCaptureMicrophone(isEnabled)
+                }
+            )
+        }
+
+        await store.send(.captureMicrophoneChanged(true))
+        await store.finish()
+
+        #expect(await probe.captureMicrophoneValues() == [true])
+    }
+
+    @Test
+    @MainActor
     func availableCamerasAreReducerOwned() async {
         let cameras = [CaptureDevice(id: "camera-1", name: "FaceTime HD Camera")]
         let store = TestStore(initialState: BroadcastFeature.State()) {

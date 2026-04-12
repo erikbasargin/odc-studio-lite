@@ -225,6 +225,11 @@ final class BroadcastManager {
         self.bandwidthTestEnabled = bandwidthTestEnabled
     }
 
+    func updateCaptureMicrophone(_ isEnabled: Bool) {
+        captureMicrophone = isEnabled
+        notifyBroadcastStateDidChange()
+    }
+
     func updateSelectedCamera(_ camera: CaptureDevice?) {
         selectedCameraDevice = camera
         notifyBroadcastStateDidChange()

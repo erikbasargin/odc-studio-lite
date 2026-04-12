@@ -191,7 +191,7 @@ Expected outcome:
 - App startup becomes more predictable and easier to reason about without an
   extra reducer boundary.
 
-### Phase 6: Integrate App Intents with the store
+### Phase 6: Integrate App Intents with the store - [Completed]
 
 Goals:
 

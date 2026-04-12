@@ -6,6 +6,7 @@ actor BroadcastClientProbe {
     private var bootstrapInvocationCount = 0
     private var primaryStreamKeyValues: [String] = []
     private var bandwidthTestEnabledValues: [Bool] = []
+    private var microphoneCaptureRequests: [Bool] = []
     private var selectedCameras: [CaptureDevice?] = []
     private var selectedMicrophones: [CaptureDevice?] = []
     private var toggleInvocationCount = 0
@@ -20,6 +21,10 @@ actor BroadcastClientProbe {
 
     func recordBandwidthTestEnabled(_ bandwidthTestEnabled: Bool) {
         bandwidthTestEnabledValues.append(bandwidthTestEnabled)
+    }
+
+    func recordCaptureMicrophone(_ isEnabled: Bool) {
+        microphoneCaptureRequests.append(isEnabled)
     }
 
     func recordSelectedCamera(_ camera: CaptureDevice?) {
@@ -46,6 +51,10 @@ actor BroadcastClientProbe {
         bandwidthTestEnabledValues
     }
 
+    func captureMicrophoneValues() -> [Bool] {
+        microphoneCaptureRequests
+    }
+
     func selectedCameraValues() -> [CaptureDevice?] {
         selectedCameras
     }
@@ -70,6 +79,7 @@ extension BroadcastClient {
         },
         setPrimaryStreamKey: @escaping @Sendable (String) async -> Void = { _ in },
         setBandwidthTestEnabled: @escaping @Sendable (Bool) async -> Void = { _ in },
+        setCaptureMicrophone: @escaping @Sendable (Bool) async -> Void = { _ in },
         setSelectedCamera: @escaping @Sendable (CaptureDevice?) async -> Void = { _ in },
         setSelectedMicrophone: @escaping @Sendable (CaptureDevice?) async -> Void = { _ in },
         toggleBroadcast: @escaping @Sendable () async -> Void = {}
@@ -80,6 +90,7 @@ extension BroadcastClient {
             updates: updates,
             setPrimaryStreamKey: setPrimaryStreamKey,
             setBandwidthTestEnabled: setBandwidthTestEnabled,
+            setCaptureMicrophone: setCaptureMicrophone,
             setSelectedCamera: setSelectedCamera,
             setSelectedMicrophone: setSelectedMicrophone,
             toggleBroadcast: toggleBroadcast

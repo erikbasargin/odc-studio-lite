@@ -4,6 +4,7 @@
 //
 
 import AppIntents
+import ComposableArchitecture
 
 struct StartCapturingMicrophone: AppIntent {
     
@@ -15,12 +16,12 @@ struct StartCapturingMicrophone: AppIntent {
         searchKeywords: ["start", "capture", "capturing", "unmute", "audio", "microphone"]
     )
     
-    @Dependency
-    private var broadcastManager: BroadcastManager
+    @AppDependency
+    private var store: StoreOf<AppFeature>
     
     @MainActor
     func perform() async throws -> some IntentResult {
-        broadcastManager.captureMicrophone = true
+        store.send(.microphoneCaptureRequested(true))
         return .result()
     }
 }
@@ -35,12 +36,12 @@ struct StopCapturingMicrophone: AppIntent {
         searchKeywords: ["stop", "uncapture", "uncapturing", "mute", "audio", "microphone"]
     )
     
-    @Dependency
-    private var broadcastManager: BroadcastManager
+    @AppDependency
+    private var store: StoreOf<AppFeature>
     
     @MainActor
     func perform() async throws -> some IntentResult {
-        broadcastManager.captureMicrophone = false
+        store.send(.microphoneCaptureRequested(false))
         return .result()
     }
 }
