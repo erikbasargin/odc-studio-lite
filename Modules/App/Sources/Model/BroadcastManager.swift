@@ -9,20 +9,17 @@ import AppKit
 import HaishinKit
 import RTMPHaishinKit
 import OSLog
-import Observation
 import VideoToolbox
 import Foundation
 
 private let log = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "BroadcastManager")
 
 @MainActor
-@Observable
 final class BroadcastManager {
+    
+    private var configuration: BroadcastConfiguration
 
-    @ObservationIgnored
-    let streamConfiguration: StreamConfiguration
-
-    var excludeAppFromStream = true {
+    private var excludeAppFromStream = true {
         didSet {
             Task {
                 await updateStreamContentFilter()
@@ -30,9 +27,9 @@ final class BroadcastManager {
         }
     }
 
-    var captureMicrophone: Bool {
+    private var captureMicrophone: Bool {
         get {
-            streamConfiguration.selectedMicrophone != nil
+            configuration.selectedMicrophone != nil
         }
         set {
             guard newValue != captureMicrophone else {
@@ -40,49 +37,23 @@ final class BroadcastManager {
             }
 
             if newValue {
-                streamConfiguration.selectedMicrophone = defaultMicrophoneDevice()
+                configuration.selectedMicrophone = defaultMicrophoneDevice()
             } else {
-                streamConfiguration.selectedMicrophone = nil
+                configuration.selectedMicrophone = nil
             }
         }
     }
 
-    var bandwidthTestEnabled = false
-    {
-        didSet {
-            notifyBroadcastStateDidChange()
-        }
-    }
-
-    var primaryStreamKey = ""
-    {
-        didSet {
-            notifyBroadcastStateDidChange()
-        }
-    }
-
-    var cameraIsAuthorized = false {
-        didSet {
-            notifyBroadcastStateDidChange()
-        }
-    }
-
-    var selectedCameraDevice: CaptureDevice? {
+    private var selectedCameraDevice: CaptureDevice? {
         get {
-            streamConfiguration.selectedCamera
+            configuration.selectedCamera
         }
         set {
-            streamConfiguration.selectedCamera = newValue
+            configuration.selectedCamera = newValue
         }
     }
 
-    private(set) var isBroadcasting: Bool = false {
-        didSet {
-            notifyBroadcastStateDidChange()
-        }
-    }
-
-    let cameraCaptureSession = AVCaptureSession()
+    private let cameraCaptureSession = AVCaptureSession()
     private let cameraDiscoverySession = AVCaptureDevice.DiscoverySession(
         deviceTypes: [.builtInWideAngleCamera, .continuityCamera],
         mediaType: .video,
@@ -93,16 +64,10 @@ final class BroadcastManager {
     private var rtmpConnectionStatusTask: Task<Void, Never>?
     private let captureSystem = CaptureSystem()
     private var session: (any Session)?
-    
-    @ObservationIgnored
     private var screenCaptureTask: Task<Void, Never>?
-    @ObservationIgnored
     private var microphoneCaptureTask: Task<Void, Never>?
-    
-    @ObservationIgnored
     private var cameraPreviewLayer: AVCaptureVideoPreviewLayer?
-    @ObservationIgnored
-    private var broadcastStateContinuations: [UUID: AsyncStream<BroadcastStateSnapshot>.Continuation] = [:]
+    private var broadcastConfigurationContinuations: [UUID: AsyncStream<BroadcastConfiguration>.Continuation] = [:]
     
     private var scaleFactor: Int {
         Int(NSScreen.main?.backingScaleFactor ?? 2)
@@ -112,14 +77,13 @@ final class BroadcastManager {
         .init(includeMenuBar: false, excludeCurrentApplication: excludeAppFromStream)
     }
     
-    @ObservationIgnored
     private var captureConfiguration: CaptureConfiguration {
         let screenFrame = NSScreen.main?.frame ?? .init(x: 0, y: 0, width: 1920, height: 1080)
 
         return .init(
             excludesCurrentProcessAudio: true,
             captureMicrophone: captureMicrophone,
-            microphoneCaptureDeviceID: streamConfiguration.selectedMicrophone?.id,
+            microphoneCaptureDeviceID: configuration.selectedMicrophone?.id,
             width: Int(screenFrame.width) * scaleFactor,
             height: Int(screenFrame.height) * scaleFactor,
             minimumFrameInterval: CMTime(value: 1, timescale: 60),
@@ -127,18 +91,17 @@ final class BroadcastManager {
         )
     }
 
-    init(streamConfiguration: StreamConfiguration = StreamConfiguration()) {
-        self.streamConfiguration = streamConfiguration
-        self.streamConfiguration.selectedCamera = AVCaptureDevice.systemPreferredCamera.map {
+    init(configuration: BroadcastConfiguration = BroadcastConfiguration()) {
+        self.configuration = configuration
+        self.configuration.selectedCamera = AVCaptureDevice.systemPreferredCamera.map {
             CaptureDevice(id: $0.uniqueID, name: $0.localizedName)
         }
-        observeStreamConfiguration()
     }
 
     deinit {
         screenCaptureTask?.cancel()
         microphoneCaptureTask?.cancel()
-        for continuation in broadcastStateContinuations.values {
+        for continuation in broadcastConfigurationContinuations.values {
             continuation.finish()
         }
 //        let captureSystem = captureSystem
@@ -207,59 +170,67 @@ final class BroadcastManager {
         
         switch status {
         case .notDetermined:
-            cameraIsAuthorized = await AVCaptureDevice.requestAccess(for: .video)
+            configuration.cameraIsAuthorized = await AVCaptureDevice.requestAccess(for: .video)
         case .restricted, .denied:
-            cameraIsAuthorized = false
+            configuration.cameraIsAuthorized = false
         case .authorized:
-            cameraIsAuthorized = true
+            configuration.cameraIsAuthorized = true
         @unknown default:
-            cameraIsAuthorized = false
+            configuration.cameraIsAuthorized = false
         }
+
+        notifyBroadcastConfigurationDidChange()
     }
 
     func updatePrimaryStreamKey(_ primaryStreamKey: String) {
-        self.primaryStreamKey = primaryStreamKey
+        configuration.primaryStreamKey = primaryStreamKey
+        notifyBroadcastConfigurationDidChange()
     }
 
     func updateBandwidthTestEnabled(_ bandwidthTestEnabled: Bool) {
-        self.bandwidthTestEnabled = bandwidthTestEnabled
+        configuration.bandwidthTestEnabled = bandwidthTestEnabled
+        notifyBroadcastConfigurationDidChange()
     }
 
-    func updateCaptureMicrophone(_ isEnabled: Bool) {
+    func updateCaptureMicrophone(_ isEnabled: Bool) async {
         captureMicrophone = isEnabled
-        notifyBroadcastStateDidChange()
+        await updateStreamConfiguration()
+        notifyBroadcastConfigurationDidChange()
     }
 
-    func updateSelectedCamera(_ camera: CaptureDevice?) {
+    func updateSelectedCamera(_ camera: CaptureDevice?) async {
         selectedCameraDevice = camera
-        notifyBroadcastStateDidChange()
+        configureCameraSession()
+        await updateStreamConfiguration()
+        notifyBroadcastConfigurationDidChange()
     }
 
-    func updateSelectedMicrophone(_ microphone: CaptureDevice?) {
-        streamConfiguration.selectedMicrophone = microphone
-        notifyBroadcastStateDidChange()
+    func updateSelectedMicrophone(_ microphone: CaptureDevice?) async {
+        configuration.selectedMicrophone = microphone
+        await updateStreamConfiguration()
+        notifyBroadcastConfigurationDidChange()
     }
 
-    func broadcastStateSnapshot() -> BroadcastStateSnapshot {
-        BroadcastStateSnapshot(
-            bandwidthTestEnabled: bandwidthTestEnabled,
-            primaryStreamKey: primaryStreamKey,
-            isBroadcasting: isBroadcasting,
-            cameraIsAuthorized: cameraIsAuthorized,
+    func broadcastConfiguration() -> BroadcastConfiguration {
+        BroadcastConfiguration(
+            bandwidthTestEnabled: configuration.bandwidthTestEnabled,
+            primaryStreamKey: configuration.primaryStreamKey,
+            isBroadcasting: configuration.isBroadcasting,
+            cameraIsAuthorized: configuration.cameraIsAuthorized,
             selectedCamera: selectedCameraDevice,
-            selectedMicrophone: streamConfiguration.selectedMicrophone
+            selectedMicrophone: configuration.selectedMicrophone
         )
     }
 
-    func broadcastStateUpdates() -> AsyncStream<BroadcastStateSnapshot> {
+    func broadcastConfigurationUpdates() -> AsyncStream<BroadcastConfiguration> {
         let id = UUID()
 
         return AsyncStream { continuation in
-            broadcastStateContinuations[id] = continuation
-            continuation.yield(broadcastStateSnapshot())
+            broadcastConfigurationContinuations[id] = continuation
+            continuation.yield(broadcastConfiguration())
             continuation.onTermination = { [weak self] _ in
                 Task { @MainActor [weak self] in
-                    self?.broadcastStateContinuations.removeValue(forKey: id)
+                    self?.broadcastConfigurationContinuations.removeValue(forKey: id)
                 }
             }
         }
@@ -277,17 +248,19 @@ final class BroadcastManager {
     
     func toogleBroadcast() async {
         do {
-            guard !isBroadcasting else {
-                isBroadcasting = false
+            guard !configuration.isBroadcasting else {
+                configuration.isBroadcasting = false
+                notifyBroadcastConfigurationDidChange()
                 await mediaMixer.stopRunning()
                 
                 try await session?.close()
                 session = nil
                 return
             }
-            isBroadcasting = true
+            configuration.isBroadcasting = true
+            notifyBroadcastConfigurationDidChange()
             
-            await makeSession(primaryStreamKey: primaryStreamKey)
+            await makeSession(primaryStreamKey: configuration.primaryStreamKey)
             
             guard let session else {
                 log.error("Session is nil")
@@ -311,18 +284,22 @@ final class BroadcastManager {
             
             try await session.connect {
                 Task { @MainActor in
-                    self.isBroadcasting = false
+                    self.configuration.isBroadcasting = false
+                    self.notifyBroadcastConfigurationDidChange()
                 }
             }
         } catch RTMPConnection.Error.requestFailed {
             log.error("RTMP connection request failed")
-            isBroadcasting = false
+            configuration.isBroadcasting = false
+            notifyBroadcastConfigurationDidChange()
         } catch RTMPStream.Error.requestFailed {
             log.error("RTMP stream request failed")
-            isBroadcasting = false
+            configuration.isBroadcasting = false
+            notifyBroadcastConfigurationDidChange()
         } catch {
             log.error("\(error.localizedDescription)")
-            isBroadcasting = false
+            configuration.isBroadcasting = false
+            notifyBroadcastConfigurationDidChange()
         }
     }
     
@@ -391,34 +368,16 @@ final class BroadcastManager {
         }
     }
 
-    private func observeStreamConfiguration() {
-        withObservationTracking {
-            _ = streamConfiguration.selectedCamera
-            _ = streamConfiguration.selectedMicrophone
-        } onChange: { [weak self] in
-            Task { @MainActor [weak self] in
-                guard let self else {
-                    return
-                }
-
-                configureCameraSession()
-                await updateStreamConfiguration()
-                notifyBroadcastStateDidChange()
-                observeStreamConfiguration()
-            }
-        }
-    }
-
     private func defaultMicrophoneDevice() -> CaptureDevice? {
         AVCaptureDevice.default(for: .audio).map { device in
             CaptureDevice(id: device.uniqueID, name: device.localizedName)
         }
     }
 
-    private func notifyBroadcastStateDidChange() {
-        let snapshot = broadcastStateSnapshot()
-        for continuation in broadcastStateContinuations.values {
-            continuation.yield(snapshot)
+    private func notifyBroadcastConfigurationDidChange() {
+        let configuration = broadcastConfiguration()
+        for continuation in broadcastConfigurationContinuations.values {
+            continuation.yield(configuration)
         }
     }
     
