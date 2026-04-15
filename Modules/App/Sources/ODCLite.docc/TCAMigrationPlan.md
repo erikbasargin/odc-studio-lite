@@ -210,6 +210,25 @@ Goals:
   reducer effects.
 - Remove `BroadcastManager` only after reducer state ownership is complete.
 
+Recommended steps:
+
+1. Extract `CameraAuthorizationService`.
+   Move camera authorization status checks and permission requests behind a
+   dedicated dependency boundary.
+2. Extract `CaptureSession`.
+   Move `CaptureSystem` lifecycle, capture configuration updates, and content
+   filter updates behind a thin service adapter.
+3. Extract `BroadcastSession`.
+   Move RTMP session creation, connection lifecycle, publishing start and stop,
+   and shutdown behavior behind a dedicated broadcast dependency.
+4. Extract mixer and capture-pipeline responsibilities.
+   Move `MediaMixer` setup and long-lived capture consumption tasks into
+   focused services such as `MediaMixerController` or
+   `CapturePipelineConsumer`.
+5. Remove `BroadcastConfiguration` ownership from `BroadcastManager`.
+   Make reducer state authoritative and reduce `BroadcastManager` to a temporary
+   adapter, then remove it entirely once the remaining integrations have moved.
+
 Expected outcome:
 
 - The app runs on TCA-native state management rather than an adapter layer.
