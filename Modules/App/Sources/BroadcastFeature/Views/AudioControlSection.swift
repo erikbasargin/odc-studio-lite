@@ -39,7 +39,7 @@ struct AudioControlSection: View {
     AudioControlSection(
         store: Store(
             initialState: BroadcastFeature.State(
-                snapshot: BroadcastStateSnapshot()
+                configuration: BroadcastConfiguration()
             )
         ) {
             BroadcastFeature()

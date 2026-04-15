@@ -21,9 +21,9 @@ struct AppFeature {
         var broadcast: BroadcastFeature.State
         var settings: SettingsFeature.State
 
-        init(snapshot: BroadcastStateSnapshot = .init()) {
-            self.broadcast = BroadcastFeature.State(snapshot: snapshot)
-            self.settings = SettingsFeature.State(primaryStreamKey: snapshot.primaryStreamKey)
+        init(configuration: BroadcastConfiguration = .init()) {
+            self.broadcast = BroadcastFeature.State(configuration: configuration)
+            self.settings = SettingsFeature.State(primaryStreamKey: configuration.primaryStreamKey)
         }
     }
 

@@ -24,12 +24,12 @@ struct BroadcastFeature {
         var availableMicrophones: [CaptureDevice] = []
         var selectedMicrophone: CaptureDevice?
 
-        init(snapshot: BroadcastStateSnapshot = .init()) {
-            self.bandwidthTestEnabled = snapshot.bandwidthTestEnabled
-            self.isBroadcasting = snapshot.isBroadcasting
-            self.cameraIsAuthorized = snapshot.cameraIsAuthorized
-            self.selectedCamera = snapshot.selectedCamera
-            self.selectedMicrophone = snapshot.selectedMicrophone
+        init(configuration: BroadcastConfiguration = .init()) {
+            self.bandwidthTestEnabled = configuration.bandwidthTestEnabled
+            self.isBroadcasting = configuration.isBroadcasting
+            self.cameraIsAuthorized = configuration.cameraIsAuthorized
+            self.selectedCamera = configuration.selectedCamera
+            self.selectedMicrophone = configuration.selectedMicrophone
         }
     }
 
@@ -42,7 +42,7 @@ struct BroadcastFeature {
         case availableMicrophonesChanged([CaptureDevice])
         case selectedMicrophoneChanged(CaptureDevice?)
         case startStopBroadcastButtonTapped
-        case stateDidChange(BroadcastStateSnapshot)
+        case stateDidChange(BroadcastConfiguration)
         case bootstrapFailed(String)
     }
 
@@ -98,12 +98,12 @@ struct BroadcastFeature {
                     await broadcastClient.toggleBroadcast()
                 }
 
-            case let .stateDidChange(snapshot):
-                state.bandwidthTestEnabled = snapshot.bandwidthTestEnabled
-                state.isBroadcasting = snapshot.isBroadcasting
-                state.cameraIsAuthorized = snapshot.cameraIsAuthorized
-                state.selectedCamera = snapshot.selectedCamera
-                state.selectedMicrophone = snapshot.selectedMicrophone
+            case let .stateDidChange(configuration):
+                state.bandwidthTestEnabled = configuration.bandwidthTestEnabled
+                state.isBroadcasting = configuration.isBroadcasting
+                state.cameraIsAuthorized = configuration.cameraIsAuthorized
+                state.selectedCamera = configuration.selectedCamera
+                state.selectedMicrophone = configuration.selectedMicrophone
                 return .none
 
             case let .bootstrapFailed(message):

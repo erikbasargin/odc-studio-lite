@@ -9,7 +9,7 @@ struct BroadcastFeatureTests {
     @Test
     @MainActor
     func taskObservesSnapshotUpdates() async {
-        let initialSnapshot = BroadcastStateSnapshot(
+        let initialConfiguration = BroadcastConfiguration(
             bandwidthTestEnabled: false,
             primaryStreamKey: "initial-key",
             isBroadcasting: false,
@@ -17,7 +17,7 @@ struct BroadcastFeatureTests {
             selectedCamera: nil,
             selectedMicrophone: nil
         )
-        let updatedSnapshot = BroadcastStateSnapshot(
+        let updatedConfiguration = BroadcastConfiguration(
             bandwidthTestEnabled: true,
             primaryStreamKey: "updated-key",
             isBroadcasting: true,
@@ -26,7 +26,7 @@ struct BroadcastFeatureTests {
             selectedMicrophone: CaptureDevice(id: "microphone-1", name: "MacBook Pro Microphone")
         )
         let probe = BroadcastClientProbe()
-        let (updates, continuation) = AsyncStream.makeStream(of: BroadcastStateSnapshot.self)
+        let (updates, continuation) = AsyncStream.makeStream(of: BroadcastConfiguration.self)
         let store = TestStore(initialState: BroadcastFeature.State()) {
             BroadcastFeature()
         } withDependencies: {
@@ -35,7 +35,7 @@ struct BroadcastFeatureTests {
                     await probe.recordBootstrap()
                 },
                 snapshot: {
-                    initialSnapshot
+                    initialConfiguration
                 },
                 updates: {
                     updates
@@ -44,12 +44,12 @@ struct BroadcastFeatureTests {
         }
 
         await store.send(.task)
-        await store.receive(.stateDidChange(initialSnapshot))
+        await store.receive(.stateDidChange(initialConfiguration))
 
-        continuation.yield(updatedSnapshot)
+        continuation.yield(updatedConfiguration)
 
-        await store.receive(.stateDidChange(updatedSnapshot)) {
-            $0 = BroadcastFeature.State(snapshot: updatedSnapshot)
+        await store.receive(.stateDidChange(updatedConfiguration)) {
+            $0 = BroadcastFeature.State(configuration: updatedConfiguration)
         }
 
         continuation.finish()

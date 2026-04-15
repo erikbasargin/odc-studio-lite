@@ -39,7 +39,7 @@ struct CameraControlSection: View {
     CameraControlSection(
         store: Store(
             initialState: BroadcastFeature.State(
-                snapshot: BroadcastStateSnapshot()
+                configuration: BroadcastConfiguration()
             )
         ) {
             BroadcastFeature()

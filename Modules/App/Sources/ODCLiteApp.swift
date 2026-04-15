@@ -28,7 +28,7 @@ struct ODCLiteApp: App {
         #endif
 
         let broadcastManager = BroadcastManager()
-        let store = Store(initialState: AppFeature.State(snapshot: broadcastManager.broadcastStateSnapshot())) {
+        let store = Store(initialState: AppFeature.State(configuration: broadcastManager.broadcastConfiguration())) {
             AppFeature()
         } withDependencies: {
             $0.broadcastClient = .live(broadcastManager)

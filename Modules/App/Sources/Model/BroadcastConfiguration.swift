@@ -7,7 +7,7 @@ import Foundation
 
 import AudioVideoKit
 
-struct BroadcastStateSnapshot: Equatable, Sendable {
+struct BroadcastConfiguration: Equatable, Sendable {
     var bandwidthTestEnabled = false
     var primaryStreamKey = ""
     var isBroadcasting = false

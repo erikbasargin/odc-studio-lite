@@ -9,7 +9,7 @@ struct AppFeatureTests {
     @Test
     @MainActor
     func taskStartsBroadcastFlow() async {
-        let initialSnapshot = BroadcastStateSnapshot(
+        let initialConfiguration = BroadcastConfiguration(
             bandwidthTestEnabled: true,
             primaryStreamKey: "stream-key",
             isBroadcasting: false
@@ -23,7 +23,7 @@ struct AppFeatureTests {
                     await probe.recordBootstrap()
                 },
                 snapshot: {
-                    initialSnapshot
+                    initialConfiguration
                 }
             )
         }
@@ -35,8 +35,8 @@ struct AppFeatureTests {
         await store.receive(.bootstrapSucceeded) {
             $0.bootstrapState = .finished
         }
-        await store.receive(.broadcast(.stateDidChange(initialSnapshot))) {
-            $0.broadcast = BroadcastFeature.State(snapshot: initialSnapshot)
+        await store.receive(.broadcast(.stateDidChange(initialConfiguration))) {
+            $0.broadcast = BroadcastFeature.State(configuration: initialConfiguration)
             $0.settings = SettingsFeature.State()
         }
 

@@ -10,8 +10,8 @@ import AudioVideoKit
 
 struct BroadcastClient: Sendable {
     var bootstrap: @Sendable () async throws -> Void
-    var snapshot: @Sendable () async -> BroadcastStateSnapshot
-    var updates: @Sendable () async -> AsyncStream<BroadcastStateSnapshot>
+    var snapshot: @Sendable () async -> BroadcastConfiguration
+    var updates: @Sendable () async -> AsyncStream<BroadcastConfiguration>
     var setPrimaryStreamKey: @Sendable (String) async -> Void
     var setBandwidthTestEnabled: @Sendable (Bool) async -> Void
     var setCaptureMicrophone: @Sendable (Bool) async -> Void
@@ -59,10 +59,10 @@ extension BroadcastClient {
                 await broadcastManager.authorizeCamera()
             },
             snapshot: {
-                await broadcastManager.broadcastStateSnapshot()
+                await broadcastManager.broadcastConfiguration()
             },
             updates: {
-                await broadcastManager.broadcastStateUpdates()
+                await broadcastManager.broadcastConfigurationUpdates()
             },
             setPrimaryStreamKey: { primaryStreamKey in
                 await broadcastManager.updatePrimaryStreamKey(primaryStreamKey)

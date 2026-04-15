@@ -71,8 +71,8 @@ actor BroadcastClientProbe {
 extension BroadcastClient {
     static func mock(
         bootstrap: @escaping @Sendable () async throws -> Void = {},
-        snapshot: @escaping @Sendable () async -> BroadcastStateSnapshot = { .init() },
-        updates: @escaping @Sendable () async -> AsyncStream<BroadcastStateSnapshot> = {
+        snapshot: @escaping @Sendable () async -> BroadcastConfiguration = { .init() },
+        updates: @escaping @Sendable () async -> AsyncStream<BroadcastConfiguration> = {
             AsyncStream { continuation in
                 continuation.finish()
             }
