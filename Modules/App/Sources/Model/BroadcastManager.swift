@@ -61,9 +61,8 @@ final class BroadcastManager {
     )
     
     private let mediaMixer = MediaMixer()
-    private var rtmpConnectionStatusTask: Task<Void, Never>?
     private let captureSystem = CaptureSystem()
-    private var session: (any Session)?
+    private var broadcastSession: BroadcastSession?
     private var screenCaptureTask: Task<Void, Never>?
     private var microphoneCaptureTask: Task<Void, Never>?
     private var cameraPreviewLayer: AVCaptureVideoPreviewLayer?
@@ -225,8 +224,6 @@ final class BroadcastManager {
     }
     
     func configureManager() async throws {
-        await SessionBuilderFactory.shared.register(RTMPSessionFactory())
-
         try await captureSystem.updateConfiguration(captureConfiguration)
         try await captureSystem.updateContentFilter(streamContentFilter)
         try startConsumingCaptureStreams(from: captureSystem)
@@ -234,26 +231,36 @@ final class BroadcastManager {
         try await captureSystem.start()
     }
     
-    func toogleBroadcast() async {
+    func stopBroadcast() async {
+        guard configuration.isBroadcasting else {
+            return
+        }
+        
+        configuration.isBroadcasting = false
+        notifyBroadcastConfigurationDidChange()
+        await mediaMixer.stopRunning()
+        
         do {
-            guard !configuration.isBroadcasting else {
-                configuration.isBroadcasting = false
-                notifyBroadcastConfigurationDidChange()
-                await mediaMixer.stopRunning()
-                
-                try await session?.close()
-                session = nil
-                return
-            }
+            try await broadcastSession?.close()
+            broadcastSession = nil
+        } catch {
+            log.error("Error closing session: \(error.localizedDescription)")
+        }
+    }
+    
+    func startBroadcast(broadcastSession: BroadcastSession?) async {
+        guard let broadcastSession else {
+            log.error("Broadcast session is not available")
+            return
+        }
+        await stopBroadcast()
+        self.broadcastSession = broadcastSession
+        
+        do {
             configuration.isBroadcasting = true
             notifyBroadcastConfigurationDidChange()
             
-            await makeSession(primaryStreamKey: configuration.primaryStreamKey)
-            
-            guard let session else {
-                log.error("Session is nil")
-                return
-            }
+            let stream = await broadcastSession.stream()
             
             let videoCodecSettings = VideoCodecSettings(
                 videoSize: .init(width: 1920, height: 1080),
@@ -262,18 +269,17 @@ final class BroadcastManager {
                 bitRateMode: .constant,
                 allowFrameReordering: false  // disable B frames
             )
-            try await session.stream.setVideoSettings(videoCodecSettings)
+            try await stream.setVideoSettings(videoCodecSettings)
             
             await mediaMixer.setSessionPreset(.high)
             try await mediaMixer.setFrameRate(Float64(captureConfiguration.minimumFrameInterval.timescale))
             
-            await mediaMixer.addOutput(session.stream)
+            await mediaMixer.addOutput(stream)
             await mediaMixer.startRunning()
             
-            try await session.connect {
+            try await broadcastSession.connect {
                 Task { @MainActor in
-                    self.configuration.isBroadcasting = false
-                    self.notifyBroadcastConfigurationDidChange()
+                    await self.stopBroadcast()
                 }
             }
         } catch RTMPConnection.Error.requestFailed {
@@ -288,51 +294,6 @@ final class BroadcastManager {
             log.error("\(error.localizedDescription)")
             configuration.isBroadcasting = false
             notifyBroadcastConfigurationDidChange()
-        }
-    }
-    
-    private func makeSession(primaryStreamKey: String) async {
-        do {
-            if session != nil {
-                try await session?.close()
-                session = nil
-            }
-            
-            // TODO: - Add bandwidthtest
-            guard let url = URL(string: "rtmps://ingest.global-contribute.live-video.net/app/\(primaryStreamKey)") else {
-                fatalError("Broadcast URL is not valid")
-            }
-            
-            session = try await SessionBuilderFactory.shared.make(url)
-                .setMode(.publish)
-                .build()
-            
-            await session?.setMaxRetryCount(0)
-            
-            guard let session else {
-                fatalError("Session is not available")
-            }
-            
-            rtmpConnectionStatusTask?.cancel()
-            rtmpConnectionStatusTask = Task {
-                for await readyState in await session.readyState {
-                    let description = switch readyState {
-                    case .connecting:
-                        "Connecting..."
-                    case .open:
-                        "Open"
-                    case .closing:
-                        "Closing..."
-                    case .closed:
-                        "Closed"
-                    }
-                    
-                    log.info("RTMP connection status: \(description)")
-                }
-            }
-        } catch {
-            session = nil
-            log.error("Cannot create session: \(error.localizedDescription)")
         }
     }
     

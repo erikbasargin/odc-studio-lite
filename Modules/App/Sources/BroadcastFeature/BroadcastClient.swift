@@ -47,11 +47,13 @@ extension DependencyValues {
 extension BroadcastClient {
     static func live(
         _ broadcastManager: BroadcastManager,
-        cameraAuthorizationService: CameraAuthorizationService = .liveValue
+        cameraAuthorizationService: CameraAuthorizationService = .liveValue,
+        broadcastSessionBuilder: BroadcastSessionBuilder = .init()
     ) -> Self {
         Self(
             bootstrap: {
                 try await broadcastManager.configureManager()
+                await BroadcastSessionBuilder.configure()
 
                 var initialConfiguration = SCContentSharingPickerConfiguration()
                 initialConfiguration.allowedPickerModes = [.singleDisplay]
@@ -84,7 +86,15 @@ extension BroadcastClient {
                 await broadcastManager.updateSelectedMicrophone(microphone)
             },
             toggleBroadcast: {
-                await broadcastManager.toogleBroadcast()
+                let configuration = await broadcastManager.broadcastConfiguration()
+                if configuration.isBroadcasting {
+                    await broadcastManager.stopBroadcast()
+                } else {
+                    let session = try? await broadcastSessionBuilder.makeBroadcastSession(
+                        primaryStreamKey: configuration.primaryStreamKey
+                    )
+                    await broadcastManager.startBroadcast(broadcastSession: session)
+                }
             }
         )
     }
