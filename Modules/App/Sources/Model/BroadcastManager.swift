@@ -165,20 +165,8 @@ final class BroadcastManager {
         }
     }
     
-    func authorizeCamera() async {
-        let status = AVCaptureDevice.authorizationStatus(for: .video)
-        
-        switch status {
-        case .notDetermined:
-            configuration.cameraIsAuthorized = await AVCaptureDevice.requestAccess(for: .video)
-        case .restricted, .denied:
-            configuration.cameraIsAuthorized = false
-        case .authorized:
-            configuration.cameraIsAuthorized = true
-        @unknown default:
-            configuration.cameraIsAuthorized = false
-        }
-
+    func updateCameraAuthorization(_ isAuthorized: Bool) {
+        configuration.cameraIsAuthorized = isAuthorized
         notifyBroadcastConfigurationDidChange()
     }
 

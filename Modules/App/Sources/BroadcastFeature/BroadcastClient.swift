@@ -45,7 +45,10 @@ extension DependencyValues {
 }
 
 extension BroadcastClient {
-    static func live(_ broadcastManager: BroadcastManager) -> Self {
+    static func live(
+        _ broadcastManager: BroadcastManager,
+        cameraAuthorizationService: CameraAuthorizationService = .liveValue
+    ) -> Self {
         Self(
             bootstrap: {
                 try await broadcastManager.configureManager()
@@ -56,7 +59,8 @@ extension BroadcastClient {
                 SCContentSharingPicker.shared.configuration = initialConfiguration
                 SCContentSharingPicker.shared.isActive = true
 
-                await broadcastManager.authorizeCamera()
+                let isAuthorized = await cameraAuthorizationService.authorize()
+                await broadcastManager.updateCameraAuthorization(isAuthorized)
             },
             snapshot: {
                 await broadcastManager.broadcastConfiguration()
