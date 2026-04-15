@@ -6,10 +6,25 @@
 import Foundation
 import HaishinKit
 import OSLog
+import VideoToolbox
 
 private let log = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "BroadcastSession")
 
 struct BroadcastSession {
+
+    struct PublishConfiguration {
+        let videoSettings: VideoCodecSettings
+
+        static let `default` = Self(
+            videoSettings: VideoCodecSettings(
+                videoSize: .init(width: 1920, height: 1080),
+                bitRate: 6000 * 1000,
+                profileLevel: kVTProfileLevel_H264_High_AutoLevel as String,
+                bitRateMode: .constant,
+                allowFrameReordering: false
+            )
+        )
+    }
 
     struct InvalidBroadcastURLError: Error {}
     struct MissingSessionError: Error {}
@@ -17,7 +32,10 @@ struct BroadcastSession {
     private let session: any Session
     private let readyStateTask: Task<Void, Never>
 
-    init(primaryStreamKey: String) async throws {
+    init(
+        primaryStreamKey: String,
+        publishConfiguration: PublishConfiguration = .default
+    ) async throws {
         guard let url = URL(string: "rtmps://ingest.global-contribute.live-video.net/app/\(primaryStreamKey)") else {
             throw InvalidBroadcastURLError()
         }
@@ -30,6 +48,8 @@ struct BroadcastSession {
         }
 
         await session.setMaxRetryCount(0)
+        let stream = await session.stream
+        try await stream.setVideoSettings(publishConfiguration.videoSettings)
 
         self.session = session
         self.readyStateTask = Task {

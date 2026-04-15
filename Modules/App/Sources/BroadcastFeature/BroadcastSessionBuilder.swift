@@ -12,7 +12,13 @@ struct BroadcastSessionBuilder {
         await SessionBuilderFactory.shared.register(RTMPSessionFactory())
     }
 
-    func makeBroadcastSession(primaryStreamKey: String) async throws -> BroadcastSession {
-        try await BroadcastSession(primaryStreamKey: primaryStreamKey)
+    func makeBroadcastSession(
+        primaryStreamKey: String,
+        publishConfiguration: BroadcastSession.PublishConfiguration = .default
+    ) async throws -> BroadcastSession {
+        try await BroadcastSession(
+            primaryStreamKey: primaryStreamKey,
+            publishConfiguration: publishConfiguration
+        )
     }
 }

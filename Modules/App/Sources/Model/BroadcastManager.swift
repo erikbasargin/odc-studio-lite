@@ -9,7 +9,6 @@ import AppKit
 import HaishinKit
 import RTMPHaishinKit
 import OSLog
-import VideoToolbox
 import Foundation
 
 private let log = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "BroadcastManager")
@@ -258,15 +257,6 @@ final class BroadcastManager {
             notifyBroadcastConfigurationDidChange()
             
             let stream = await broadcastSession.stream()
-            
-            let videoCodecSettings = VideoCodecSettings(
-                videoSize: .init(width: 1920, height: 1080),
-                bitRate: 6000 * 1000,
-                profileLevel: kVTProfileLevel_H264_High_AutoLevel as String,
-                bitRateMode: .constant,
-                allowFrameReordering: false  // disable B frames
-            )
-            try await stream.setVideoSettings(videoCodecSettings)
             
             await mediaMixer.setSessionPreset(.high)
             try await mediaMixer.setFrameRate(Float64(captureConfiguration.minimumFrameInterval.timescale))
