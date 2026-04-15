@@ -1,5 +1,5 @@
 [tools]
-tuist = "4.169.2"
+tuist = "4.180.0"
 
 [tasks.auth]
 description = "Login to Tuist account"
