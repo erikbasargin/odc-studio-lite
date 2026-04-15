@@ -62,9 +62,8 @@ final class BroadcastManager {
     
     private let mediaMixer = MediaMixer()
     private let captureSystem = CaptureSystem()
+    private let capturePipelineConsumer = CapturePipelineConsumer()
     private var broadcastSession: BroadcastSession?
-    private var screenCaptureTask: Task<Void, Never>?
-    private var microphoneCaptureTask: Task<Void, Never>?
     private var cameraPreviewLayer: AVCaptureVideoPreviewLayer?
     private var broadcastConfigurationContinuations: [UUID: AsyncStream<BroadcastConfiguration>.Continuation] = [:]
     
@@ -98,8 +97,6 @@ final class BroadcastManager {
     }
 
     deinit {
-        screenCaptureTask?.cancel()
-        microphoneCaptureTask?.cancel()
         for continuation in broadcastConfigurationContinuations.values {
             continuation.finish()
         }
@@ -226,7 +223,7 @@ final class BroadcastManager {
     func configureManager() async throws {
         try await captureSystem.updateConfiguration(captureConfiguration)
         try await captureSystem.updateContentFilter(streamContentFilter)
-        try startConsumingCaptureStreams(from: captureSystem)
+        try capturePipelineConsumer.startConsuming(from: captureSystem, on: mediaMixer)
 
         try await captureSystem.start()
     }
@@ -330,38 +327,4 @@ final class BroadcastManager {
         }
     }
     
-    private func startConsumingCaptureStreams(from captureSystem: CaptureSystem) throws {
-        let screenCaptureStream = try captureSystem.screenCaptureStream
-        let microphoneCaptureStream = try captureSystem.microphoneCaptureStream
-        
-        func listenVideoStream(stream: CaptureSystem.CaptureStream<CaptureSystem.Screen>, on mixer: isolated MediaMixer) async {
-            for await payload in stream where mixer.isRunning {
-                guard SCVideoMetadata(payload.sample)?.status == .complete else {
-                    continue
-                }
-                
-                payload.sample.withUnsafeSampleBuffer { sampleBuffer in
-                    mixer.append(sampleBuffer, track: 0)
-                }
-            }
-        }
-        
-        func listenMicrophone(stream: CaptureSystem.CaptureStream<CaptureSystem.Microphone>, on mixer: isolated MediaMixer) async {
-            for await payload in stream where mixer.isRunning {
-                payload.sample.withUnsafeSampleBuffer { sampleBuffer in
-                    mixer.append(sampleBuffer, track: 0)
-                }
-            }
-        }
-        
-        screenCaptureTask?.cancel()
-        screenCaptureTask = Task { [mediaMixer] in
-            await listenVideoStream(stream: screenCaptureStream, on: mediaMixer)
-        }
-        
-        microphoneCaptureTask?.cancel()
-        microphoneCaptureTask = Task { [mediaMixer] in
-            await listenMicrophone(stream: microphoneCaptureStream, on: mediaMixer)
-        }
-    }
 }

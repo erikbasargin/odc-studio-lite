@@ -111,15 +111,22 @@ ScreenCaptureKit, or RTMP details directly in reducer logic.
 
 Recommended boundaries for this codebase:
 
-- `CaptureSession`
-  Wraps `CaptureSystem` start, stop, configuration, and content filter updates.
+- `CaptureSystem`
+  Already represents the capture-side controller and should remain the primary
+  interface for capture start, stop, configuration, and content filter updates.
 - `CameraAuthorizationService`
   Wraps camera authorization status checks and permission requests.
 - `ContentSharingPickerService`
   Wraps `SCContentSharingPicker` configuration and activation.
 - `BroadcastSession`
-  Wraps RTMP session creation, mixer setup, connection lifecycle, and shutdown.
-  Can register output from `CaptureSystem`.
+  Wraps RTMP session creation, session-specific configuration, connection
+  lifecycle, and shutdown.
+- `CapturePipelineConsumer`
+  Wraps long-lived capture consumption tasks that forward screen and microphone
+  samples into the active mixer.
+- `MediaMixerController`
+  May wrap `MediaMixer` setup, output registration, start, and stop behavior if
+  richer mixer-specific controls are needed beyond the current lifecycle calls.
 
 This keeps the migration seams narrow and focused on the parts of the app that
 are most side-effect heavy.
@@ -214,14 +221,16 @@ Recommended steps:
 
 1. Extract `CameraAuthorizationService`.
    Move camera authorization status checks and permission requests behind a
-   dedicated dependency boundary.
+   dedicated dependency boundary. [Completed]
 2. Extract `BroadcastSession`.
    Move RTMP session creation, connection lifecycle, publishing start and stop,
-   and shutdown behavior behind a dedicated broadcast dependency.
+   and shutdown behavior behind a dedicated broadcast dependency. [Completed]
 3. Extract mixer and capture-pipeline responsibilities.
-   Move `MediaMixer` setup and long-lived capture consumption tasks into
-   focused services such as `MediaMixerController` or
-   `CapturePipelineConsumer`.
+   Move long-lived capture consumption tasks into `CapturePipelineConsumer`
+   while keeping orchestration in `BroadcastClient`. Move remaining
+   session-specific configuration, such as `VideoCodecSettings`, into
+   `BroadcastSession`. Introduce `MediaMixerController` only if richer
+   mixer-specific controls are needed. [In Progress]
 4. Remove `BroadcastConfiguration` ownership from `BroadcastManager`.
    Make reducer state authoritative and reduce `BroadcastManager` to a temporary
    adapter, then remove it entirely once the remaining integrations have moved.
