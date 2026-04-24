@@ -10,7 +10,7 @@ import VideoToolbox
 
 private let log = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "BroadcastSession")
 
-struct BroadcastSession {
+actor BroadcastSession: Equatable {
 
     struct PublishConfiguration {
         let videoSettings: VideoCodecSettings
@@ -29,8 +29,10 @@ struct BroadcastSession {
     struct InvalidBroadcastURLError: Error {}
     struct MissingSessionError: Error {}
 
-    private let session: any Session
-    private let readyStateTask: Task<Void, Never>
+    private let streamProvider: @Sendable () async -> any StreamConvertible
+    private let connectHandler: @Sendable (@escaping @Sendable () -> Void) async throws -> Void
+    private let closeHandler: @Sendable () async throws -> Void
+    private let readyStateTask: Task<Void, Never>?
 
     init(
         primaryStreamKey: String,
@@ -51,8 +53,7 @@ struct BroadcastSession {
         let stream = await session.stream
         try await stream.setVideoSettings(publishConfiguration.videoSettings)
 
-        self.session = session
-        self.readyStateTask = Task {
+        let readyStateTask = Task {
             for await readyState in await session.readyState {
                 let description = switch readyState {
                 case .connecting:
@@ -68,18 +69,46 @@ struct BroadcastSession {
                 log.info("RTMP connection status: \(description)")
             }
         }
+
+        self.streamProvider = {
+            await session.stream
+        }
+        self.connectHandler = { disconnected in
+            try await session.connect(disconnected)
+        }
+        self.closeHandler = {
+            try await session.close()
+        }
+        self.readyStateTask = readyStateTask
+    }
+
+    init(
+        stream: @escaping @Sendable () async -> any StreamConvertible = {
+            fatalError("Test BroadcastSession cannot provide a stream")
+        },
+        connect: @escaping @Sendable (@escaping @Sendable () -> Void) async throws -> Void = { _ in },
+        close: @escaping @Sendable () async throws -> Void = {}
+    ) {
+        self.streamProvider = stream
+        self.connectHandler = connect
+        self.closeHandler = close
+        self.readyStateTask = nil
     }
 
     func stream() async -> any StreamConvertible {
-        await session.stream
+        await streamProvider()
     }
 
     func connect(disconnected: @Sendable @escaping () -> Void) async throws {
-        try await session.connect(disconnected)
+        try await connectHandler(disconnected)
     }
 
     func close() async throws {
-        readyStateTask.cancel()
-        try await session.close()
+        readyStateTask?.cancel()
+        try await closeHandler()
+    }
+
+    nonisolated static func == (lhs: BroadcastSession, rhs: BroadcastSession) -> Bool {
+        lhs === rhs
     }
 }

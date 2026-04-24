@@ -36,7 +36,6 @@ struct ODCLiteApp: App {
             AppFeature()
         } withDependencies: {
             $0.captureClient = .live(captureRuntime)
-            $0.broadcastClient = .live(captureRuntime)
         }
         self.store = store
 

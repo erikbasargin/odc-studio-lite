@@ -7,6 +7,17 @@ struct BroadcastFeatureTests {
 
     @Test
     @MainActor
+    func taskConfiguresBroadcastBuilder() async {
+        let store = TestStore(initialState: BroadcastFeature.State()) {
+            BroadcastFeature()
+        }
+
+        await store.send(.task)
+        await store.finish()
+    }
+
+    @Test
+    @MainActor
     func bandwidthTestFlagIsReducerOwned() async {
         let store = TestStore(initialState: BroadcastFeature.State()) {
             BroadcastFeature()
@@ -21,60 +32,44 @@ struct BroadcastFeatureTests {
     @MainActor
     func startBroadcastUsesExplicitPrimaryStreamKey() async {
         let probe = AppClientProbe()
+        let session = BroadcastSession()
         let store = TestStore(initialState: BroadcastFeature.State()) {
             BroadcastFeature()
         } withDependencies: {
-            $0.broadcastClient = .mock(
-                startBroadcast: { primaryStreamKey, _ in
+            $0.broadcastSessionBuilder = .init(
+                makeBroadcastSession: { primaryStreamKey, _ in
                     await probe.recordStartBroadcast(primaryStreamKey: primaryStreamKey)
+                    return session
                 }
             )
         }
 
-        await store.send(.startBroadcast("stream-key")) {
-            $0.isBroadcasting = true
+        await store.send(.startBroadcast("stream-key"))
+        await store.receive(.broadcastSessionIsReady(session)) {
+            $0.broadcastSession = session
         }
-        await store.finish()
 
-        let requests = await probe.startBroadcastValues()
-        #expect(requests == ["stream-key"])
+        #expect(await probe.startBroadcastValues() == ["stream-key"])
     }
 
     @Test
     @MainActor
     func stopBroadcastWritesThroughDependency() async {
-        let probe = AppClientProbe()
+        let session = BroadcastSession()
         let store = TestStore(
-            initialState: BroadcastFeature.State(configuration: .init(isBroadcasting: true))
+            initialState: {
+                var state = BroadcastFeature.State(configuration: .init(isBroadcasting: true))
+                state.broadcastSession = session
+                return state
+            }()
         ) {
             BroadcastFeature()
-        } withDependencies: {
-            $0.broadcastClient = .mock(
-                stopBroadcast: {
-                    await probe.recordStopBroadcast()
-                }
-            )
         }
 
         await store.send(.stopBroadcast) {
+            $0.broadcastSession = nil
             $0.isBroadcasting = false
         }
         await store.finish()
-
-        #expect(await probe.stopBroadcastCount() == 1)
-    }
-
-    @Test
-    @MainActor
-    func broadcastStoppedClearsReducerState() async {
-        let store = TestStore(
-            initialState: BroadcastFeature.State(configuration: .init(isBroadcasting: true))
-        ) {
-            BroadcastFeature()
-        }
-
-        await store.send(.broadcastStopped) {
-            $0.isBroadcasting = false
-        }
     }
 }

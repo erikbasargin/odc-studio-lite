@@ -7,7 +7,7 @@ import ComposableArchitecture
 
 @Reducer
 struct AppFeature {
-
+    
     enum BootstrapState: Equatable {
         case idle
         case inProgress
@@ -66,17 +66,20 @@ struct AppFeature {
 
                 state.bootstrapState = .inProgress
                 let selectedMicrophone = state.capture.selectedMicrophone
-                return .run { send in
-                    do {
-                        let isAuthorized = try await captureClient.bootstrap(
-                            selectedMicrophone
-                        )
-                        await send(.capture(.cameraAuthorizationChanged(isAuthorized)))
-                        await send(.bootstrapSucceeded)
-                    } catch {
-                        await send(.bootstrapFailed(error.localizedDescription))
+                return .merge(
+                    .send(.broadcast(.task)),
+                    .run { send in
+                        do {
+                            let isAuthorized = try await captureClient.bootstrap(
+                                selectedMicrophone
+                            )
+                            await send(.capture(.cameraAuthorizationChanged(isAuthorized)))
+                            await send(.bootstrapSucceeded)
+                        } catch {
+                            await send(.bootstrapFailed(error.localizedDescription))
+                        }
                     }
-                }
+                )
 
             case .retryButtonTapped:
                 state.bootstrapState = .idle
@@ -102,6 +105,16 @@ struct AppFeature {
             case let .bootstrapFailed(message):
                 state.bootstrapState = .failed(message)
                 return .none
+
+            case let .broadcast(.broadcastSessionIsReady(session)):
+                return .run { send in
+                    do {
+                        try await captureClient.startBroadcast(session)
+                        await send(.broadcast(.initiateBroadcast))
+                    } catch {
+                        await send(.broadcast(.stopBroadcast))
+                    }
+                }
 
             case .capture, .broadcast, .settings:
                 return .none

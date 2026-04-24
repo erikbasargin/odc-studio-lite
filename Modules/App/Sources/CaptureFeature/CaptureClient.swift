@@ -21,6 +21,7 @@ struct CaptureClient: Sendable {
     var setSelectedMicrophone: @Sendable (CaptureDevice?) async -> Void
     var startCaptureSession: @Sendable () async -> Void
     var stopCaptureSession: @Sendable () async -> Void
+    var startBroadcast: @Sendable (BroadcastSession) async throws -> Void
 }
 
 extension CaptureClient: DependencyKey {
@@ -33,7 +34,8 @@ extension CaptureClient: DependencyKey {
         setSelectedCamera: { _ in },
         setSelectedMicrophone: { _ in },
         startCaptureSession: {},
-        stopCaptureSession: {}
+        stopCaptureSession: {},
+        startBroadcast: { _ in }
     )
 }
 
@@ -78,6 +80,9 @@ extension CaptureClient {
             },
             stopCaptureSession: {
                 await runtime.stopCaptureSession()
+            },
+            startBroadcast: { session in
+                try await runtime.startBroadcast(session: session)
             }
         )
     }
@@ -180,15 +185,12 @@ actor CaptureRuntime {
         stopCameraCaptureSession()
     }
 
-    func startBroadcast(stream: any StreamConvertible) async throws {
+    func startBroadcast(session: BroadcastSession) async throws {
+        let stream = await session.stream()
         await mediaMixer.setSessionPreset(.high)
         try await mediaMixer.setFrameRate(60)
         await mediaMixer.addOutput(stream)
         await mediaMixer.startRunning()
-    }
-
-    func stopBroadcast() async {
-        await mediaMixer.stopRunning()
     }
 
     private func makeCaptureConfiguration(selectedMicrophone: CaptureDevice?) -> CaptureConfiguration {
