@@ -230,7 +230,7 @@ Recommended steps:
    while keeping orchestration in `BroadcastClient`. Move remaining
    session-specific configuration, such as `VideoCodecSettings`, into
    `BroadcastSession`. Introduce `MediaMixerController` only if richer
-   mixer-specific controls are needed. [In Progress]
+   mixer-specific controls are needed. [Completed]
 4. Remove `BroadcastConfiguration` ownership from `BroadcastManager`.
    Make reducer state authoritative and reduce `BroadcastManager` to a temporary
    adapter, then remove it entirely once the remaining integrations have moved.

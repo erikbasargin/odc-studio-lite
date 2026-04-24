@@ -1,6 +1,6 @@
+import AudioVideoKit
 import ComposableArchitecture
 @testable import ODCLite
-import AudioVideoKit
 import Testing
 
 @Suite
@@ -8,51 +8,20 @@ struct BroadcastFeatureTests {
 
     @Test
     @MainActor
-    func taskObservesSnapshotUpdates() async {
-        let initialConfiguration = BroadcastConfiguration(
-            bandwidthTestEnabled: false,
-            primaryStreamKey: "initial-key",
-            isBroadcasting: false,
-            cameraIsAuthorized: false,
-            selectedCamera: nil,
-            selectedMicrophone: nil
-        )
-        let updatedConfiguration = BroadcastConfiguration(
-            bandwidthTestEnabled: true,
-            primaryStreamKey: "updated-key",
-            isBroadcasting: true,
-            cameraIsAuthorized: true,
-            selectedCamera: CaptureDevice(id: "camera-1", name: "FaceTime HD Camera"),
-            selectedMicrophone: CaptureDevice(id: "microphone-1", name: "MacBook Pro Microphone")
-        )
+    func taskHasNoBootstrapSideEffects() async {
         let probe = BroadcastClientProbe()
-        let (updates, continuation) = AsyncStream.makeStream(of: BroadcastConfiguration.self)
         let store = TestStore(initialState: BroadcastFeature.State()) {
             BroadcastFeature()
         } withDependencies: {
             $0.broadcastClient = .mock(
-                bootstrap: {
-                    await probe.recordBootstrap()
-                },
-                snapshot: {
-                    initialConfiguration
-                },
-                updates: {
-                    updates
+                bootstrap: { selectedMicrophone in
+                    await probe.recordBootstrap(selectedMicrophone: selectedMicrophone)
+                    return false
                 }
             )
         }
 
         await store.send(.task)
-        await store.receive(.stateDidChange(initialConfiguration))
-
-        continuation.yield(updatedConfiguration)
-
-        await store.receive(.stateDidChange(updatedConfiguration)) {
-            $0 = BroadcastFeature.State(configuration: updatedConfiguration)
-        }
-
-        continuation.finish()
         await store.finish()
 
         #expect(await probe.bootstrapCount() == 0)
@@ -60,44 +29,70 @@ struct BroadcastFeatureTests {
 
     @Test
     @MainActor
-    func bandwidthTestFlagWritesThroughDependency() async {
-        let probe = BroadcastClientProbe()
+    func bandwidthTestFlagIsReducerOwned() async {
         let store = TestStore(initialState: BroadcastFeature.State()) {
             BroadcastFeature()
-        } withDependencies: {
-            $0.broadcastClient = .mock(
-                setBandwidthTestEnabled: { isEnabled in
-                    await probe.recordBandwidthTestEnabled(isEnabled)
-                }
-            )
         }
 
         await store.send(.bandwidthTestEnabledChanged(true)) {
             $0.bandwidthTestEnabled = true
         }
-        await store.finish()
-
-        #expect(await probe.bandwidthTestValues() == [true])
     }
 
     @Test
     @MainActor
-    func microphoneCaptureWritesThroughDependency() async {
+    func microphoneCaptureDisablesSelectedMicrophone() async {
         let probe = BroadcastClientProbe()
+        let microphone = CaptureDevice(id: "microphone-1", name: "MacBook Pro Microphone")
         let store = TestStore(initialState: BroadcastFeature.State()) {
             BroadcastFeature()
         } withDependencies: {
             $0.broadcastClient = .mock(
-                setCaptureMicrophone: { isEnabled in
-                    await probe.recordCaptureMicrophone(isEnabled)
+                setSelectedMicrophone: { selectedMicrophone in
+                    await probe.recordSelectedMicrophone(selectedMicrophone)
+                }
+            )
+        }
+
+        store.exhaustivity = .off
+
+        await store.send(.selectedMicrophoneChanged(microphone)) {
+            $0.selectedMicrophone = microphone
+        }
+        await store.send(.captureMicrophoneChanged(false)) {
+            $0.selectedMicrophone = nil
+        }
+        await store.finish()
+
+        #expect(await probe.selectedMicrophoneValues() == [microphone, nil])
+    }
+
+    @Test
+    @MainActor
+    func microphoneCaptureEnablesDefaultMicrophone() async {
+        let probe = BroadcastClientProbe()
+        let microphone = CaptureDevice(id: "microphone-1", name: "MacBook Pro Microphone")
+        await probe.setDefaultMicrophone(microphone)
+        let store = TestStore(initialState: BroadcastFeature.State()) {
+            BroadcastFeature()
+        } withDependencies: {
+            $0.broadcastClient = .mock(
+                defaultMicrophone: {
+                    await probe.resolveDefaultMicrophone()
+                },
+                setSelectedMicrophone: { selectedMicrophone in
+                    await probe.recordSelectedMicrophone(selectedMicrophone)
                 }
             )
         }
 
         await store.send(.captureMicrophoneChanged(true))
+        await store.receive(.defaultMicrophoneResolved(microphone)) {
+            $0.selectedMicrophone = microphone
+        }
         await store.finish()
 
-        #expect(await probe.captureMicrophoneValues() == [true])
+        #expect(await probe.selectedMicrophoneValues() == [microphone])
     }
 
     @Test
@@ -174,21 +169,71 @@ struct BroadcastFeatureTests {
 
     @Test
     @MainActor
-    func toggleBroadcastWritesThroughDependency() async {
+    func startBroadcastUsesExplicitPrimaryStreamKey() async {
         let probe = BroadcastClientProbe()
+        let microphone = CaptureDevice(id: "microphone-1", name: "MacBook Pro Microphone")
         let store = TestStore(initialState: BroadcastFeature.State()) {
             BroadcastFeature()
         } withDependencies: {
             $0.broadcastClient = .mock(
-                toggleBroadcast: {
-                    await probe.recordToggleBroadcast()
+                startBroadcast: { primaryStreamKey, selectedMicrophone, _ in
+                    await probe.recordStartBroadcast(
+                        primaryStreamKey: primaryStreamKey,
+                        selectedMicrophone: selectedMicrophone
+                    )
                 }
             )
         }
 
-        await store.send(.startStopBroadcastButtonTapped)
+        await store.send(.selectedMicrophoneChanged(microphone)) {
+            $0.selectedMicrophone = microphone
+        }
+        await store.send(.startStopBroadcastButtonTapped("stream-key")) {
+            $0.isBroadcasting = true
+        }
         await store.finish()
 
-        #expect(await probe.toggleBroadcastCount() == 1)
+        let requests = await probe.startBroadcastValues()
+        #expect(requests.count == 1)
+        #expect(requests.first?.primaryStreamKey == "stream-key")
+        #expect(requests.first?.selectedMicrophone == microphone)
+    }
+
+    @Test
+    @MainActor
+    func stopBroadcastWritesThroughDependency() async {
+        let probe = BroadcastClientProbe()
+        let store = TestStore(
+            initialState: BroadcastFeature.State(configuration: .init(isBroadcasting: true))
+        ) {
+            BroadcastFeature()
+        } withDependencies: {
+            $0.broadcastClient = .mock(
+                stopBroadcast: {
+                    await probe.recordStopBroadcast()
+                }
+            )
+        }
+
+        await store.send(.startStopBroadcastButtonTapped("stream-key")) {
+            $0.isBroadcasting = false
+        }
+        await store.finish()
+
+        #expect(await probe.stopBroadcastCount() == 1)
+    }
+
+    @Test
+    @MainActor
+    func broadcastStoppedClearsReducerState() async {
+        let store = TestStore(
+            initialState: BroadcastFeature.State(configuration: .init(isBroadcasting: true))
+        ) {
+            BroadcastFeature()
+        }
+
+        await store.send(.broadcastStopped) {
+            $0.isBroadcasting = false
+        }
     }
 }
