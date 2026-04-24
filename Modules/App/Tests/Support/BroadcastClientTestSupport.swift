@@ -4,27 +4,16 @@ import AudioVideoKit
 
 actor BroadcastClientProbe {
     private var bootstrapInvocationCount = 0
-    private var primaryStreamKeyValues: [String] = []
-    private var bandwidthTestEnabledValues: [Bool] = []
-    private var microphoneCaptureRequests: [Bool] = []
+    private var bootstrapMicrophones: [CaptureDevice?] = []
+    private var defaultMicrophone: CaptureDevice?
     private var selectedCameras: [CaptureDevice?] = []
     private var selectedMicrophones: [CaptureDevice?] = []
-    private var toggleInvocationCount = 0
+    private var startBroadcastRequests: [(primaryStreamKey: String, selectedMicrophone: CaptureDevice?)] = []
+    private var stopBroadcastInvocationCount = 0
 
-    func recordBootstrap() {
+    func recordBootstrap(selectedMicrophone: CaptureDevice?) {
         bootstrapInvocationCount += 1
-    }
-
-    func recordPrimaryStreamKey(_ primaryStreamKey: String) {
-        primaryStreamKeyValues.append(primaryStreamKey)
-    }
-
-    func recordBandwidthTestEnabled(_ bandwidthTestEnabled: Bool) {
-        bandwidthTestEnabledValues.append(bandwidthTestEnabled)
-    }
-
-    func recordCaptureMicrophone(_ isEnabled: Bool) {
-        microphoneCaptureRequests.append(isEnabled)
+        bootstrapMicrophones.append(selectedMicrophone)
     }
 
     func recordSelectedCamera(_ camera: CaptureDevice?) {
@@ -35,24 +24,33 @@ actor BroadcastClientProbe {
         selectedMicrophones.append(microphone)
     }
 
-    func recordToggleBroadcast() {
-        toggleInvocationCount += 1
+    func setDefaultMicrophone(_ microphone: CaptureDevice?) {
+        defaultMicrophone = microphone
+    }
+
+    func resolveDefaultMicrophone() -> CaptureDevice? {
+        defaultMicrophone
+    }
+
+    func recordStartBroadcast(
+        primaryStreamKey: String,
+        selectedMicrophone: CaptureDevice?
+    ) {
+        startBroadcastRequests.append(
+            (primaryStreamKey: primaryStreamKey, selectedMicrophone: selectedMicrophone)
+        )
+    }
+
+    func recordStopBroadcast() {
+        stopBroadcastInvocationCount += 1
     }
 
     func bootstrapCount() -> Int {
         bootstrapInvocationCount
     }
 
-    func primaryStreamKeys() -> [String] {
-        primaryStreamKeyValues
-    }
-
-    func bandwidthTestValues() -> [Bool] {
-        bandwidthTestEnabledValues
-    }
-
-    func captureMicrophoneValues() -> [Bool] {
-        microphoneCaptureRequests
+    func bootstrapSelectedMicrophones() -> [CaptureDevice?] {
+        bootstrapMicrophones
     }
 
     func selectedCameraValues() -> [CaptureDevice?] {
@@ -63,37 +61,35 @@ actor BroadcastClientProbe {
         selectedMicrophones
     }
 
-    func toggleBroadcastCount() -> Int {
-        toggleInvocationCount
+    func startBroadcastValues() -> [(primaryStreamKey: String, selectedMicrophone: CaptureDevice?)] {
+        startBroadcastRequests
+    }
+
+    func stopBroadcastCount() -> Int {
+        stopBroadcastInvocationCount
     }
 }
 
 extension BroadcastClient {
     static func mock(
-        bootstrap: @escaping @Sendable () async throws -> Void = {},
-        snapshot: @escaping @Sendable () async -> BroadcastConfiguration = { .init() },
-        updates: @escaping @Sendable () async -> AsyncStream<BroadcastConfiguration> = {
-            AsyncStream { continuation in
-                continuation.finish()
-            }
-        },
-        setPrimaryStreamKey: @escaping @Sendable (String) async -> Void = { _ in },
-        setBandwidthTestEnabled: @escaping @Sendable (Bool) async -> Void = { _ in },
-        setCaptureMicrophone: @escaping @Sendable (Bool) async -> Void = { _ in },
+        bootstrap: @escaping @Sendable (CaptureDevice?) async throws -> Bool = { _ in false },
+        defaultMicrophone: @escaping @Sendable () async -> CaptureDevice? = { nil },
         setSelectedCamera: @escaping @Sendable (CaptureDevice?) async -> Void = { _ in },
         setSelectedMicrophone: @escaping @Sendable (CaptureDevice?) async -> Void = { _ in },
-        toggleBroadcast: @escaping @Sendable () async -> Void = {}
+        startBroadcast: @escaping @Sendable (
+            String,
+            CaptureDevice?,
+            @escaping @Sendable () async -> Void
+        ) async throws -> Void = { _, _, _ in },
+        stopBroadcast: @escaping @Sendable () async -> Void = {}
     ) -> Self {
         Self(
             bootstrap: bootstrap,
-            snapshot: snapshot,
-            updates: updates,
-            setPrimaryStreamKey: setPrimaryStreamKey,
-            setBandwidthTestEnabled: setBandwidthTestEnabled,
-            setCaptureMicrophone: setCaptureMicrophone,
+            defaultMicrophone: defaultMicrophone,
             setSelectedCamera: setSelectedCamera,
             setSelectedMicrophone: setSelectedMicrophone,
-            toggleBroadcast: toggleBroadcast
+            startBroadcast: startBroadcast,
+            stopBroadcast: stopBroadcast
         )
     }
 }

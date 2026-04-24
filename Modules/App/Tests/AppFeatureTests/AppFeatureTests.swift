@@ -9,21 +9,14 @@ struct AppFeatureTests {
     @Test
     @MainActor
     func taskStartsBroadcastFlow() async {
-        let initialConfiguration = BroadcastConfiguration(
-            bandwidthTestEnabled: true,
-            primaryStreamKey: "stream-key",
-            isBroadcasting: false
-        )
         let probe = BroadcastClientProbe()
         let store = TestStore(initialState: AppFeature.State()) {
             AppFeature()
         } withDependencies: {
             $0.broadcastClient = .mock(
-                bootstrap: {
-                    await probe.recordBootstrap()
-                },
-                snapshot: {
-                    initialConfiguration
+                bootstrap: { selectedMicrophone in
+                    await probe.recordBootstrap(selectedMicrophone: selectedMicrophone)
+                    return true
                 }
             )
         }
@@ -32,15 +25,15 @@ struct AppFeatureTests {
             $0.bootstrapState = .inProgress
         }
         await store.receive(.broadcast(.task))
+        await store.receive(.broadcast(.cameraAuthorizationChanged(true))) {
+            $0.broadcast.cameraIsAuthorized = true
+        }
         await store.receive(.bootstrapSucceeded) {
             $0.bootstrapState = .finished
         }
-        await store.receive(.broadcast(.stateDidChange(initialConfiguration))) {
-            $0.broadcast = BroadcastFeature.State(configuration: initialConfiguration)
-            $0.settings = SettingsFeature.State()
-        }
 
         #expect(await probe.bootstrapCount() == 1)
+        #expect(await probe.bootstrapSelectedMicrophones() == [nil])
     }
 
     @Test
@@ -53,7 +46,7 @@ struct AppFeatureTests {
             AppFeature()
         } withDependencies: {
             $0.broadcastClient = .mock(
-                bootstrap: {
+                bootstrap: { _ in
                     throw bootstrapError
                 }
             )
@@ -78,5 +71,20 @@ struct AppFeatureTests {
 
         await store.send(.microphoneCaptureRequested(true))
         await store.receive(.broadcast(.captureMicrophoneChanged(true)))
+    }
+
+    @Test
+    @MainActor
+    func startBroadcastUsesSettingsOwnedPrimaryStreamKey() async {
+        let store = TestStore(
+            initialState: AppFeature.State(
+                configuration: .init(primaryStreamKey: "stream-key")
+            )
+        ) {
+            AppFeature()
+        }
+
+        await store.send(.startBroadcast)
+        await store.receive(.broadcast(.startBroadcast("stream-key")))
     }
 }

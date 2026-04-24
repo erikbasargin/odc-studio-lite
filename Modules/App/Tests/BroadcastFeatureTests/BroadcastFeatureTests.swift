@@ -188,7 +188,7 @@ struct BroadcastFeatureTests {
         await store.send(.selectedMicrophoneChanged(microphone)) {
             $0.selectedMicrophone = microphone
         }
-        await store.send(.startStopBroadcastButtonTapped("stream-key")) {
+        await store.send(.startBroadcast("stream-key")) {
             $0.isBroadcasting = true
         }
         await store.finish()
@@ -215,7 +215,7 @@ struct BroadcastFeatureTests {
             )
         }
 
-        await store.send(.startStopBroadcastButtonTapped("stream-key")) {
+        await store.send(.stopBroadcast) {
             $0.isBroadcasting = false
         }
         await store.finish()

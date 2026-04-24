@@ -47,7 +47,7 @@ struct MenuBarExtraContentView: View {
             .disabled(broadcastStore.isBroadcasting)
             
             Button("\(broadcastStore.isBroadcasting ? "Stop" : "Start") broadcast") {
-                broadcastStore.send(.startStopBroadcastButtonTapped)
+                store.send(broadcastStore.isBroadcasting ? .stopBroadcast : .startBroadcast)
             }
             .disabled(store.settings.primaryStreamKey.isEmpty)
         }

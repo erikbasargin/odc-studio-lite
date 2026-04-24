@@ -4,12 +4,8 @@
 //
 
 import ComposableArchitecture
-import Foundation
-import os
 
 import AudioVideoKit
-
-private let log = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "BroadcastFeature")
 
 @Reducer
 struct BroadcastFeature {
@@ -36,14 +32,16 @@ struct BroadcastFeature {
     enum Action: Equatable {
         case task
         case captureMicrophoneChanged(Bool)
+        case defaultMicrophoneResolved(CaptureDevice?)
         case bandwidthTestEnabledChanged(Bool)
         case availableCamerasChanged([CaptureDevice])
         case selectedCameraChanged(CaptureDevice?)
         case availableMicrophonesChanged([CaptureDevice])
         case selectedMicrophoneChanged(CaptureDevice?)
-        case startStopBroadcastButtonTapped
-        case stateDidChange(BroadcastConfiguration)
-        case bootstrapFailed(String)
+        case cameraAuthorizationChanged(Bool)
+        case startBroadcast(String)
+        case stopBroadcast
+        case broadcastStopped
     }
 
     @Dependency(\.broadcastClient) private var broadcastClient
@@ -52,25 +50,35 @@ struct BroadcastFeature {
         Reduce { state, action in
             switch action {
             case .task:
-                return .run { send in
-                    let initialSnapshot = await broadcastClient.snapshot()
-                    await send(.stateDidChange(initialSnapshot))
-
-                    let updates = await broadcastClient.updates()
-                    for await snapshot in updates {
-                        await send(.stateDidChange(snapshot))
-                    }
-                }
+                return .none
 
             case let .bandwidthTestEnabledChanged(bandwidthTestEnabled):
                 state.bandwidthTestEnabled = bandwidthTestEnabled
-                return .run { _ in
-                    await broadcastClient.setBandwidthTestEnabled(bandwidthTestEnabled)
-                }
+                return .none
 
             case let .captureMicrophoneChanged(isEnabled):
+                guard isEnabled else {
+                    state.selectedMicrophone = nil
+                    return .run { _ in
+                        await broadcastClient.setSelectedMicrophone(nil)
+                    }
+                }
+
+                guard let selectedMicrophone = state.selectedMicrophone else {
+                    return .run { send in
+                        let defaultMicrophone = await broadcastClient.defaultMicrophone()
+                        await send(.defaultMicrophoneResolved(defaultMicrophone))
+                    }
+                }
+
                 return .run { _ in
-                    await broadcastClient.setCaptureMicrophone(isEnabled)
+                    await broadcastClient.setSelectedMicrophone(selectedMicrophone)
+                }
+
+            case let .defaultMicrophoneResolved(microphone):
+                state.selectedMicrophone = microphone
+                return .run { _ in
+                    await broadcastClient.setSelectedMicrophone(microphone)
                 }
 
             case let .availableCamerasChanged(cameras):
@@ -93,21 +101,34 @@ struct BroadcastFeature {
                     await broadcastClient.setSelectedMicrophone(microphone)
                 }
 
-            case .startStopBroadcastButtonTapped:
-                return .run { _ in
-                    await broadcastClient.toggleBroadcast()
-                }
-
-            case let .stateDidChange(configuration):
-                state.bandwidthTestEnabled = configuration.bandwidthTestEnabled
-                state.isBroadcasting = configuration.isBroadcasting
-                state.cameraIsAuthorized = configuration.cameraIsAuthorized
-                state.selectedCamera = configuration.selectedCamera
-                state.selectedMicrophone = configuration.selectedMicrophone
+            case let .cameraAuthorizationChanged(isAuthorized):
+                state.cameraIsAuthorized = isAuthorized
                 return .none
 
-            case let .bootstrapFailed(message):
-                log.error("Failed to bootstrap broadcast flow: \(message)")
+            case let .startBroadcast(primaryStreamKey):
+                state.isBroadcasting = true
+                let selectedMicrophone = state.selectedMicrophone
+                return .run { send in
+                    do {
+                        try await broadcastClient.startBroadcast(
+                            primaryStreamKey,
+                            selectedMicrophone
+                        ) {
+                            await send(.broadcastStopped)
+                        }
+                    } catch {
+                        await send(.broadcastStopped)
+                    }
+                }
+
+            case .stopBroadcast:
+                state.isBroadcasting = false
+                return .run { _ in
+                    await broadcastClient.stopBroadcast()
+                }
+
+            case .broadcastStopped:
+                state.isBroadcasting = false
                 return .none
             }
         }

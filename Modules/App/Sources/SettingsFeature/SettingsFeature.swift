@@ -17,16 +17,12 @@ struct SettingsFeature {
         case primaryStreamKeyChanged(String)
     }
 
-    @Dependency(\.broadcastClient) private var broadcastClient
-
     var body: some ReducerOf<Self> {
         Reduce { state, action in
             switch action {
             case let .primaryStreamKeyChanged(primaryStreamKey):
                 state.primaryStreamKey = primaryStreamKey
-                return .run { _ in
-                    await broadcastClient.setPrimaryStreamKey(primaryStreamKey)
-                }
+                return .none
             }
         }
     }

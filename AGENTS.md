@@ -22,7 +22,6 @@ This repository is a Tuist-managed macOS app for broadcasting captured content:
 - Use `mise run setup` to generate Xcode project if needed.
 - Use Xcode MCP for builds and tests.
 - Prefer editing docs in `Modules/App/Sources/ODCLite.docc` when the request is architectural or planning-oriented.
-- When User requests to initiate the migration - use the migration plan `Modules/App/Sources/ODCLite.docc/TCAMigrationPlan.md` and folow phases in defined order. If provided order is no longer working notify User and wait for further instructions.
 
 ## Intent Layer Maintenance
 
@@ -30,6 +29,5 @@ When updating this file, keep it aligned with the actual repository instead of t
 
 - Update `Repository Map` when module paths, targets, or important entry points change.
 - Update `Global Guardrails` when build tooling, concurrency rules, or source of truth boundaries change.
-- Reflect architecture direction documented in `Modules/App/Sources/ODCLite.docc/TCAMigrationPlan.md`. Current intent: the app is in a staged migration from a `BroadcastManager`-centered design to The Composable Architecture.
 - Until that migration is complete, prefer incremental seams: reducers and adapters around existing behavior rather than large rewrites of AVFoundation, ScreenCaptureKit, or RTMP internals.
 - If new subdirectories gain their own `AGENTS.md`, keep this root file focused on cross-cutting repo guidance and push local workflow details down into the nearest intent node.

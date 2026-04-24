@@ -13,15 +13,16 @@ import RTMPHaishinKit
 private let log = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "BroadcastClient")
 
 struct BroadcastClient: Sendable {
-    var bootstrap: @Sendable () async throws -> Void
-    var snapshot: @Sendable () async -> BroadcastConfiguration
-    var updates: @Sendable () async -> AsyncStream<BroadcastConfiguration>
-    var setPrimaryStreamKey: @Sendable (String) async -> Void
-    var setBandwidthTestEnabled: @Sendable (Bool) async -> Void
-    var setCaptureMicrophone: @Sendable (Bool) async -> Void
+    var bootstrap: @Sendable (CaptureDevice?) async throws -> Bool
+    var defaultMicrophone: @Sendable () async -> CaptureDevice?
     var setSelectedCamera: @Sendable (CaptureDevice?) async -> Void
     var setSelectedMicrophone: @Sendable (CaptureDevice?) async -> Void
-    var toggleBroadcast: @Sendable () async -> Void
+    var startBroadcast: @Sendable (
+        String,
+        CaptureDevice?,
+        @escaping @Sendable () async -> Void
+    ) async throws -> Void
+    var stopBroadcast: @Sendable () async -> Void
 }
 
 extension BroadcastClient: DependencyKey {
@@ -29,15 +30,12 @@ extension BroadcastClient: DependencyKey {
     static let testValue = Self.unimplemented
 
     private static let unimplemented = Self(
-        bootstrap: {},
-        snapshot: { .init() },
-        updates: { AsyncStream { _ in } },
-        setPrimaryStreamKey: { _ in },
-        setBandwidthTestEnabled: { _ in },
-        setCaptureMicrophone: { _ in },
+        bootstrap: { _ in false },
+        defaultMicrophone: { nil },
         setSelectedCamera: { _ in },
         setSelectedMicrophone: { _ in },
-        toggleBroadcast: {}
+        startBroadcast: { _, _, _ in },
+        stopBroadcast: {}
     )
 }
 
@@ -62,23 +60,11 @@ extension BroadcastClient {
         )
 
         return Self(
-            bootstrap: {
-                try await runtime.bootstrap()
+            bootstrap: { selectedMicrophone in
+                try await runtime.bootstrap(selectedMicrophone: selectedMicrophone)
             },
-            snapshot: {
-                await runtime.snapshot()
-            },
-            updates: {
-                await runtime.updates()
-            },
-            setPrimaryStreamKey: { primaryStreamKey in
-                await runtime.setPrimaryStreamKey(primaryStreamKey)
-            },
-            setBandwidthTestEnabled: { bandwidthTestEnabled in
-                await runtime.setBandwidthTestEnabled(bandwidthTestEnabled)
-            },
-            setCaptureMicrophone: { isEnabled in
-                await runtime.setCaptureMicrophone(isEnabled)
+            defaultMicrophone: {
+                await runtime.defaultMicrophone()
             },
             setSelectedCamera: { camera in
                 await runtime.setSelectedCamera(camera)
@@ -86,8 +72,15 @@ extension BroadcastClient {
             setSelectedMicrophone: { microphone in
                 await runtime.setSelectedMicrophone(microphone)
             },
-            toggleBroadcast: {
-                await runtime.toggleBroadcast()
+            startBroadcast: { primaryStreamKey, selectedMicrophone, disconnected in
+                try await runtime.startBroadcast(
+                    primaryStreamKey: primaryStreamKey,
+                    selectedMicrophone: selectedMicrophone,
+                    disconnected: disconnected
+                )
+            },
+            stopBroadcast: {
+                await runtime.stopBroadcast()
             }
         )
     }
@@ -113,11 +106,13 @@ private final class LiveBroadcastRuntime {
         self.broadcastSessionBuilder = broadcastSessionBuilder
     }
 
-    func bootstrap() async throws {
+    func bootstrap(selectedMicrophone: CaptureDevice?) async throws -> Bool {
         try await mediaMixerController.bootstrapCapture(
             using: captureSystem,
-            configuration: broadcastManager.currentCaptureConfiguration(),
-            contentFilter: broadcastManager.currentStreamContentFilter()
+            configuration: broadcastManager.makeCaptureConfiguration(
+                selectedMicrophone: selectedMicrophone
+            ),
+            contentFilter: broadcastManager.makeStreamContentFilter()
         )
         await BroadcastSessionBuilder.configure()
 
@@ -127,68 +122,44 @@ private final class LiveBroadcastRuntime {
         SCContentSharingPicker.shared.configuration = initialConfiguration
         SCContentSharingPicker.shared.isActive = true
 
-        let isAuthorized = await cameraAuthorizationService.authorize()
-        broadcastManager.updateCameraAuthorization(isAuthorized)
+        return await cameraAuthorizationService.authorize()
     }
 
-    func snapshot() -> BroadcastConfiguration {
-        broadcastManager.broadcastConfiguration()
-    }
-
-    func updates() -> AsyncStream<BroadcastConfiguration> {
-        broadcastManager.broadcastConfigurationUpdates()
-    }
-
-    func setPrimaryStreamKey(_ primaryStreamKey: String) {
-        broadcastManager.updatePrimaryStreamKey(primaryStreamKey)
-    }
-
-    func setBandwidthTestEnabled(_ bandwidthTestEnabled: Bool) {
-        broadcastManager.updateBandwidthTestEnabled(bandwidthTestEnabled)
-    }
-
-    func setCaptureMicrophone(_ isEnabled: Bool) async {
-        broadcastManager.updateCaptureMicrophone(isEnabled)
-        await updateCaptureConfiguration()
+    func defaultMicrophone() -> CaptureDevice? {
+        broadcastManager.defaultMicrophoneDevice()
     }
 
     func setSelectedCamera(_ camera: CaptureDevice?) async {
-        broadcastManager.updateSelectedCamera(camera)
-        await updateCaptureConfiguration()
+        broadcastManager.setSelectedCamera(camera)
     }
 
     func setSelectedMicrophone(_ microphone: CaptureDevice?) async {
-        broadcastManager.updateSelectedMicrophone(microphone)
-        await updateCaptureConfiguration()
-    }
-
-    func toggleBroadcast() async {
-        let configuration = broadcastManager.broadcastConfiguration()
-
-        if configuration.isBroadcasting {
-            await stopBroadcast()
-            return
-        }
-
         do {
-            let session = try await broadcastSessionBuilder.makeBroadcastSession(
-                primaryStreamKey: configuration.primaryStreamKey
-            )
-            try await startBroadcast(session)
+            try await updateCaptureConfiguration(selectedMicrophone: microphone)
         } catch {
-            log.error("Failed to create broadcast session: \(error.localizedDescription)")
+            log.error("Failed to update stream configuration: \(error.localizedDescription)")
         }
     }
 
-    private func startBroadcast(_ session: BroadcastSession) async throws {
+    func startBroadcast(
+        primaryStreamKey: String,
+        selectedMicrophone: CaptureDevice?,
+        disconnected: @escaping @Sendable () async -> Void
+    ) async throws {
         await stopBroadcast()
-        broadcastSession = session
-        broadcastManager.updateIsBroadcasting(true)
 
         do {
+            try await updateCaptureConfiguration(selectedMicrophone: selectedMicrophone)
+            let session = try await broadcastSessionBuilder.makeBroadcastSession(
+                primaryStreamKey: primaryStreamKey
+            )
+            broadcastSession = session
+
             let stream = await session.stream()
             let frameRate = Float64(
-                broadcastManager.currentCaptureConfiguration().minimumFrameInterval.timescale
+                broadcastManager
+                    .makeCaptureConfiguration(selectedMicrophone: selectedMicrophone)
+                    .minimumFrameInterval.timescale
             )
 
             try await mediaMixerController.startBroadcast(
@@ -198,26 +169,21 @@ private final class LiveBroadcastRuntime {
             try await session.connect { [weak self] in
                 Task { @MainActor [weak self] in
                     await self?.stopBroadcast()
+                    await disconnected()
                 }
             }
-        } catch RTMPConnection.Error.requestFailed {
-            log.error("RTMP connection request failed")
-            await stopBroadcast()
-        } catch RTMPStream.Error.requestFailed {
-            log.error("RTMP stream request failed")
-            await stopBroadcast()
         } catch {
             log.error("\(error.localizedDescription)")
             await stopBroadcast()
+            throw error
         }
     }
 
-    private func stopBroadcast() async {
-        guard broadcastManager.broadcastConfiguration().isBroadcasting || broadcastSession != nil else {
+    func stopBroadcast() async {
+        guard broadcastSession != nil else {
             return
         }
 
-        broadcastManager.updateIsBroadcasting(false)
         await mediaMixerController.stopBroadcast()
 
         do {
@@ -229,14 +195,18 @@ private final class LiveBroadcastRuntime {
         }
     }
 
-    private func updateCaptureConfiguration() async {
+    private func updateCaptureConfiguration(selectedMicrophone: CaptureDevice?) async throws {
+        let configuration = broadcastManager.makeCaptureConfiguration(
+            selectedMicrophone: selectedMicrophone
+        )
+
         do {
             try await mediaMixerController.updateCaptureConfiguration(
-                broadcastManager.currentCaptureConfiguration(),
+                configuration,
                 using: captureSystem
             )
         } catch {
-            log.error("Failed to update stream configuration: \(error.localizedDescription)")
+            throw error
         }
     }
 }
