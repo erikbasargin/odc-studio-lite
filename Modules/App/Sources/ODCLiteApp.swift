@@ -27,15 +27,16 @@ struct ODCLiteApp: App {
         LBLogger(kRTMPHaishinKitIdentifier).level = .debug
         #endif
 
-        let broadcastManager = BroadcastManager()
+        let captureRuntime = CaptureRuntime()
         let store = Store(
             initialState: AppFeature.State(
-                configuration: broadcastManager.initialBroadcastConfiguration()
+                configuration: CaptureClient.initialConfiguration()
             )
         ) {
             AppFeature()
         } withDependencies: {
-            $0.broadcastClient = .live(broadcastManager)
+            $0.captureClient = .live(captureRuntime)
+            $0.broadcastClient = .live(captureRuntime)
         }
         self.store = store
 

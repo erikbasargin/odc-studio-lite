@@ -9,8 +9,8 @@ import SwiftUI
 
 struct AudioControlSection: View {
 
-    @Bindable var store: StoreOf<BroadcastFeature>
-    
+    @Bindable var store: StoreOf<CaptureFeature>
+
     var body: some View {
         Section("Audio") {
             Picker(
@@ -38,11 +38,11 @@ struct AudioControlSection: View {
 #Preview {
     AudioControlSection(
         store: Store(
-            initialState: BroadcastFeature.State(
+            initialState: CaptureFeature.State(
                 configuration: BroadcastConfiguration()
             )
         ) {
-            BroadcastFeature()
+            CaptureFeature()
         }
     )
 }

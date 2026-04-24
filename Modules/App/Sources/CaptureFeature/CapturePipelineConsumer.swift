@@ -6,7 +6,6 @@
 import AudioVideoKit
 import HaishinKit
 
-@MainActor
 final class CapturePipelineConsumer {
 
     private var screenCaptureTask: Task<Void, Never>?

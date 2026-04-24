@@ -18,10 +18,12 @@ struct AppFeature {
     @ObservableState
     struct State: Equatable {
         var bootstrapState: BootstrapState = .idle
+        var capture: CaptureFeature.State
         var broadcast: BroadcastFeature.State
         var settings: SettingsFeature.State
 
         init(configuration: BroadcastConfiguration = .init()) {
+            self.capture = CaptureFeature.State(configuration: configuration)
             self.broadcast = BroadcastFeature.State(configuration: configuration)
             self.settings = SettingsFeature.State(primaryStreamKey: configuration.primaryStreamKey)
         }
@@ -35,13 +37,18 @@ struct AppFeature {
         case stopBroadcast
         case bootstrapSucceeded
         case bootstrapFailed(String)
+        case capture(CaptureFeature.Action)
         case broadcast(BroadcastFeature.Action)
         case settings(SettingsFeature.Action)
     }
 
-    @Dependency(\.broadcastClient) private var broadcastClient
+    @Dependency(\.captureClient) private var captureClient
 
     var body: some ReducerOf<Self> {
+        Scope(state: \.capture, action: \.capture) {
+            CaptureFeature()
+        }
+
         Scope(state: \.broadcast, action: \.broadcast) {
             BroadcastFeature()
         }
@@ -58,28 +65,25 @@ struct AppFeature {
                 }
 
                 state.bootstrapState = .inProgress
-                let selectedMicrophone = state.broadcast.selectedMicrophone
-                return .merge(
-                    .send(.broadcast(.task)),
-                    .run { send in
-                        do {
-                            let isAuthorized = try await broadcastClient.bootstrap(
-                                selectedMicrophone
-                            )
-                            await send(.broadcast(.cameraAuthorizationChanged(isAuthorized)))
-                            await send(.bootstrapSucceeded)
-                        } catch {
-                            await send(.bootstrapFailed(error.localizedDescription))
-                        }
+                let selectedMicrophone = state.capture.selectedMicrophone
+                return .run { send in
+                    do {
+                        let isAuthorized = try await captureClient.bootstrap(
+                            selectedMicrophone
+                        )
+                        await send(.capture(.cameraAuthorizationChanged(isAuthorized)))
+                        await send(.bootstrapSucceeded)
+                    } catch {
+                        await send(.bootstrapFailed(error.localizedDescription))
                     }
-                )
+                }
 
             case .retryButtonTapped:
                 state.bootstrapState = .idle
                 return .send(.task)
 
             case let .microphoneCaptureRequested(isEnabled):
-                return .send(.broadcast(.captureMicrophoneChanged(isEnabled)))
+                return .send(.capture(.captureMicrophoneChanged(isEnabled)))
 
             case .startBroadcast:
                 return .send(
@@ -99,7 +103,7 @@ struct AppFeature {
                 state.bootstrapState = .failed(message)
                 return .none
 
-            case .broadcast, .settings:
+            case .capture, .broadcast, .settings:
                 return .none
             }
         }

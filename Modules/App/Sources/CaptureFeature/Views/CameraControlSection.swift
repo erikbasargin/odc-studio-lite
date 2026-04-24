@@ -9,8 +9,8 @@ import SwiftUI
 
 struct CameraControlSection: View {
 
-    @Bindable var store: StoreOf<BroadcastFeature>
-    
+    @Bindable var store: StoreOf<CaptureFeature>
+
     var body: some View {
         Section("Video") {
             Picker(
@@ -22,6 +22,11 @@ struct CameraControlSection: View {
                         .tag(device)
                 }
             }
+
+            Button(store.isCaptureSessionRunning ? "Stop capture session" : "Start capture session") {
+                store.send(store.isCaptureSessionRunning ? .stopCaptureSession : .startCaptureSession)
+            }
+            .disabled(!store.cameraIsAuthorized || store.selectedCamera == nil)
         }
         .task {
             let discoveryService = CaptureDevice.DiscoveryService(
@@ -38,11 +43,11 @@ struct CameraControlSection: View {
 #Preview {
     CameraControlSection(
         store: Store(
-            initialState: BroadcastFeature.State(
+            initialState: CaptureFeature.State(
                 configuration: BroadcastConfiguration()
             )
         ) {
-            BroadcastFeature()
+            CaptureFeature()
         }
     )
 }

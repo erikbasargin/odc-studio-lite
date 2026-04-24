@@ -1,14 +1,16 @@
-import ComposableArchitecture
 import AudioVideoKit
+import ComposableArchitecture
 @testable import ODCLite
 
-actor BroadcastClientProbe {
+actor AppClientProbe {
     private var bootstrapInvocationCount = 0
     private var bootstrapMicrophones: [CaptureDevice?] = []
     private var defaultMicrophone: CaptureDevice?
     private var selectedCameras: [CaptureDevice?] = []
     private var selectedMicrophones: [CaptureDevice?] = []
-    private var startBroadcastRequests: [(primaryStreamKey: String, selectedMicrophone: CaptureDevice?)] = []
+    private var startCaptureSessionInvocationCount = 0
+    private var stopCaptureSessionInvocationCount = 0
+    private var startBroadcastRequests: [String] = []
     private var stopBroadcastInvocationCount = 0
 
     func recordBootstrap(selectedMicrophone: CaptureDevice?) {
@@ -32,17 +34,20 @@ actor BroadcastClientProbe {
         defaultMicrophone
     }
 
-    func recordStartBroadcast(
-        primaryStreamKey: String,
-        selectedMicrophone: CaptureDevice?
-    ) {
-        startBroadcastRequests.append(
-            (primaryStreamKey: primaryStreamKey, selectedMicrophone: selectedMicrophone)
-        )
+    func recordStartBroadcast(primaryStreamKey: String) {
+        startBroadcastRequests.append(primaryStreamKey)
     }
 
     func recordStopBroadcast() {
         stopBroadcastInvocationCount += 1
+    }
+
+    func recordStartCaptureSession() {
+        startCaptureSessionInvocationCount += 1
+    }
+
+    func recordStopCaptureSession() {
+        stopCaptureSessionInvocationCount += 1
     }
 
     func bootstrapCount() -> Int {
@@ -61,33 +66,52 @@ actor BroadcastClientProbe {
         selectedMicrophones
     }
 
-    func startBroadcastValues() -> [(primaryStreamKey: String, selectedMicrophone: CaptureDevice?)] {
+    func startBroadcastValues() -> [String] {
         startBroadcastRequests
     }
 
     func stopBroadcastCount() -> Int {
         stopBroadcastInvocationCount
     }
+
+    func startCaptureSessionCount() -> Int {
+        startCaptureSessionInvocationCount
+    }
+
+    func stopCaptureSessionCount() -> Int {
+        stopCaptureSessionInvocationCount
+    }
 }
 
-extension BroadcastClient {
+extension CaptureClient {
     static func mock(
         bootstrap: @escaping @Sendable (CaptureDevice?) async throws -> Bool = { _ in false },
         defaultMicrophone: @escaping @Sendable () async -> CaptureDevice? = { nil },
         setSelectedCamera: @escaping @Sendable (CaptureDevice?) async -> Void = { _ in },
         setSelectedMicrophone: @escaping @Sendable (CaptureDevice?) async -> Void = { _ in },
-        startBroadcast: @escaping @Sendable (
-            String,
-            CaptureDevice?,
-            @escaping @Sendable () async -> Void
-        ) async throws -> Void = { _, _, _ in },
-        stopBroadcast: @escaping @Sendable () async -> Void = {}
+        startCaptureSession: @escaping @Sendable () async -> Void = {},
+        stopCaptureSession: @escaping @Sendable () async -> Void = {}
     ) -> Self {
         Self(
             bootstrap: bootstrap,
             defaultMicrophone: defaultMicrophone,
             setSelectedCamera: setSelectedCamera,
             setSelectedMicrophone: setSelectedMicrophone,
+            startCaptureSession: startCaptureSession,
+            stopCaptureSession: stopCaptureSession
+        )
+    }
+}
+
+extension BroadcastClient {
+    static func mock(
+        startBroadcast: @escaping @Sendable (
+            String,
+            @escaping @Sendable () async -> Void
+        ) async throws -> Void = { _, _ in },
+        stopBroadcast: @escaping @Sendable () async -> Void = {}
+    ) -> Self {
+        Self(
             startBroadcast: startBroadcast,
             stopBroadcast: stopBroadcast
         )
