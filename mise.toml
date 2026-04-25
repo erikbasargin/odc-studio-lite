@@ -25,6 +25,9 @@ run = "tuist generate"
 [tasks."Inspect implicit dependencies"]
 run = "tuist inspect dependencies --only implicit"
 
+[tasks.lint]
+run = "swift-format . --recursive --in-place"
+
 [tasks.setup]
 description = "Install and generate"
 run = [
