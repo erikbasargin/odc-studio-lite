@@ -12,7 +12,7 @@ struct BroadcastFeatureTests {
             BroadcastFeature()
         }
 
-        await store.send(.task)
+        await store.send(.bootstrap)
         await store.finish()
     }
 

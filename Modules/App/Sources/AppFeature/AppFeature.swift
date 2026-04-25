@@ -30,13 +30,13 @@ struct AppFeature {
     }
 
     enum Action: Equatable {
-        case task
+        case bootstrap
+        case bootstrapSucceeded
+        case bootstrapFailed(String)
         case retryButtonTapped
         case microphoneCaptureRequested(Bool)
         case startBroadcast
         case stopBroadcast
-        case bootstrapSucceeded
-        case bootstrapFailed(String)
         case capture(CaptureFeature.Action)
         case broadcast(BroadcastFeature.Action)
         case settings(SettingsFeature.Action)
@@ -59,7 +59,7 @@ struct AppFeature {
 
         Reduce { state, action in
             switch action {
-            case .task:
+            case .bootstrap:
                 guard case .idle = state.bootstrapState else {
                     return .none
                 }
@@ -67,7 +67,7 @@ struct AppFeature {
                 state.bootstrapState = .inProgress
                 let selectedMicrophone = state.capture.selectedMicrophone
                 return .merge(
-                    .send(.broadcast(.task)),
+                    .send(.broadcast(.bootstrap)),
                     .run { send in
                         do {
                             let isAuthorized = try await captureClient.bootstrap(
@@ -83,7 +83,7 @@ struct AppFeature {
 
             case .retryButtonTapped:
                 state.bootstrapState = .idle
-                return .send(.task)
+                return .send(.bootstrap)
 
             case let .microphoneCaptureRequested(isEnabled):
                 return .send(.capture(.captureMicrophoneChanged(isEnabled)))

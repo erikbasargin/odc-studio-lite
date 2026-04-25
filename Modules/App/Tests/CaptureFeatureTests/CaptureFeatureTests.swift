@@ -21,7 +21,7 @@ struct CaptureFeatureTests {
             )
         }
 
-        await store.send(.task)
+        await store.send(.bootstrap)
         await store.finish()
 
         #expect(await probe.bootstrapCount() == 0)

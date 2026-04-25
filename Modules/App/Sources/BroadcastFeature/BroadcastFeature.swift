@@ -21,7 +21,7 @@ struct BroadcastFeature {
     }
 
     enum Action: Equatable {
-        case task
+        case bootstrap
         case bandwidthTestEnabledChanged(Bool)
         case startBroadcast(String)
         case initiateBroadcast
@@ -36,7 +36,7 @@ struct BroadcastFeature {
     var body: some ReducerOf<Self> {
         Reduce { state, action in
             switch action {
-            case .task:
+            case .bootstrap:
                 return .run { _ in
                     await BroadcastSessionBuilder.configure()
                 }

@@ -26,7 +26,7 @@ struct CaptureFeature {
     }
 
     enum Action: Equatable {
-        case task
+        case bootstrap
         case captureMicrophoneChanged(Bool)
         case defaultMicrophoneResolved(CaptureDevice?)
         case availableCamerasChanged([CaptureDevice])
@@ -43,7 +43,7 @@ struct CaptureFeature {
     var body: some ReducerOf<Self> {
         Reduce { state, action in
             switch action {
-            case .task:
+            case .bootstrap:
                 return .none
 
             case let .captureMicrophoneChanged(isEnabled):

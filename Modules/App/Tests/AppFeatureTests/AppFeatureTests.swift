@@ -21,10 +21,10 @@ struct AppFeatureTests {
             )
         }
 
-        await store.send(.task) {
+        await store.send(.bootstrap) {
             $0.bootstrapState = .inProgress
         }
-        await store.receive(.broadcast(.task))
+        await store.receive(.broadcast(.bootstrap))
         await store.receive(.capture(.cameraAuthorizationChanged(true))) {
             $0.capture.cameraIsAuthorized = true
         }
@@ -53,10 +53,10 @@ struct AppFeatureTests {
         }
         store.exhaustivity = .off
 
-        await store.send(.task) {
+        await store.send(.bootstrap) {
             $0.bootstrapState = .inProgress
         }
-        await store.receive(.broadcast(.task))
+        await store.receive(.broadcast(.bootstrap))
         await store.receive(.bootstrapFailed("Bootstrap failed")) {
             $0.bootstrapState = .failed("Bootstrap failed")
         }

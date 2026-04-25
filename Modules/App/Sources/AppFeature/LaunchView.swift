@@ -40,7 +40,7 @@ struct LaunchView: View {
             }
         }
         .task {
-            store.send(.task)
+            store.send(.bootstrap)
         }
         .onChange(of: store.bootstrapState) { _, bootstrapState in
             if case .finished = bootstrapState {
