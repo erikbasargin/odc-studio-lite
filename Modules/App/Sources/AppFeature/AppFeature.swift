@@ -31,8 +31,6 @@ struct AppFeature {
 
     enum Action: Equatable {
         case bootstrap
-        case bootstrapSucceeded
-        case bootstrapFailed(String)
         case retryButtonTapped
         case microphoneCaptureRequested(Bool)
         case startBroadcast
@@ -65,20 +63,9 @@ struct AppFeature {
                 }
 
                 state.bootstrapState = .inProgress
-                let selectedMicrophone = state.capture.selectedMicrophone
                 return .merge(
                     .send(.broadcast(.bootstrap)),
-                    .run { send in
-                        do {
-                            let isAuthorized = try await captureClient.bootstrap(
-                                selectedMicrophone
-                            )
-                            await send(.capture(.cameraAuthorizationChanged(isAuthorized)))
-                            await send(.bootstrapSucceeded)
-                        } catch {
-                            await send(.bootstrapFailed(error.localizedDescription))
-                        }
-                    }
+                    .send(.capture(.bootstrap))
                 )
 
             case .retryButtonTapped:
@@ -98,11 +85,11 @@ struct AppFeature {
             case .stopBroadcast:
                 return .send(.broadcast(.stopBroadcast))
 
-            case .bootstrapSucceeded:
+            case .capture(.bootstrapSucceeded):
                 state.bootstrapState = .finished
                 return .none
 
-            case let .bootstrapFailed(message):
+            case let .capture(.bootstrapFailed(message)):
                 state.bootstrapState = .failed(message)
                 return .none
 

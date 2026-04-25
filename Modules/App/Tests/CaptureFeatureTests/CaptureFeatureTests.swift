@@ -8,7 +8,7 @@ struct CaptureFeatureTests {
 
     @Test
     @MainActor
-    func taskHasNoBootstrapSideEffects() async {
+    func bootstrapWritesThroughDependency() async {
         let probe = AppClientProbe()
         let store = TestStore(initialState: CaptureFeature.State()) {
             CaptureFeature()
@@ -22,9 +22,11 @@ struct CaptureFeatureTests {
         }
 
         await store.send(.bootstrap)
-        await store.finish()
+        await store.receive(.cameraAuthorizationChanged(false))
+        await store.receive(.bootstrapSucceeded)
 
-        #expect(await probe.bootstrapCount() == 0)
+        #expect(await probe.bootstrapCount() == 1)
+        #expect(await probe.bootstrapSelectedMicrophones() == [nil])
     }
 
     @Test
