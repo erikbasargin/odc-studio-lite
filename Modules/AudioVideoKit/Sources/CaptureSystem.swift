@@ -172,7 +172,8 @@ private extension CaptureSystem {
         let streamConfiguration = SCStreamConfiguration()
         streamConfiguration.excludesCurrentProcessAudio = configuration.excludesCurrentProcessAudio
         streamConfiguration.captureMicrophone = configuration.captureMicrophone
-        streamConfiguration.microphoneCaptureDeviceID = configuration.captureMicrophone
+        streamConfiguration.microphoneCaptureDeviceID =
+            configuration.captureMicrophone
             ? configuration.microphoneCaptureDeviceID
             : nil
         streamConfiguration.width = configuration.width

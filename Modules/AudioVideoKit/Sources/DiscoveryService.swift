@@ -3,14 +3,14 @@
 // See LICENSE for license information.
 //
 
-import Foundation
 import AVFoundation
+import Foundation
 
 extension CaptureDevice {
-
+    
     public typealias MediaType = AVMediaType
     public typealias DeviceType = AVCaptureDevice.DeviceType
-
+    
     public struct DiscoveryService<Session: CaptureDeviceDiscoverySession>: CaptureDeviceDiscoveryService {
         
         public var devices: AsyncStream<[CaptureDevice]> {
@@ -20,7 +20,8 @@ extension CaptureDevice {
         private let observer: Observer
         
         public init(mediaType: MediaType, deviceTypes: [DeviceType]) where Session == AVCaptureDevice.DiscoverySession {
-            self.init(mediaType: mediaType, deviceTypes: deviceTypes, sessionFactory: Session.init(mediaType:deviceTypes:))
+            self.init(
+                mediaType: mediaType, deviceTypes: deviceTypes, sessionFactory: Session.init(mediaType:deviceTypes:))
         }
         
         init(mediaType: MediaType, deviceTypes: [DeviceType], sessionFactory: (MediaType, [DeviceType]) -> Session) {
@@ -37,17 +38,18 @@ fileprivate extension CaptureDevice.DiscoveryService {
         private let keyPath = "devices"
         
         init(session: Session) {
-            (stream, continuation) = AsyncStream.makeStream(of: [CaptureDevice].self, bufferingPolicy: .bufferingNewest(1))
+            (stream, continuation) = AsyncStream.makeStream(
+                of: [CaptureDevice].self, bufferingPolicy: .bufferingNewest(1))
             self.session = session
             super.init()
             session.addObserver(self, forKeyPath: keyPath, options: [.initial, .new], context: nil)
         }
-
+        
         deinit {
             continuation.finish()
             session.removeObserver(self, forKeyPath: keyPath)
         }
-
+        
         override func observeValue(
             forKeyPath keyPath: String?,
             of object: Any?,
@@ -68,9 +70,8 @@ fileprivate extension CaptureDevice.DiscoveryService {
 
 extension AVCaptureDevice.DiscoverySession: CaptureDeviceDiscoverySession {}
 
-
 fileprivate extension AVCaptureDevice.DiscoverySession {
-
+    
     convenience init(mediaType: CaptureDevice.MediaType, deviceTypes: [CaptureDevice.DeviceType]) {
         self.init(deviceTypes: deviceTypes, mediaType: mediaType, position: .unspecified)
     }

@@ -5,12 +5,11 @@
 //  Created by Erik Basargin on 12/04/2026.
 //
 
+import ComposableArchitecture
 import SwiftUI
 
-import ComposableArchitecture
-
 struct LaunchView: View {
-
+    
     @Bindable var store: StoreOf<AppFeature>
     @Environment(\.dismiss) private var dismiss
     
@@ -25,7 +24,7 @@ struct LaunchView: View {
             case .finished:
                 Color.clear
 
-            case let .failed(message):
+            case .failed(let message):
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Unable to start ODC Lite")
                         .font(.headline)

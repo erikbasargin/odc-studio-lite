@@ -84,13 +84,13 @@ extension PreferredCameraController {
             context: UnsafeMutableRawPointer?
         ) {
             precondition(keyPath == self.keyPath)
-
+            
             guard let newValue = change?[.newKey] else {
                 preconditionFailure("No preferred camera observed")
             }
-
+            
             let captureDevice = (newValue as? Source).map(CaptureDevice.init(device:))
-
+            
             continuation.yield(captureDevice)
         }
     }

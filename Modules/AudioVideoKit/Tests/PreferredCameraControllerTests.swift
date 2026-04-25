@@ -4,9 +4,9 @@
 //
 
 import AudioVideoKit
+import ConcurrencyExtras
 import Foundation
 import Testing
-import ConcurrencyExtras
 import os
 
 @Suite(.serialized, .timeLimit(.minutes(1)))
@@ -123,7 +123,8 @@ struct PreferredCameraControllerTests {
     @Test func onNextDoesNotEmitValueWhenNotSystemPreferredCameraKeypathObserved() async throws {
         let observer = PreferredCameraController(sourceType: MockDevice.self)
         
-        async let cameraObserver = observer.preferredCamera.dropFirst().prefix(1).reduce(into: []) { partialResult, deviceID in
+        async let cameraObserver = observer.preferredCamera.dropFirst().prefix(1).reduce(into: []) {
+            partialResult, deviceID in
             partialResult.append(deviceID)
         }
         
@@ -141,13 +142,13 @@ struct PreferredCameraControllerTests {
             ]
         )
     }
-
+    
     @Test func streamIsClosedWhenControllerIsDeallocated() async throws {
         let controller: OSAllocatedUnfairLock<PreferredCameraController<MockDevice>?> = OSAllocatedUnfairLock(
             uncheckedState: PreferredCameraController(sourceType: MockDevice.self)
         )
-        
-        async let stream = try controller.withLock { 
+
+        async let stream = try controller.withLock {
             let controller = try #require($0)
             return controller.preferredCamera
         }
@@ -155,7 +156,7 @@ struct PreferredCameraControllerTests {
         await Task.megaYield()
         
         controller.withLock { $0 = nil }
-
+        
         let result = try #require(await stream.first { _ in true })
         
         #expect(result == nil)

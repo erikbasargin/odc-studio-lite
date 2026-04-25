@@ -1,5 +1,6 @@
 import AudioVideoKit
 import ComposableArchitecture
+
 @testable import ODCLite
 
 actor AppClientProbe {
@@ -13,80 +14,80 @@ actor AppClientProbe {
     private var startBroadcastRequests: [String] = []
     private var attachedBroadcastSessions: [BroadcastSession] = []
     private var stoppedBroadcastSessions: [BroadcastSession?] = []
-
+    
     func recordBootstrap(selectedMicrophone: CaptureDevice?) {
         bootstrapInvocationCount += 1
         bootstrapMicrophones.append(selectedMicrophone)
     }
-
+    
     func recordSelectedCamera(_ camera: CaptureDevice?) {
         selectedCameras.append(camera)
     }
-
+    
     func recordSelectedMicrophone(_ microphone: CaptureDevice?) {
         selectedMicrophones.append(microphone)
     }
-
+    
     func setDefaultMicrophone(_ microphone: CaptureDevice?) {
         defaultMicrophone = microphone
     }
-
+    
     func resolveDefaultMicrophone() -> CaptureDevice? {
         defaultMicrophone
     }
-
+    
     func recordStartBroadcast(primaryStreamKey: String) {
         startBroadcastRequests.append(primaryStreamKey)
     }
-
+    
     func recordAttachedBroadcastSession(_ session: BroadcastSession) {
         attachedBroadcastSessions.append(session)
     }
-
+    
     func recordStoppedBroadcastSession(_ session: BroadcastSession?) {
         stoppedBroadcastSessions.append(session)
     }
-
+    
     func recordStartCaptureSession() {
         startCaptureSessionInvocationCount += 1
     }
-
+    
     func recordStopCaptureSession() {
         stopCaptureSessionInvocationCount += 1
     }
-
+    
     func bootstrapCount() -> Int {
         bootstrapInvocationCount
     }
-
+    
     func bootstrapSelectedMicrophones() -> [CaptureDevice?] {
         bootstrapMicrophones
     }
-
+    
     func selectedCameraValues() -> [CaptureDevice?] {
         selectedCameras
     }
-
+    
     func selectedMicrophoneValues() -> [CaptureDevice?] {
         selectedMicrophones
     }
-
+    
     func startBroadcastValues() -> [String] {
         startBroadcastRequests
     }
-
+    
     func attachedBroadcastSessionCount() -> Int {
         attachedBroadcastSessions.count
     }
-
+    
     func stoppedBroadcastSessionCount() -> Int {
         stoppedBroadcastSessions.count
     }
-
+    
     func startCaptureSessionCount() -> Int {
         startCaptureSessionInvocationCount
     }
-
+    
     func stopCaptureSessionCount() -> Int {
         stopCaptureSessionInvocationCount
     }

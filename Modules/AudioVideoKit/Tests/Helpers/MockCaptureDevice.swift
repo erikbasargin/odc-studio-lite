@@ -3,8 +3,8 @@
 // See LICENSE for license information.
 //
 
-import Foundation
 import AudioVideoKit
+import Foundation
 
 final class MockDevice: NSObject, CaptureDeviceProtocol {
     
@@ -37,7 +37,7 @@ final class MockDevice: NSObject, CaptureDeviceProtocol {
     
     let uniqueID: String
     let localizedName: String
-        
+    
     override class func addObserver(
         _ observer: NSObject,
         forKeyPath keyPath: String,
@@ -72,7 +72,7 @@ final class MockDevice: NSObject, CaptureDeviceProtocol {
         self.uniqueID = uniqueID
         self.localizedName = ""
     }
-
+    
     init(uniqueID: String, localizedName: String) {
         self.uniqueID = uniqueID
         self.localizedName = localizedName

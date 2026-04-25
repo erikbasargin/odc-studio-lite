@@ -1,11 +1,12 @@
 import AudioVideoKit
 import ComposableArchitecture
-@testable import ODCLite
 import Testing
+
+@testable import ODCLite
 
 @Suite
 struct CaptureFeatureTests {
-
+    
     @Test
     @MainActor
     func bootstrapWritesThroughDependency() async {
@@ -20,15 +21,15 @@ struct CaptureFeatureTests {
                 }
             )
         }
-
+        
         await store.send(.bootstrap)
         await store.receive(.cameraAuthorizationChanged(false))
         await store.receive(.bootstrapSucceeded)
-
+        
         #expect(await probe.bootstrapCount() == 1)
         #expect(await probe.bootstrapSelectedMicrophones() == [nil])
     }
-
+    
     @Test
     @MainActor
     func microphoneCaptureDisablesSelectedMicrophone() async {
@@ -43,9 +44,9 @@ struct CaptureFeatureTests {
                 }
             )
         }
-
+        
         store.exhaustivity = .off
-
+        
         await store.send(.selectedMicrophoneChanged(microphone)) {
             $0.selectedMicrophone = microphone
         }
@@ -53,10 +54,10 @@ struct CaptureFeatureTests {
             $0.selectedMicrophone = nil
         }
         await store.finish()
-
+        
         #expect(await probe.selectedMicrophoneValues() == [microphone, nil])
     }
-
+    
     @Test
     @MainActor
     func microphoneCaptureEnablesDefaultMicrophone() async {
@@ -75,16 +76,16 @@ struct CaptureFeatureTests {
                 }
             )
         }
-
+        
         await store.send(.captureMicrophoneChanged(true))
         await store.receive(.defaultMicrophoneResolved(microphone)) {
             $0.selectedMicrophone = microphone
         }
         await store.finish()
-
+        
         #expect(await probe.selectedMicrophoneValues() == [microphone])
     }
-
+    
     @Test
     @MainActor
     func availableCamerasAreReducerOwned() async {
@@ -92,12 +93,12 @@ struct CaptureFeatureTests {
         let store = TestStore(initialState: CaptureFeature.State()) {
             CaptureFeature()
         }
-
+        
         await store.send(.availableCamerasChanged(cameras)) {
             $0.availableCameras = cameras
         }
     }
-
+    
     @Test
     @MainActor
     func availableMicrophonesAreReducerOwned() async {
@@ -105,12 +106,12 @@ struct CaptureFeatureTests {
         let store = TestStore(initialState: CaptureFeature.State()) {
             CaptureFeature()
         }
-
+        
         await store.send(.availableMicrophonesChanged(microphones)) {
             $0.availableMicrophones = microphones
         }
     }
-
+    
     @Test
     @MainActor
     func selectedCameraWritesThroughDependency() async {
@@ -125,15 +126,15 @@ struct CaptureFeatureTests {
                 }
             )
         }
-
+        
         await store.send(.selectedCameraChanged(camera)) {
             $0.selectedCamera = camera
         }
         await store.finish()
-
+        
         #expect(await probe.selectedCameraValues() == [camera])
     }
-
+    
     @Test
     @MainActor
     func selectedMicrophoneWritesThroughDependency() async {
@@ -148,15 +149,15 @@ struct CaptureFeatureTests {
                 }
             )
         }
-
+        
         await store.send(.selectedMicrophoneChanged(microphone)) {
             $0.selectedMicrophone = microphone
         }
         await store.finish()
-
+        
         #expect(await probe.selectedMicrophoneValues() == [microphone])
     }
-
+    
     @Test
     @MainActor
     func startCaptureSessionWritesThroughDependency() async {
@@ -175,15 +176,15 @@ struct CaptureFeatureTests {
                 }
             )
         }
-
+        
         await store.send(.startCaptureSession) {
             $0.isCaptureSessionRunning = true
         }
         await store.finish()
-
+        
         #expect(await probe.startCaptureSessionCount() == 1)
     }
-
+    
     @Test
     @MainActor
     func stopCaptureSessionWritesThroughDependency() async {
@@ -202,7 +203,7 @@ struct CaptureFeatureTests {
                 }
             )
         }
-
+        
         await store.send(.startCaptureSession) {
             $0.isCaptureSessionRunning = true
         }
@@ -210,10 +211,10 @@ struct CaptureFeatureTests {
             $0.isCaptureSessionRunning = false
         }
         await store.finish()
-
+        
         #expect(await probe.stopCaptureSessionCount() == 1)
     }
-
+    
     @Test
     @MainActor
     func clearingCameraStopsCaptureSession() async {
@@ -234,7 +235,7 @@ struct CaptureFeatureTests {
                 }
             )
         }
-
+        
         await store.send(.startCaptureSession) {
             $0.isCaptureSessionRunning = true
         }
@@ -243,7 +244,7 @@ struct CaptureFeatureTests {
             $0.isCaptureSessionRunning = false
         }
         await store.finish()
-
+        
         #expect(await probe.selectedCameraValues() == [nil])
         #expect(await probe.stopCaptureSessionCount() == 1)
     }

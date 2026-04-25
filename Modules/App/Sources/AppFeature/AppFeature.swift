@@ -14,21 +14,21 @@ struct AppFeature {
         case finished
         case failed(String)
     }
-
+    
     @ObservableState
     struct State: Equatable {
         var bootstrapState: BootstrapState = .idle
         var capture: CaptureFeature.State
         var broadcast: BroadcastFeature.State
         var settings: SettingsFeature.State
-
+        
         init(configuration: BroadcastConfiguration = .init()) {
             self.capture = CaptureFeature.State(configuration: configuration)
             self.broadcast = BroadcastFeature.State(configuration: configuration)
             self.settings = SettingsFeature.State(primaryStreamKey: configuration.primaryStreamKey)
         }
     }
-
+    
     enum Action: Equatable {
         case bootstrap
         case retryButtonTapped
@@ -39,29 +39,29 @@ struct AppFeature {
         case broadcast(BroadcastFeature.Action)
         case settings(SettingsFeature.Action)
     }
-
+    
     @Dependency(\.captureClient) private var captureClient
-
+    
     var body: some ReducerOf<Self> {
         Scope(state: \.capture, action: \.capture) {
             CaptureFeature()
         }
-
+        
         Scope(state: \.broadcast, action: \.broadcast) {
             BroadcastFeature()
         }
-
+        
         Scope(state: \.settings, action: \.settings) {
             SettingsFeature()
         }
-
+        
         Reduce { state, action in
             switch action {
             case .bootstrap:
                 guard case .idle = state.bootstrapState else {
                     return .none
                 }
-
+                
                 state.bootstrapState = .inProgress
                 return .merge(
                     .send(.broadcast(.bootstrap)),
@@ -72,7 +72,7 @@ struct AppFeature {
                 state.bootstrapState = .idle
                 return .send(.bootstrap)
 
-            case let .microphoneCaptureRequested(isEnabled):
+            case .microphoneCaptureRequested(let isEnabled):
                 return .send(.capture(.captureMicrophoneChanged(isEnabled)))
 
             case .startBroadcast:
@@ -89,11 +89,11 @@ struct AppFeature {
                 state.bootstrapState = .finished
                 return .none
 
-            case let .capture(.bootstrapFailed(message)):
+            case .capture(.bootstrapFailed(let message)):
                 state.bootstrapState = .failed(message)
                 return .none
 
-            case let .broadcast(.broadcastSessionIsReady(session)):
+            case .broadcast(.broadcastSessionIsReady(let session)):
                 return .run { send in
                     do {
                         try await captureClient.startBroadcast(session)

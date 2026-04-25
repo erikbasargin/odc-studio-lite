@@ -16,7 +16,7 @@ public struct CaptureDevice: Identifiable, Hashable, Sendable {
 }
 
 extension CaptureDevice {
-
+    
     init<Device>(device: Device) where Device: CaptureDeviceProtocol {
         self.id = device.uniqueID
         self.name = device.localizedName

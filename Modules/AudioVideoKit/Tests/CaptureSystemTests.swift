@@ -364,7 +364,7 @@ private final class MockSCStream: SCStream {
     override func updateContentFilter(_ contentFilter: SCContentFilter) async throws {
         try onUpdateContentFilter?(contentFilter)
     }
-
+    
     func stubOutputSampleBuffer(_ sampleBuffer: CMSampleBuffer, type: SCStreamOutputType) {
         currentStreamOutput?.stream?(self, didOutputSampleBuffer: sampleBuffer, of: type)
     }
@@ -381,12 +381,13 @@ private struct MockShareableContentProvider: ShareableContentProvider {
 
 private struct MockContentFilterProvider: SCContentFilterProvider {
     
-    let onInvoke: (
-        _ display: SCDisplay,
-        _ excludingApplications: [SCRunningApplication],
-        _ exceptingWindows: [SCWindow]
-    ) -> Void
-    
+    let onInvoke:
+        (
+            _ display: SCDisplay,
+            _ excludingApplications: [SCRunningApplication],
+            _ exceptingWindows: [SCWindow]
+        ) -> Void
+
     func invoke(
         display: SCDisplay,
         excludingApplications applications: [SCRunningApplication],

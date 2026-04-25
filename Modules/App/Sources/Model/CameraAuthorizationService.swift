@@ -14,7 +14,7 @@ extension CameraAuthorizationService: DependencyKey {
     static let liveValue = Self(
         authorize: {
             let status = AVCaptureDevice.authorizationStatus(for: .video)
-
+            
             switch status {
             case .notDetermined:
                 return await AVCaptureDevice.requestAccess(for: .video)
@@ -27,7 +27,7 @@ extension CameraAuthorizationService: DependencyKey {
             }
         }
     )
-
+    
     static let testValue = Self(authorize: { false })
 }
 

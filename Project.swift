@@ -44,13 +44,13 @@ let project = Project(
                     .debug(
                         name: "Debug",
                         settings: [
-                            "PRODUCT_BUNDLE_IDENTIFIER": "com.odclite.debug",
+                            "PRODUCT_BUNDLE_IDENTIFIER": "com.odclite.debug"
                         ],
                     ),
                     .release(
                         name: "Release",
                         settings: [
-                            "PRODUCT_BUNDLE_IDENTIFIER": "com.odclite",
+                            "PRODUCT_BUNDLE_IDENTIFIER": "com.odclite"
                         ],
                     ),
                 ],
@@ -64,7 +64,7 @@ let project = Project(
             bundleId: "com.odclite.debug.unitTests",
             deploymentTargets: deploymentTargets,
             buildableFolders: [
-                "Modules/App/Tests",
+                "Modules/App/Tests"
             ],
             dependencies: [
                 .target(name: "ODCLite"),
@@ -73,7 +73,7 @@ let project = Project(
             ],
             settings: .settings(
                 base: [
-                    "CODE_SIGN_IDENTITY": "Apple Development",
+                    "CODE_SIGN_IDENTITY": "Apple Development"
                 ],
             ),
         ),
@@ -85,7 +85,7 @@ let project = Project(
             bundleId: "com.odclite.audioVideoKit",
             deploymentTargets: deploymentTargets,
             buildableFolders: [
-                "Modules/AudioVideoKit/Sources",
+                "Modules/AudioVideoKit/Sources"
             ],
             settings: .settings(
                 base: [
@@ -103,7 +103,7 @@ let project = Project(
             bundleId: "com.odclite.audioVideoKit.unitTests",
             deploymentTargets: deploymentTargets,
             buildableFolders: [
-                "Modules/AudioVideoKit/Tests",
+                "Modules/AudioVideoKit/Tests"
             ],
             dependencies: [
                 .target(name: "AudioVideoKit"),
@@ -120,10 +120,10 @@ let project = Project(
                     .executionAction(
                         title: "Inspect Build",
                         scriptText: """
-                        $HOME/.local/bin/mise x -C $SRCROOT -- tuist inspect build    
-                        """,
+                            $HOME/.local/bin/mise x -C $SRCROOT -- tuist inspect build    
+                            """,
                         target: "ODCLite",
-                    ),
+                    )
                 ],
                 runPostActionsOnFailure: true,
             ),
@@ -131,7 +131,7 @@ let project = Project(
                 "ODCLiteTests",
                 "AudioVideoKitTests",
             ]),
-        ),
+        )
     ]
 )
 

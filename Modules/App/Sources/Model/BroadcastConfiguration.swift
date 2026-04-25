@@ -3,9 +3,8 @@
 // See LICENSE for license information.
 //
 
-import Foundation
-
 import AudioVideoKit
+import Foundation
 
 struct BroadcastConfiguration: Equatable, Sendable {
     var bandwidthTestEnabled = false

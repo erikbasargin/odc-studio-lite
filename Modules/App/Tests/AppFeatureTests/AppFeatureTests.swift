@@ -1,11 +1,12 @@
 import ComposableArchitecture
-@testable import ODCLite
 import Foundation
 import Testing
 
+@testable import ODCLite
+
 @Suite
 struct AppFeatureTests {
-
+    
     @Test
     @MainActor
     func taskStartsBroadcastFlow() async {
@@ -20,7 +21,7 @@ struct AppFeatureTests {
                 }
             )
         }
-
+        
         await store.send(.bootstrap) {
             $0.bootstrapState = .inProgress
         }
@@ -32,17 +33,19 @@ struct AppFeatureTests {
         await store.receive(.capture(.bootstrapSucceeded)) {
             $0.bootstrapState = .finished
         }
-
+        
         #expect(await probe.bootstrapCount() == 1)
         #expect(await probe.bootstrapSelectedMicrophones() == [nil])
     }
-
+    
     @Test
     @MainActor
     func bootstrapFailureIsModeledInAppState() async {
-        let bootstrapError = NSError(domain: "AppFeatureTests", code: 1, userInfo: [
-            NSLocalizedDescriptionKey: "Bootstrap failed"
-        ])
+        let bootstrapError = NSError(
+            domain: "AppFeatureTests", code: 1,
+            userInfo: [
+                NSLocalizedDescriptionKey: "Bootstrap failed"
+            ])
         let store = TestStore(initialState: AppFeature.State()) {
             AppFeature()
         } withDependencies: {
@@ -53,7 +56,7 @@ struct AppFeatureTests {
             )
         }
         store.exhaustivity = .off
-
+        
         await store.send(.bootstrap) {
             $0.bootstrapState = .inProgress
         }
@@ -63,19 +66,19 @@ struct AppFeatureTests {
             $0.bootstrapState = .failed("Bootstrap failed")
         }
     }
-
+    
     @Test
     @MainActor
     func microphoneCaptureRequestRoutesThroughCaptureFeature() async {
         let store = TestStore(initialState: AppFeature.State()) {
             AppFeature()
         }
-
+        
         await store.send(.microphoneCaptureRequested(true))
         await store.receive(.capture(.captureMicrophoneChanged(true)))
         await store.receive(.capture(.defaultMicrophoneResolved(nil)))
     }
-
+    
     @Test
     @MainActor
     func startBroadcastUsesSettingsOwnedPrimaryStreamKey() async {
@@ -100,7 +103,7 @@ struct AppFeatureTests {
                 }
             )
         }
-
+        
         await store.send(.startBroadcast)
         await store.receive(.broadcast(.startBroadcast("stream-key")))
         await store.receive(.broadcast(.broadcastSessionIsReady(session))) {
@@ -109,7 +112,7 @@ struct AppFeatureTests {
         await store.receive(.broadcast(.initiateBroadcast)) {
             $0.broadcast.isBroadcasting = true
         }
-
+        
         #expect(await probe.startBroadcastValues() == ["stream-key"])
         #expect(await probe.attachedBroadcastSessionCount() == 1)
     }

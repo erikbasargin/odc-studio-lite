@@ -4,11 +4,10 @@
 //
 
 import AppIntents
+import AudioVideoKit
 import ComposableArchitecture
 import ScreenCaptureKit
 import SwiftUI
-
-import AudioVideoKit
 
 #if DEBUG
 import Logboard
@@ -26,7 +25,7 @@ struct ODCLiteApp: App {
         LBLogger(kHaishinKitIdentifier).level = .debug
         LBLogger(kRTMPHaishinKitIdentifier).level = .debug
         #endif
-
+        
         let captureRuntime = CaptureRuntime()
         let store = Store(
             initialState: AppFeature.State(
@@ -38,9 +37,9 @@ struct ODCLiteApp: App {
             $0.captureClient = .live(captureRuntime)
         }
         self.store = store
-
+        
         AppDependencyManager.shared.add(dependency: store)
-
+        
         ODCLiteShortcuts.updateAppShortcutParameters()
     }
     
@@ -64,9 +63,9 @@ struct ODCLiteApp: App {
 }
 
 private struct MenuBarExtraLabelView: View {
-
+    
     let store: StoreOf<BroadcastFeature>
-
+    
     var body: some View {
         Image(.menuBarExtra)
             .symbolRenderingMode(.palette)

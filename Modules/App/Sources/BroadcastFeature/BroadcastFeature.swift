@@ -7,19 +7,19 @@ import ComposableArchitecture
 
 @Reducer
 struct BroadcastFeature {
-
+    
     @ObservableState
     struct State: Equatable {
         var bandwidthTestEnabled = false
         var isBroadcasting = false
         var broadcastSession: BroadcastSession?
-
+        
         init(configuration: BroadcastConfiguration = .init()) {
             self.bandwidthTestEnabled = configuration.bandwidthTestEnabled
             self.isBroadcasting = configuration.isBroadcasting
         }
     }
-
+    
     enum Action: Equatable {
         case bootstrap
         case bandwidthTestEnabledChanged(Bool)
@@ -32,7 +32,7 @@ struct BroadcastFeature {
     }
     
     @Dependency(\.broadcastSessionBuilder) var broadcastSessionBuilder
-
+    
     var body: some ReducerOf<Self> {
         Reduce { state, action in
             switch action {
@@ -41,11 +41,11 @@ struct BroadcastFeature {
                     await BroadcastSessionBuilder.configure()
                 }
 
-            case let .bandwidthTestEnabledChanged(bandwidthTestEnabled):
+            case .bandwidthTestEnabledChanged(let bandwidthTestEnabled):
                 state.bandwidthTestEnabled = bandwidthTestEnabled
                 return .none
 
-            case let .startBroadcast(primaryStreamKey):
+            case .startBroadcast(let primaryStreamKey):
                 return .run { send in
                     do {
                         let session = try await broadcastSessionBuilder.makeBroadcastSession(primaryStreamKey, .default)
@@ -63,7 +63,7 @@ struct BroadcastFeature {
                     try await session?.close()
                 }
 
-            case let .broadcastSessionIsReady(session):
+            case .broadcastSessionIsReady(let session):
                 state.broadcastSession = session
                 return .none
 
@@ -71,7 +71,7 @@ struct BroadcastFeature {
                 guard let session = state.broadcastSession else {
                     return .none
                 }
-
+                
                 state.isBroadcasting = true
                 return .run { send in
                     do {

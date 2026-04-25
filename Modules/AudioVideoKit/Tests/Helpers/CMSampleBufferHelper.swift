@@ -21,7 +21,7 @@ struct CaptureStreamHelper {
         let formatDescription = try CMFormatDescription(
             audioStreamBasicDescription: .init(
                 mSampleRate: 48000,
-                mFormatID: 1819304813,
+                mFormatID: 1_819_304_813,
                 mFormatFlags: 41,
                 mBytesPerPacket: 4,
                 mFramesPerPacket: 1,

@@ -12,7 +12,7 @@ struct BroadcastSessionBuilder: Sendable {
     static func configure() async {
         await SessionBuilderFactory.shared.register(RTMPSessionFactory())
     }
-
+    
     var makeBroadcastSession: @Sendable (String, BroadcastSession.PublishConfiguration) async throws -> BroadcastSession
 }
 
@@ -36,4 +36,3 @@ extension DependencyValues {
         set { self[BroadcastSessionBuilder.self] = newValue }
     }
 }
-

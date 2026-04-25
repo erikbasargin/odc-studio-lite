@@ -8,9 +8,9 @@ import ComposableArchitecture
 import SwiftUI
 
 struct AudioControlSection: View {
-
+    
     @Bindable var store: StoreOf<CaptureFeature>
-
+    
     var body: some View {
         Section("Audio") {
             Picker(

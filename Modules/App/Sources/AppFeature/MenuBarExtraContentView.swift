@@ -7,16 +7,16 @@ import ComposableArchitecture
 import SwiftUI
 
 struct MenuBarExtraContentView: View {
-
+    
     @Bindable var store: StoreOf<AppFeature>
-
+    
     var body: some View {
         let captureStore = store.scope(state: \.capture, action: \.capture)
         @Bindable var broadcastStore = store.scope(state: \.broadcast, action: \.broadcast)
-
+        
         CameraControlSection(store: captureStore)
         AudioControlSection(store: captureStore)
-
+        
         Section("Twitch Broadcast") {
             Toggle(
                 "Bandwidth test",
