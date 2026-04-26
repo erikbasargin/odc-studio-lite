@@ -5,7 +5,6 @@ import ComposableArchitecture
 
 actor AppClientProbe {
     private var bootstrapInvocationCount = 0
-    private var bootstrapMicrophones: [CaptureDevice?] = []
     private var defaultMicrophone: CaptureDevice?
     private var selectedCameras: [CaptureDevice?] = []
     private var selectedMicrophones: [CaptureDevice?] = []
@@ -15,9 +14,8 @@ actor AppClientProbe {
     private var attachedBroadcastSessions: [BroadcastSession] = []
     private var stoppedBroadcastSessions: [BroadcastSession?] = []
     
-    func recordBootstrap(selectedMicrophone: CaptureDevice?) {
+    func recordBootstrap() {
         bootstrapInvocationCount += 1
-        bootstrapMicrophones.append(selectedMicrophone)
     }
     
     func recordSelectedCamera(_ camera: CaptureDevice?) {
@@ -60,10 +58,6 @@ actor AppClientProbe {
         bootstrapInvocationCount
     }
     
-    func bootstrapSelectedMicrophones() -> [CaptureDevice?] {
-        bootstrapMicrophones
-    }
-    
     func selectedCameraValues() -> [CaptureDevice?] {
         selectedCameras
     }
@@ -95,7 +89,7 @@ actor AppClientProbe {
 
 extension CaptureClient {
     static func mock(
-        bootstrap: @escaping @Sendable (CaptureDevice?) async throws -> Bool = { _ in false },
+        bootstrap: @escaping @Sendable () async throws -> Bool = { false },
         defaultMicrophone: @escaping @Sendable () async -> CaptureDevice? = { nil },
         setSelectedCamera: @escaping @Sendable (CaptureDevice?) async -> Void = { _ in },
         setSelectedMicrophone: @escaping @Sendable (CaptureDevice?) async -> Void = { _ in },

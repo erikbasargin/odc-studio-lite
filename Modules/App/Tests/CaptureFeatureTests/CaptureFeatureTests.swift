@@ -15,8 +15,8 @@ struct CaptureFeatureTests {
             CaptureFeature()
         } withDependencies: {
             $0.captureClient = .mock(
-                bootstrap: { selectedMicrophone in
-                    await probe.recordBootstrap(selectedMicrophone: selectedMicrophone)
+                bootstrap: {
+                    await probe.recordBootstrap()
                     return false
                 }
             )
@@ -27,7 +27,6 @@ struct CaptureFeatureTests {
         await store.receive(.bootstrapSucceeded)
         
         #expect(await probe.bootstrapCount() == 1)
-        #expect(await probe.bootstrapSelectedMicrophones() == [nil])
     }
     
     @Test

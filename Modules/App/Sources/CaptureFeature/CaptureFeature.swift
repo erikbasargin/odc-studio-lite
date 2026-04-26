@@ -46,12 +46,9 @@ struct CaptureFeature {
         Reduce { state, action in
             switch action {
             case .bootstrap:
-                let selectedMicrophone = state.selectedMicrophone
                 return .run { send in
                     do {
-                        let isAuthorized = try await captureClient.bootstrap(
-                            selectedMicrophone
-                        )
+                        let isAuthorized = try await captureClient.bootstrap()
                         await send(.cameraAuthorizationChanged(isAuthorized))
                         await send(.bootstrapSucceeded)
                     } catch {

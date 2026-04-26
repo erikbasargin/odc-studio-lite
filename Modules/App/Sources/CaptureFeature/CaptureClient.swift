@@ -14,7 +14,7 @@ import OSLog
 private let log = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "CaptureClient")
 
 struct CaptureClient: Sendable {
-    var bootstrap: @Sendable (CaptureDevice?) async throws -> Bool
+    var bootstrap: @Sendable () async throws -> Bool
     var defaultMicrophone: @Sendable () async -> CaptureDevice?
     var setSelectedCamera: @Sendable (CaptureDevice?) async -> Void
     var setSelectedMicrophone: @Sendable (CaptureDevice?) async -> Void
@@ -28,7 +28,7 @@ extension CaptureClient: DependencyKey {
     static let testValue = Self.unimplemented
     
     private static let unimplemented = Self(
-        bootstrap: { _ in false },
+        bootstrap: { false },
         defaultMicrophone: { nil },
         setSelectedCamera: { _ in },
         setSelectedMicrophone: { _ in },
@@ -59,11 +59,8 @@ extension CaptureClient {
         cameraAuthorizationService: CameraAuthorizationService = .liveValue
     ) -> Self {
         Self(
-            bootstrap: { selectedMicrophone in
-                try await runtime.bootstrap(
-                    selectedMicrophone: selectedMicrophone,
-                    cameraAuthorizationService: cameraAuthorizationService
-                )
+            bootstrap: {
+                await runtime.bootstrap(cameraAuthorizationService: cameraAuthorizationService)
             },
             defaultMicrophone: {
                 await runtime.defaultMicrophone()
@@ -91,7 +88,9 @@ actor CaptureRuntime {
     
     private var excludeAppFromStream = true
     private var selectedCameraDevice: CaptureDevice?
+    private var selectedMicrophoneDevice: CaptureDevice?
     private var cameraSessionIsRunning = false
+    private var capturePipelineIsConfigured = false
     
     private let captureSystem = CaptureSystem()
     private let mediaMixer = MediaMixer()
@@ -114,16 +113,8 @@ actor CaptureRuntime {
     struct NoCameraDevice: Error {}
     struct CameraCaptureSessionError: Error {}
     
-    func bootstrap(
-        selectedMicrophone: CaptureDevice?,
-        cameraAuthorizationService: CameraAuthorizationService
-    ) async throws -> Bool {
-        try await captureSystem.updateConfiguration(makeCaptureConfiguration(selectedMicrophone: selectedMicrophone))
-        try await captureSystem.updateContentFilter(makeStreamContentFilter())
-        try capturePipelineConsumer.startConsuming(from: captureSystem, on: mediaMixer)
-        try await captureSystem.start()
-        
-        return await cameraAuthorizationService.authorize()
+    func bootstrap(cameraAuthorizationService: CameraAuthorizationService) async -> Bool {
+        await cameraAuthorizationService.authorize()
     }
     
     func defaultMicrophone() -> CaptureDevice? {
@@ -147,6 +138,12 @@ actor CaptureRuntime {
     }
     
     func setSelectedMicrophone(_ microphone: CaptureDevice?) async {
+        selectedMicrophoneDevice = microphone
+        
+        guard cameraSessionIsRunning else {
+            return
+        }
+
         do {
             try await updateCaptureConfiguration(selectedMicrophone: microphone)
         } catch {
@@ -154,8 +151,16 @@ actor CaptureRuntime {
         }
     }
     
-    func startCaptureSession() {
+    func startCaptureSession() async {
         guard selectedCameraDevice != nil else {
+            return
+        }
+
+        do {
+            try await configureCapturePipelineIfNeeded()
+            try await captureSystem.start()
+        } catch {
+            log.error("Failed to start capture pipeline: \(error.localizedDescription)")
             return
         }
         
@@ -176,6 +181,14 @@ actor CaptureRuntime {
         cameraCaptureSession.commitConfiguration()
         
         stopCameraCaptureSession()
+
+        Task {
+            do {
+                try await captureSystem.stop()
+            } catch {
+                log.error("Failed to stop capture pipeline: \(error.localizedDescription)")
+            }
+        }
     }
     
     func startBroadcast(session: BroadcastSession) async throws {
@@ -209,6 +222,20 @@ actor CaptureRuntime {
         try await captureSystem.updateConfiguration(
             makeCaptureConfiguration(selectedMicrophone: selectedMicrophone),
         )
+    }
+
+    private func configureCapturePipelineIfNeeded() async throws {
+        try await captureSystem.updateConfiguration(
+            makeCaptureConfiguration(selectedMicrophone: selectedMicrophoneDevice)
+        )
+        try await captureSystem.updateContentFilter(makeStreamContentFilter())
+
+        guard !capturePipelineIsConfigured else {
+            return
+        }
+
+        try capturePipelineConsumer.startConsuming(from: captureSystem, on: mediaMixer)
+        capturePipelineIsConfigured = true
     }
     
     private func configureCameraSession() {

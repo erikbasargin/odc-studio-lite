@@ -15,8 +15,8 @@ struct AppFeatureTests {
             AppFeature()
         } withDependencies: {
             $0.captureClient = .mock(
-                bootstrap: { selectedMicrophone in
-                    await probe.recordBootstrap(selectedMicrophone: selectedMicrophone)
+                bootstrap: {
+                    await probe.recordBootstrap()
                     return true
                 }
             )
@@ -36,7 +36,6 @@ struct AppFeatureTests {
         }
         
         #expect(await probe.bootstrapCount() == 1)
-        #expect(await probe.bootstrapSelectedMicrophones() == [nil])
     }
     
     @Test
@@ -51,7 +50,7 @@ struct AppFeatureTests {
             AppFeature()
         } withDependencies: {
             $0.captureClient = .mock(
-                bootstrap: { _ in
+                bootstrap: {
                     throw bootstrapError
                 }
             )
