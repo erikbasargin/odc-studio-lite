@@ -25,6 +25,7 @@ struct AppFeatureTests {
         await store.send(.bootstrap) {
             $0.bootstrapState = .inProgress
         }
+        await store.receive(.settings(.bootstrap))
         await store.receive(.broadcast(.bootstrap))
         await store.receive(.capture(.bootstrap))
         await store.receive(.capture(.cameraAuthorizationChanged(true))) {
@@ -60,6 +61,7 @@ struct AppFeatureTests {
         await store.send(.bootstrap) {
             $0.bootstrapState = .inProgress
         }
+        await store.receive(.settings(.bootstrap))
         await store.receive(.broadcast(.bootstrap))
         await store.receive(.capture(.bootstrap))
         await store.receive(.capture(.bootstrapFailed("Bootstrap failed"))) {

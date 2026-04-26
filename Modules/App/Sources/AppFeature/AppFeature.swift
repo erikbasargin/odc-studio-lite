@@ -64,6 +64,7 @@ struct AppFeature {
                 
                 state.bootstrapState = .inProgress
                 return .merge(
+                    .send(.settings(.bootstrap)),
                     .send(.broadcast(.bootstrap)),
                     .send(.capture(.bootstrap))
                 )

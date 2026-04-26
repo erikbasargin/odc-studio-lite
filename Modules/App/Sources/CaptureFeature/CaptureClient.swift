@@ -10,7 +10,6 @@ import ComposableArchitecture
 import Foundation
 import HaishinKit
 import OSLog
-import ScreenCaptureKit
 
 private let log = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "CaptureClient")
 
@@ -123,12 +122,6 @@ actor CaptureRuntime {
         try await captureSystem.updateContentFilter(makeStreamContentFilter())
         try capturePipelineConsumer.startConsuming(from: captureSystem, on: mediaMixer)
         try await captureSystem.start()
-        
-        var initialConfiguration = SCContentSharingPickerConfiguration()
-        initialConfiguration.allowedPickerModes = [.singleDisplay]
-        initialConfiguration.allowsChangingSelectedContent = true
-        SCContentSharingPicker.shared.configuration = initialConfiguration
-        SCContentSharingPicker.shared.isActive = true
         
         return await cameraAuthorizationService.authorize()
     }
