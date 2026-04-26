@@ -17,11 +17,11 @@ struct StartCapturingMicrophone: AppIntent {
     )
     
     @AppDependency
-    private var store: StoreOf<AppFeature>
+    private var store: StoreOf<CaptureFeature>
     
     @MainActor
     func perform() async throws -> some IntentResult {
-        store.send(.microphoneCaptureRequested(true))
+        store.send(.captureMicrophoneChanged(true))
         return .result()
     }
 }
@@ -37,11 +37,11 @@ struct StopCapturingMicrophone: AppIntent {
     )
     
     @AppDependency
-    private var store: StoreOf<AppFeature>
+    private var store: StoreOf<CaptureFeature>
     
     @MainActor
     func perform() async throws -> some IntentResult {
-        store.send(.microphoneCaptureRequested(false))
+        store.send(.captureMicrophoneChanged(false))
         return .result()
     }
 }

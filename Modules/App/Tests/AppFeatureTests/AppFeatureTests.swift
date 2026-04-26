@@ -70,18 +70,6 @@ struct AppFeatureTests {
     
     @Test
     @MainActor
-    func microphoneCaptureRequestRoutesThroughCaptureFeature() async {
-        let store = TestStore(initialState: AppFeature.State()) {
-            AppFeature()
-        }
-        
-        await store.send(.microphoneCaptureRequested(true))
-        await store.receive(.capture(.captureMicrophoneChanged(true)))
-        await store.receive(.capture(.defaultMicrophoneResolved(nil)))
-    }
-    
-    @Test
-    @MainActor
     func startBroadcastUsesSettingsOwnedPrimaryStreamKey() async {
         let probe = AppClientProbe()
         let session = BroadcastSession()

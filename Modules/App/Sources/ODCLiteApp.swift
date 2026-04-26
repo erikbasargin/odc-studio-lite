@@ -38,7 +38,8 @@ struct ODCLiteApp: App {
         }
         self.store = store
         
-        AppDependencyManager.shared.add(dependency: store)
+        let captureStore = store.scope(state: \.capture, action: \.capture)
+        AppDependencyManager.shared.add(dependency: captureStore)
         
         ODCLiteShortcuts.updateAppShortcutParameters()
     }
