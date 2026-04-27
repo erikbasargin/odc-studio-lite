@@ -5,6 +5,7 @@
 
 import AudioVideoKit
 import ComposableArchitecture
+import Shared
 import SwiftUI
 
 struct CameraControlSection: View {

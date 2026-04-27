@@ -4,23 +4,35 @@
 //
 
 import ComposableArchitecture
+import Shared
 
 @Reducer
-struct BroadcastFeature {
+public struct BroadcastFeature {
     
     @ObservableState
-    struct State: Equatable {
-        var bandwidthTestEnabled = false
-        var isBroadcasting = false
-        var broadcastSession: BroadcastSession?
+    public struct State: Equatable {
+        public var bandwidthTestEnabled = false
+        public var isBroadcasting = false
+        public var broadcastSession: BroadcastSession?
         
-        init(configuration: BroadcastConfiguration = .init()) {
+        public init(
+            bandwidthTestEnabled: Bool = false,
+            isBroadcasting: Bool = false,
+            broadcastSession: BroadcastSession? = nil
+        ) {
+            self.bandwidthTestEnabled = bandwidthTestEnabled
+            self.isBroadcasting = isBroadcasting
+            self.broadcastSession = broadcastSession
+        }
+        
+        public init(configuration: BroadcastConfiguration = .init()) {
             self.bandwidthTestEnabled = configuration.bandwidthTestEnabled
             self.isBroadcasting = configuration.isBroadcasting
+            self.broadcastSession = nil
         }
     }
     
-    enum Action: Equatable {
+    public enum Action: Equatable {
         case bootstrap
         case bandwidthTestEnabledChanged(Bool)
         case startBroadcast(String)
@@ -33,7 +45,9 @@ struct BroadcastFeature {
     
     @Dependency(\.broadcastSessionBuilder) var broadcastSessionBuilder
     
-    var body: some ReducerOf<Self> {
+    public init() {}
+    
+    public var body: some ReducerOf<Self> {
         Reduce { state, action in
             switch action {
             case .bootstrap:
@@ -46,6 +60,7 @@ struct BroadcastFeature {
                 return .none
 
             case .startBroadcast(let primaryStreamKey):
+                let broadcastSessionBuilder = broadcastSessionBuilder
                 return .run { send in
                     do {
                         let session = try await broadcastSessionBuilder.makeBroadcastSession(primaryStreamKey, .default)

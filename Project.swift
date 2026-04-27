@@ -13,6 +13,12 @@ let projectBaseSettings: SettingsDictionary = [
 
 let deploymentTargets: DeploymentTargets = .macOS("26.0")
 
+let moduleBaseSettings: SettingsDictionary = [
+    "ENABLE_MODULE_VERIFIER": "YES",
+    "MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS": "gnu11 gnu++14",
+    "ENABLE_USER_SCRIPT_SANDBOXING": "YES",
+]
+
 let project = Project(
     name: "ODCLite",
     settings: .settings(base: projectBaseSettings),
@@ -31,6 +37,8 @@ let project = Project(
             entitlements: "Modules/App/Configurations/ODCLite.entitlements",
             dependencies: [
                 .target(name: "AudioVideoKit"),
+                .target(name: "BroadcastFeature"),
+                .target(name: "Shared"),
                 .external(name: "ComposableArchitecture"),
                 .external(name: "HaishinKit"),
                 .external(name: "RTMPHaishinKit"),
@@ -69,6 +77,8 @@ let project = Project(
             dependencies: [
                 .target(name: "ODCLite"),
                 .target(name: "AudioVideoKit"),
+                .target(name: "BroadcastFeature"),
+                .target(name: "Shared"),
                 .external(name: "ComposableArchitecture"),
             ],
             settings: .settings(
@@ -87,13 +97,56 @@ let project = Project(
             buildableFolders: [
                 "Modules/AudioVideoKit/Sources"
             ],
-            settings: .settings(
-                base: [
-                    "ENABLE_MODULE_VERIFIER": "YES",
-                    "MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS": "gnu11 gnu++14",
-                    "ENABLE_USER_SCRIPT_SANDBOXING": "YES",
-                ],
-            )
+            settings: .settings(base: moduleBaseSettings),
+        ),
+        
+        .target(
+            name: "BroadcastFeature",
+            destinations: .macOS,
+            product: productType(),
+            bundleId: "com.odclite.broadcastFeature",
+            deploymentTargets: deploymentTargets,
+            buildableFolders: [
+                "Modules/BroadcastFeature/Sources"
+            ],
+            dependencies: [
+                .target(name: "Shared"),
+                .external(name: "ComposableArchitecture"),
+                .external(name: "HaishinKit"),
+                .external(name: "RTMPHaishinKit"),
+            ],
+            settings: .settings(base: moduleBaseSettings),
+        ),
+        
+        .target(
+            name: "BroadcastFeatureTests",
+            destinations: .macOS,
+            product: .unitTests,
+            bundleId: "com.odclite.broadcastFeature.unitTests",
+            deploymentTargets: deploymentTargets,
+            buildableFolders: [
+                "Modules/BroadcastFeature/Tests"
+            ],
+            dependencies: [
+                .target(name: "BroadcastFeature"),
+                .external(name: "ComposableArchitecture"),
+            ],
+        ),
+        
+        .target(
+            name: "Shared",
+            destinations: .macOS,
+            product: productType(),
+            bundleId: "com.odclite.shared",
+            deploymentTargets: deploymentTargets,
+            buildableFolders: [
+                "Modules/Shared/Sources"
+            ],
+            dependencies: [
+                .target(name: "AudioVideoKit"),
+                .external(name: "ComposableArchitecture"),
+            ],
+            settings: .settings(base: moduleBaseSettings),
         ),
         
         .target(
@@ -129,6 +182,7 @@ let project = Project(
             ),
             testAction: .targets([
                 "ODCLiteTests",
+                "BroadcastFeatureTests",
                 "AudioVideoKitTests",
             ]),
         )

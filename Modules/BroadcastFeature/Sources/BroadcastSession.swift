@@ -10,12 +10,12 @@ import VideoToolbox
 
 private let log = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "BroadcastSession")
 
-actor BroadcastSession: Equatable {
+public actor BroadcastSession: Equatable {
     
-    struct PublishConfiguration {
+    public struct PublishConfiguration: Sendable {
         let videoSettings: VideoCodecSettings
         
-        static let `default` = Self(
+        public static let `default` = Self(
             videoSettings: VideoCodecSettings(
                 videoSize: .init(width: 1920, height: 1080),
                 bitRate: 6000 * 1000,
@@ -34,7 +34,7 @@ actor BroadcastSession: Equatable {
     private let closeHandler: @Sendable () async throws -> Void
     private let readyStateTask: Task<Void, Never>?
     
-    init(
+    public init(
         primaryStreamKey: String,
         publishConfiguration: PublishConfiguration = .default
     ) async throws {
@@ -84,7 +84,7 @@ actor BroadcastSession: Equatable {
         self.readyStateTask = readyStateTask
     }
     
-    init(
+    public init(
         stream: @escaping @Sendable () async -> any StreamConvertible = {
             fatalError("Test BroadcastSession cannot provide a stream")
         },
@@ -97,20 +97,20 @@ actor BroadcastSession: Equatable {
         self.readyStateTask = nil
     }
     
-    func stream() async -> any StreamConvertible {
+    public func stream() async -> any StreamConvertible {
         await streamProvider()
     }
     
-    func connect(disconnected: @Sendable @escaping () -> Void) async throws {
+    public func connect(disconnected: @Sendable @escaping () -> Void) async throws {
         try await connectHandler(disconnected)
     }
     
-    func close() async throws {
+    public func close() async throws {
         readyStateTask?.cancel()
         try await closeHandler()
     }
     
-    nonisolated static func == (lhs: BroadcastSession, rhs: BroadcastSession) -> Bool {
+    public nonisolated static func == (lhs: BroadcastSession, rhs: BroadcastSession) -> Bool {
         lhs === rhs
     }
 }

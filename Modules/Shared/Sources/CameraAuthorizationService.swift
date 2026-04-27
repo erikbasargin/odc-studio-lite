@@ -3,15 +3,19 @@
 // See LICENSE for license information.
 //
 
-@preconcurrency import AVFoundation
+import AVFoundation
 import ComposableArchitecture
 
-struct CameraAuthorizationService: Sendable {
-    var authorize: @Sendable () async -> Bool
+public struct CameraAuthorizationService: Sendable {
+    public var authorize: @Sendable () async -> Bool
+    
+    public init(authorize: @escaping @Sendable () async -> Bool) {
+        self.authorize = authorize
+    }
 }
 
 extension CameraAuthorizationService: DependencyKey {
-    static let liveValue = Self(
+    public static let liveValue = Self(
         authorize: {
             let status = AVCaptureDevice.authorizationStatus(for: .video)
             
@@ -28,10 +32,10 @@ extension CameraAuthorizationService: DependencyKey {
         }
     )
     
-    static let testValue = Self(authorize: { false })
+    public static let testValue = Self(authorize: { false })
 }
 
-extension DependencyValues {
+public extension DependencyValues {
     var cameraAuthorizationService: CameraAuthorizationService {
         get { self[CameraAuthorizationService.self] }
         set { self[CameraAuthorizationService.self] = newValue }

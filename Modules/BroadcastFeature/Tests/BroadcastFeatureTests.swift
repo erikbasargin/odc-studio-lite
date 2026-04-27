@@ -1,7 +1,7 @@
 import ComposableArchitecture
 import Testing
 
-@testable import ODCLite
+@testable import BroadcastFeature
 
 @Suite
 struct BroadcastFeatureTests {
@@ -32,7 +32,7 @@ struct BroadcastFeatureTests {
     @Test
     @MainActor
     func startBroadcastUsesExplicitPrimaryStreamKey() async {
-        let probe = AppClientProbe()
+        let probe = BroadcastFeatureProbe()
         let session = BroadcastSession()
         let store = TestStore(initialState: BroadcastFeature.State()) {
             BroadcastFeature()
@@ -59,9 +59,10 @@ struct BroadcastFeatureTests {
         let session = BroadcastSession()
         let store = TestStore(
             initialState: {
-                var state = BroadcastFeature.State(configuration: .init(isBroadcasting: true))
-                state.broadcastSession = session
-                return state
+                BroadcastFeature.State(
+                    isBroadcasting: true,
+                    broadcastSession: session
+                )
             }()
         ) {
             BroadcastFeature()
@@ -72,5 +73,17 @@ struct BroadcastFeatureTests {
             $0.isBroadcasting = false
         }
         await store.finish()
+    }
+}
+
+actor BroadcastFeatureProbe {
+    private var startBroadcastRequests: [String] = []
+    
+    func recordStartBroadcast(primaryStreamKey: String) {
+        startBroadcastRequests.append(primaryStreamKey)
+    }
+    
+    func startBroadcastValues() -> [String] {
+        startBroadcastRequests
     }
 }

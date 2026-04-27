@@ -6,10 +6,12 @@
 @preconcurrency import AVFoundation
 import AppKit
 import AudioVideoKit
+import BroadcastFeature
 import ComposableArchitecture
 import Foundation
 import HaishinKit
 import OSLog
+import Shared
 
 private let log = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "CaptureClient")
 
@@ -143,7 +145,7 @@ actor CaptureRuntime {
         guard cameraSessionIsRunning else {
             return
         }
-
+        
         do {
             try await updateCaptureConfiguration(selectedMicrophone: microphone)
         } catch {
@@ -155,7 +157,7 @@ actor CaptureRuntime {
         guard selectedCameraDevice != nil else {
             return
         }
-
+        
         do {
             try await configureCapturePipelineIfNeeded()
             try await captureSystem.start()
@@ -181,7 +183,7 @@ actor CaptureRuntime {
         cameraCaptureSession.commitConfiguration()
         
         stopCameraCaptureSession()
-
+        
         Task {
             do {
                 try await captureSystem.stop()
@@ -223,17 +225,17 @@ actor CaptureRuntime {
             makeCaptureConfiguration(selectedMicrophone: selectedMicrophone),
         )
     }
-
+    
     private func configureCapturePipelineIfNeeded() async throws {
         try await captureSystem.updateConfiguration(
             makeCaptureConfiguration(selectedMicrophone: selectedMicrophoneDevice)
         )
         try await captureSystem.updateContentFilter(makeStreamContentFilter())
-
+        
         guard !capturePipelineIsConfigured else {
             return
         }
-
+        
         try capturePipelineConsumer.startConsuming(from: captureSystem, on: mediaMixer)
         capturePipelineIsConfigured = true
     }
