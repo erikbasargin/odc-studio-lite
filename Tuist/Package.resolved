@@ -1,5 +1,5 @@
 {
-  "originHash" : "4371da811d09817bb98f0f6f0c1d176ce44565c8d9b0d0ac97481fe79fd94a00",
+  "originHash" : "22e1a6b07e9070860d1cae01d12739f1eb976036edde9a00a261ba177e39355c",
   "pins" : [
     {
       "identity" : "combine-schedulers",
@@ -41,6 +41,14 @@
       "location" : "",
       "state" : {
         "version" : "1.3.2"
+      }
+    },
+    {
+      "identity" : "square.Valet",
+      "kind" : "registry",
+      "location" : "",
+      "state" : {
+        "version" : "5.1.0"
       }
     },
     {
