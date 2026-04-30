@@ -3,6 +3,7 @@
 // See LICENSE for license information.
 //
 
+import BroadcastFeature
 import ComposableArchitecture
 import SwiftUI
 
@@ -17,17 +18,8 @@ struct MenuBarExtraContentView: View {
         CameraControlSection(store: captureStore)
         AudioControlSection(store: captureStore)
         
-        Section("Twitch Broadcast") {
-            Toggle(
-                "Bandwidth test",
-                isOn: $broadcastStore.bandwidthTestEnabled.sending(\.bandwidthTestEnabledChanged)
-            )
-            .disabled(broadcastStore.isBroadcasting)
-            
-            Button("\(broadcastStore.isBroadcasting ? "Stop" : "Start") broadcast") {
-                store.send(broadcastStore.isBroadcasting ? .stopBroadcast : .startBroadcast)
-            }
-            .disabled(store.settings.primaryStreamKey.isEmpty)
+        TwitchBroadcastSection(store: broadcastStore) {
+            store.send(broadcastStore.isBroadcasting ? .stopBroadcast : .startBroadcast)
         }
         
         Section {
