@@ -27,7 +27,7 @@ struct AppFeature {
         init(configuration: BroadcastConfiguration = .init()) {
             self.capture = CaptureFeature.State(configuration: configuration)
             self.broadcast = BroadcastFeature.State(configuration: configuration)
-            self.settings = SettingsFeature.State(primaryStreamKey: configuration.primaryStreamKey)
+            self.settings = SettingsFeature.State()
         }
     }
     
