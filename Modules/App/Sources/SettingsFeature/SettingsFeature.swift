@@ -5,6 +5,7 @@
 
 import ComposableArchitecture
 @preconcurrency import ScreenCaptureKit
+import Shared
 
 @Reducer
 struct SettingsFeature {
@@ -31,10 +32,12 @@ struct SettingsFeature {
     
     enum Action: Equatable {
         case bootstrap
+        case primaryStreamKeyLoaded(String)
         case primaryStreamKeyChanged(String)
     }
     
     @Dependency(\.contentSharingPickerClient) private var contentSharingPickerClient
+    @Dependency(\.twitchPrimaryKeyStorage) private var twitchPrimaryKeyStorage
     
     var body: some ReducerOf<Self> {
         Reduce { state, action in
@@ -42,14 +45,28 @@ struct SettingsFeature {
             case .bootstrap:
                 let configuration = state.contentSharingPickerConfiguration
                 let isActive = state.contentSharingPickerIsActive
-                return .run { _ in
-                    await contentSharingPickerClient.setConfiguration(configuration)
-                    await contentSharingPickerClient.setIsActive(isActive)
-                }
-
-            case .primaryStreamKeyChanged(let primaryStreamKey):
+                return .merge(
+                    .run { _ in
+                        await contentSharingPickerClient.setConfiguration(configuration)
+                        await contentSharingPickerClient.setIsActive(isActive)
+                    },
+                    .run { send in
+                        guard let primaryStreamKey = try twitchPrimaryKeyStorage.load() else {
+                            return
+                        }
+                        await send(.primaryStreamKeyLoaded(primaryStreamKey))
+                    }
+                )
+                
+            case .primaryStreamKeyLoaded(let primaryStreamKey):
                 state.primaryStreamKey = primaryStreamKey
                 return .none
+                
+            case .primaryStreamKeyChanged(let primaryStreamKey):
+                state.primaryStreamKey = primaryStreamKey
+                return .run { _ in
+                    try twitchPrimaryKeyStorage.save(primaryStreamKey)
+                }
             }
         }
     }

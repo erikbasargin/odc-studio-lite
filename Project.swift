@@ -145,6 +145,7 @@ let project = Project(
             dependencies: [
                 .target(name: "AudioVideoKit"),
                 .external(name: "ComposableArchitecture"),
+                .external(name: "Valet"),
             ],
             settings: .settings(base: moduleBaseSettings),
         ),

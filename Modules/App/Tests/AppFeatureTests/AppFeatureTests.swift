@@ -5,12 +5,10 @@ import Testing
 
 @testable import ODCLite
 
-@Suite
+@MainActor
 struct AppFeatureTests {
     
-    @Test
-    @MainActor
-    func taskStartsBroadcastFlow() async {
+    @Test func taskStartsBroadcastFlow() async {
         let probe = AppClientProbe()
         let store = TestStore(initialState: AppFeature.State()) {
             AppFeature()
@@ -21,6 +19,7 @@ struct AppFeatureTests {
                     return true
                 }
             )
+            $0.twitchPrimaryKeyStorage.load = { nil }
         }
         
         await store.send(.bootstrap) {
@@ -39,9 +38,7 @@ struct AppFeatureTests {
         #expect(await probe.bootstrapCount() == 1)
     }
     
-    @Test
-    @MainActor
-    func bootstrapFailureIsModeledInAppState() async {
+    @Test func bootstrapFailureIsModeledInAppState() async {
         let bootstrapError = NSError(
             domain: "AppFeatureTests", code: 1,
             userInfo: [
@@ -55,6 +52,7 @@ struct AppFeatureTests {
                     throw bootstrapError
                 }
             )
+            $0.twitchPrimaryKeyStorage.load = { nil }
         }
         store.exhaustivity = .off
         
@@ -69,9 +67,7 @@ struct AppFeatureTests {
         }
     }
     
-    @Test
-    @MainActor
-    func startBroadcastUsesSettingsOwnedPrimaryStreamKey() async {
+    @Test func startBroadcastUsesSettingsOwnedPrimaryStreamKey() async {
         let probe = AppClientProbe()
         let session = BroadcastSession()
         let store = TestStore(
