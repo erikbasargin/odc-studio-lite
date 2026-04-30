@@ -35,7 +35,7 @@ public struct BroadcastFeature {
     public enum Action: Equatable {
         case bootstrap
         case bandwidthTestEnabledChanged(Bool)
-        case startBroadcast(String)
+        case startBroadcast
         case initiateBroadcast
         case stopBroadcast
         case broadcastSessionIsReady(BroadcastSession)
@@ -44,6 +44,7 @@ public struct BroadcastFeature {
     }
     
     @Dependency(\.broadcastSessionBuilder) var broadcastSessionBuilder
+    @Dependency(\.twitchPrimaryKeyStorage) var twitchPrimaryKeyStorage
     
     public init() {}
     
@@ -59,10 +60,16 @@ public struct BroadcastFeature {
                 state.bandwidthTestEnabled = bandwidthTestEnabled
                 return .none
 
-            case .startBroadcast(let primaryStreamKey):
+            case .startBroadcast:
                 let broadcastSessionBuilder = broadcastSessionBuilder
+                let twitchPrimaryKeyStorage = twitchPrimaryKeyStorage
                 return .run { send in
                     do {
+                        guard let primaryStreamKey = try twitchPrimaryKeyStorage.load() else {
+                            await send(.broadcastStopped)
+                            return
+                        }
+                        
                         let session = try await broadcastSessionBuilder.makeBroadcastSession(primaryStreamKey, .default)
                         await send(.broadcastSessionIsReady(session))
                     } catch {

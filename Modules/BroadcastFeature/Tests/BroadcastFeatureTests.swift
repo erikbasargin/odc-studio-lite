@@ -31,12 +31,13 @@ struct BroadcastFeatureTests {
     
     @Test
     @MainActor
-    func startBroadcastUsesExplicitPrimaryStreamKey() async {
+    func startBroadcastLoadsPrimaryStreamKeyFromStorage() async {
         let probe = BroadcastFeatureProbe()
         let session = BroadcastSession()
         let store = TestStore(initialState: BroadcastFeature.State()) {
             BroadcastFeature()
         } withDependencies: {
+            $0.twitchPrimaryKeyStorage.load = { "stream-key" }
             $0.broadcastSessionBuilder = .init(
                 makeBroadcastSession: { primaryStreamKey, _ in
                     await probe.recordStartBroadcast(primaryStreamKey: primaryStreamKey)
@@ -45,7 +46,7 @@ struct BroadcastFeatureTests {
             )
         }
         
-        await store.send(.startBroadcast("stream-key"))
+        await store.send(.startBroadcast)
         await store.receive(.broadcastSessionIsReady(session)) {
             $0.broadcastSession = session
         }

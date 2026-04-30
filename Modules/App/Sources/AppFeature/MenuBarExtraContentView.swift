@@ -18,9 +18,7 @@ struct MenuBarExtraContentView: View {
         CameraControlSection(store: captureStore)
         AudioControlSection(store: captureStore)
         
-        TwitchBroadcastSection(store: broadcastStore) {
-            store.send(broadcastStore.isBroadcasting ? .stopBroadcast : .startBroadcast)
-        }
+        TwitchBroadcastSection(store: broadcastStore)
         
         Section {
             SettingsLink()

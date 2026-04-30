@@ -67,14 +67,10 @@ struct AppFeatureTests {
         }
     }
     
-    @Test func startBroadcastUsesSettingsOwnedPrimaryStreamKey() async {
+    @Test func startBroadcastUsesStoredPrimaryStreamKey() async {
         let probe = AppClientProbe()
         let session = BroadcastSession()
-        let store = TestStore(
-            initialState: AppFeature.State(
-                configuration: .init(primaryStreamKey: "stream-key")
-            )
-        ) {
+        let store = TestStore(initialState: AppFeature.State()) {
             AppFeature()
         } withDependencies: {
             $0.captureClient = .mock(
@@ -82,6 +78,7 @@ struct AppFeatureTests {
                     await probe.recordAttachedBroadcastSession(attachedSession)
                 }
             )
+            $0.twitchPrimaryKeyStorage.load = { "stream-key" }
             $0.broadcastSessionBuilder = .init(
                 makeBroadcastSession: { primaryStreamKey, _ in
                     await probe.recordStartBroadcast(primaryStreamKey: primaryStreamKey)
@@ -90,8 +87,7 @@ struct AppFeatureTests {
             )
         }
         
-        await store.send(.startBroadcast)
-        await store.receive(.broadcast(.startBroadcast("stream-key")))
+        await store.send(.broadcast(.startBroadcast))
         await store.receive(.broadcast(.broadcastSessionIsReady(session))) {
             $0.broadcast.broadcastSession = session
         }

@@ -34,8 +34,6 @@ struct AppFeature {
     enum Action: Equatable {
         case bootstrap
         case retryButtonTapped
-        case startBroadcast
-        case stopBroadcast
         case capture(CaptureFeature.Action)
         case broadcast(BroadcastFeature.Action)
         case settings(SettingsFeature.Action)
@@ -73,16 +71,6 @@ struct AppFeature {
             case .retryButtonTapped:
                 state.bootstrapState = .idle
                 return .send(.bootstrap)
-
-            case .startBroadcast:
-                return .send(
-                    .broadcast(
-                        .startBroadcast(state.settings.primaryStreamKey)
-                    )
-                )
-
-            case .stopBroadcast:
-                return .send(.broadcast(.stopBroadcast))
 
             case .capture(.bootstrapSucceeded):
                 state.bootstrapState = .finished

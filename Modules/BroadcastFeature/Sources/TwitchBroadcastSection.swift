@@ -7,18 +7,13 @@ import ComposableArchitecture
 import SwiftUI
 
 public struct TwitchBroadcastSection: View {
-
+    
     @Bindable public var store: StoreOf<BroadcastFeature>
-    private let startStopBroadcast: () -> Void
-
-    public init(
-        store: StoreOf<BroadcastFeature>,
-        startStopBroadcast: @escaping () -> Void
-    ) {
+    
+    public init(store: StoreOf<BroadcastFeature>) {
         self.store = store
-        self.startStopBroadcast = startStopBroadcast
     }
-
+    
     public var body: some View {
         Section("Twitch Broadcast") {
             Toggle(
@@ -26,9 +21,9 @@ public struct TwitchBroadcastSection: View {
                 isOn: $store.bandwidthTestEnabled.sending(\.bandwidthTestEnabledChanged)
             )
             .disabled(store.isBroadcasting)
-
+            
             Button("\(store.isBroadcasting ? "Stop" : "Start") broadcast") {
-                startStopBroadcast()
+                store.send(store.isBroadcasting ? .stopBroadcast : .startBroadcast)
             }
         }
     }
@@ -39,8 +34,6 @@ public struct TwitchBroadcastSection: View {
         TwitchBroadcastSection(
             store: Store(initialState: BroadcastFeature.State()) {
                 BroadcastFeature()
-            },
-            startStopBroadcast: {}
-        )
+            })
     }
 }

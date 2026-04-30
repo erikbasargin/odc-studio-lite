@@ -57,11 +57,11 @@ struct SettingsFeature {
                         await send(.primaryStreamKeyLoaded(primaryStreamKey))
                     }
                 )
-                
+
             case .primaryStreamKeyLoaded(let primaryStreamKey):
                 state.primaryStreamKey = primaryStreamKey
                 return .none
-                
+
             case .primaryStreamKeyChanged(let primaryStreamKey):
                 state.primaryStreamKey = primaryStreamKey
                 return .run { _ in
