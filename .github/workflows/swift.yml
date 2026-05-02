@@ -3,31 +3,79 @@ name: Swift
 on:
   push:
     branches: [ "develop" ]
-  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   id-token: write
   contents: read
 
 jobs:
-  build:
+  inspect-dependencies:
     runs-on: macos-26
+    timeout-minutes: 20
+
     steps:
-    - uses: actions/checkout@v6.0.2
-    - uses: jdx/mise-action@v4.0.1
-    - uses: swift-actions/setup-swift@v3
-    - name: Tuist auth
-      run: mise run auth
-    - name: Install dependecies
-      run: mise run install
-    - name: Generate Xcode project
-      run: mise run generate
-    - name: Setup Xcode cache
-      run: mise run setupXcodeCache
-    - name: Inspect implicit dependencies
-      run: mise run "Inspect implicit dependencies"
-    - name: Run tests
-      run: mise exec -- tuist test -- CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY=""
-    - name: Warm cache
-      run: mise exec -- tuist cache
+      - uses: actions/checkout@v6
+      - uses: jdx/mise-action@v4
+      - uses: swift-actions/setup-swift@v3
+    
+      - name: Tuist auth
+        run: mise run auth
       
+      - name: Install dependecies
+        run: mise run install
+      
+      - name: Generate Xcode project
+        run: mise run generate
+      
+      - name: Setup Xcode cache
+        run: mise run setupXcodeCache
+      
+      - name: Inspect dependencies
+        run: mise run "Inspect dependencies"
+
+  test:
+    runs-on: macos-26
+    timeout-minutes: 20
+    
+    steps:
+      - uses: actions/checkout@v6
+      - uses: jdx/mise-action@v4
+      - uses: swift-actions/setup-swift@v3
+    
+      - name: Tuist auth
+        run: mise run auth
+      
+      - name: Install dependecies
+        run: mise run install
+        
+      - name: Setup Xcode cache
+        run: mise run setupXcodeCache
+        
+      - name: Run tests
+        run: mise exec -- tuist test -- CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY=""
+      
+  warm-cache:
+    runs-on: macos-26
+    timeout-minutes: 20
+    needs: test
+
+    steps:
+      - uses: actions/checkout@v6
+      - uses: jdx/mise-action@v4
+      - uses: swift-actions/setup-swift@v3
+
+      - name: Tuist auth
+        run: mise run auth
+      
+      - name: Install dependecies
+        run: mise run install
+
+      - name: Setup Xcode cache
+        run: mise run setupXcodeCache
+
+      - name: Warm cache
+        run: mise exec -- tuist cache
