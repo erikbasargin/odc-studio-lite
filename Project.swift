@@ -181,11 +181,21 @@ let project = Project(
                 ],
                 runPostActionsOnFailure: true,
             ),
-            testAction: .targets([
-                "ODCLiteTests",
-                "BroadcastFeatureTests",
-                "AudioVideoKitTests",
-            ]),
+            testAction: .targets(
+                [
+                    "ODCLiteTests",
+                    "BroadcastFeatureTests",
+                    "AudioVideoKitTests",
+                ],
+                postActions: [
+                    .executionAction(
+                        title: "Inspect Test",
+                        scriptText: """
+                            $HOME/.local/bin/mise x -C $SRCROOT -- tuist inspect test
+                            """,
+                    ),
+                ]
+            ),
         )
     ]
 )
