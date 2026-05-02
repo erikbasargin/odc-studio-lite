@@ -22,6 +22,10 @@ description = "Generate the Xcode project"
 alias = "g"
 run = "tuist generate"
 
+[tasks.test]
+description = "Run tests"
+run = "tuist test"
+
 [tasks."Inspect implicit dependencies"]
 run = "tuist inspect dependencies --only implicit"
 
