@@ -10,23 +10,12 @@ import ComposableArchitecture
 import ScreenCaptureKit
 import SwiftUI
 
-#if DEBUG
-import Logboard
-import HaishinKit
-import RTMPHaishinKit
-#endif
-
 @main
 struct ODCLiteApp: App {
     
     private let store: StoreOf<AppFeature>
     
     init() {
-        #if DEBUG
-        LBLogger(kHaishinKitIdentifier).level = .debug
-        LBLogger(kRTMPHaishinKitIdentifier).level = .debug
-        #endif
-        
         let captureRuntime = CaptureRuntime()
         let store = Store(
             initialState: AppFeature.State(

@@ -7,9 +7,17 @@ import ComposableArchitecture
 import HaishinKit
 import RTMPHaishinKit
 
+#if DEBUG
+import Logboard
+#endif
+
 public struct BroadcastSessionBuilder: Sendable {
     
     static func configure() async {
+        #if DEBUG
+        LBLogger(kHaishinKitIdentifier).level = .debug
+        LBLogger(kRTMPHaishinKitIdentifier).level = .debug
+        #endif
         await SessionBuilderFactory.shared.register(RTMPSessionFactory())
     }
     

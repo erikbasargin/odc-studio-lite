@@ -41,7 +41,6 @@ let project = Project(
                 .target(name: "Shared"),
                 .external(name: "ComposableArchitecture"),
                 .external(name: "HaishinKit"),
-                .external(name: "RTMPHaishinKit"),
             ],
             settings: .settings(
                 base: [
