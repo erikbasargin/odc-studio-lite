@@ -4,7 +4,12 @@ ODC Lite captures a selected display, optionally mixes camera and microphone inp
 
 ## Overview
 
-The app is built around a single `BroadcastManager` instance shared across the main app scene, menu bar extra, and settings window. At launch, ODC Lite:
+The app is moving toward a modular Composable Architecture design. `AppFeature`
+acts as the composition root for the main app scene, menu bar extra, and
+settings window. It scopes feature state into capture, broadcast, and settings
+domains, then coordinates the few workflows that cross those boundaries.
+
+At launch, ODC Lite:
 
 - Registers the RTMP session factory.
 - Configures `CaptureSystem` with the current screen and audio capture settings.
@@ -13,6 +18,21 @@ The app is built around a single `BroadcastManager` instance shared across the m
 - Requests camera authorization for the optional camera source.
 
 The menu bar extra is the primary control surface. From there, users can select a camera, select a microphone, enable a bandwidth test, open Settings, or start and stop a Twitch broadcast.
+
+## Architecture Direction
+
+Feature state and user actions are owned by TCA reducers. `BroadcastFeature` is
+already extracted into its own module, while capture and settings are still
+hosted inside the app target as the migration continues. Live system behavior is
+kept behind dependency clients and actors, including capture runtime work,
+content sharing picker configuration, Twitch stream-key storage, and RTMP
+session creation.
+
+`AudioVideoKit` remains the lower-level media layer. It wraps ScreenCaptureKit
+and AVFoundation concepts into reusable capture primitives, typed async streams,
+device discovery helpers, and sample-buffer utilities. The app layer composes
+those primitives into user-facing workflows instead of owning the raw capture
+pipeline directly.
 
 ## Broadcast Flow
 
