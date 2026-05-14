@@ -22,6 +22,11 @@ description = "Generate the Xcode project"
 alias = "g"
 run = "tuist generate"
 
+[tasks.generateNoOpen]
+description = "Generate the Xcode project without opening Xcode"
+alias = "gno"
+run = "tuist generate --no-open"
+
 [tasks.test]
 description = "Run tests"
 run = "tuist test"
