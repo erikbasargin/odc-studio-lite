@@ -37,6 +37,17 @@ The repository uses `mise` to pin Tuist and expose common workflows. Prefer `mis
 - Use one workflow lane at a time: either Xcode MCP or `mise` commands. Do not interleave both in the same step.
 - Do not run `xcodebuild` directly unless the user explicitly requests it.
 
+**Typical `mise` lane after changes:**
+
+```sh
+# Only needed when Project.swift changes (new targets, dependencies, settings)
+mise run gno                      # regenerate Xcode project without opening it
+
+mise run "Inspect dependencies"   # check for redundant or implicit dependencies
+mise run lint                     # format and lint Swift sources
+mise run test                     # build and run the full test suite
+```
+
 ## Intent Layer Maintenance
 
 When updating this file, keep it aligned with the actual repository instead of turning it into generic policy text. Avoid referencing internal type names, specific modules, or version numbers that change more frequently than monthly.
