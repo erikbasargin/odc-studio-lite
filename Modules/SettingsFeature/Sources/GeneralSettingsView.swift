@@ -6,11 +6,15 @@
 import ComposableArchitecture
 import SwiftUI
 
-struct GeneralSettingsView: View {
+public struct GeneralSettingsView: View {
     
-    @Bindable var store: StoreOf<SettingsFeature>
+    @Bindable public var store: StoreOf<SettingsFeature>
     
-    var body: some View {
+    public init(store: StoreOf<SettingsFeature>) {
+        self.store = store
+    }
+    
+    public var body: some View {
         Form {
             Section("Twitch") {
                 SecureField(

@@ -3,7 +3,7 @@ import Shared
 import Synchronization
 import Testing
 
-@testable import ODCLite
+@testable import SettingsFeature
 
 @MainActor
 struct SettingsFeatureTests {

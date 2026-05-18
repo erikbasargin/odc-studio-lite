@@ -8,6 +8,7 @@ import AudioVideoKit
 import BroadcastFeature
 import ComposableArchitecture
 import ScreenCaptureKit
+import SettingsFeature
 import SwiftUI
 
 @main

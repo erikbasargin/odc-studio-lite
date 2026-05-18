@@ -38,6 +38,7 @@ let project = Project(
             dependencies: [
                 .target(name: "AudioVideoKit"),
                 .target(name: "BroadcastFeature"),
+                .target(name: "SettingsFeature"),
                 .target(name: "Shared"),
                 .external(name: "ComposableArchitecture"),
                 .external(name: "HaishinKit"),
@@ -77,7 +78,7 @@ let project = Project(
                 .target(name: "ODCLite"),
                 .target(name: "AudioVideoKit"),
                 .target(name: "BroadcastFeature"),
-                .target(name: "Shared"),
+                .target(name: "SettingsFeature"),
                 .external(name: "ComposableArchitecture"),
             ],
             settings: .settings(
@@ -150,6 +151,38 @@ let project = Project(
         ),
         
         .target(
+            name: "SettingsFeature",
+            destinations: .macOS,
+            product: productType(),
+            bundleId: "com.odclite.settingsFeature",
+            deploymentTargets: deploymentTargets,
+            buildableFolders: [
+                "Modules/SettingsFeature/Sources"
+            ],
+            dependencies: [
+                .target(name: "Shared"),
+                .external(name: "ComposableArchitecture"),
+            ],
+            settings: .settings(base: moduleBaseSettings),
+        ),
+        
+        .target(
+            name: "SettingsFeatureTests",
+            destinations: .macOS,
+            product: .unitTests,
+            bundleId: "com.odclite.settingsFeature.unitTests",
+            deploymentTargets: deploymentTargets,
+            buildableFolders: [
+                "Modules/SettingsFeature/Tests"
+            ],
+            dependencies: [
+                .target(name: "SettingsFeature"),
+                .target(name: "Shared"),
+                .external(name: "ComposableArchitecture"),
+            ],
+        ),
+        
+        .target(
             name: "AudioVideoKitTests",
             destinations: .macOS,
             product: .unitTests,
@@ -184,6 +217,7 @@ let project = Project(
                 [
                     "ODCLiteTests",
                     "BroadcastFeatureTests",
+                    "SettingsFeatureTests",
                     "AudioVideoKitTests",
                 ],
                 postActions: [
@@ -192,7 +226,7 @@ let project = Project(
                         scriptText: """
                             $HOME/.local/bin/mise x -C $SRCROOT -- tuist inspect test
                             """,
-                    ),
+                    )
                 ]
             ),
         )
