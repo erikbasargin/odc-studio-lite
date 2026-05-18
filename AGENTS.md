@@ -33,8 +33,9 @@ Formatting is handled by `swift-format` (configured in `.swift-format`).
 The repository uses `mise` to pin Tuist and expose common workflows. Prefer `mise run <task>` instead of calling `tuist` directly. See `mise.toml` for the full task list.
 
 - Some tasks (`setup`, `generate`, `g`, `edit`) may open Xcode. Prefer `mise run generateNoOpen` or `mise run gno` when regenerating while staying in the CLI lane.
+- **If Xcode MCP is connected, prefer it for builds, tests, and IDE-driven tasks.** Fall back to `mise` only when Xcode MCP is not available.
 - Use one workflow lane at a time: either Xcode MCP or `mise` commands. Do not interleave both in the same step.
-- Do not run `xcodebuild` directly unless the user explicitly requests it. Use `mise run test`/`mise run lint` for CLI validation or Xcode MCP for IDE-driven builds.
+- Do not run `xcodebuild` directly unless the user explicitly requests it.
 
 ## Intent Layer Maintenance
 
